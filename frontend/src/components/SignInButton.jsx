@@ -6,16 +6,15 @@ export default function SignInButton() {
       className="
         flex items-center gap-2
         bg-white text-gray-900 font-semibold
-        px-5 py-2.5 rounded-lg
+        px-5 py-1.5 rounded-lg
         transition-all duration-200
-        hover:bg-gray-100 hover:scale-105
+        hover:bg-gray-200
         focus:outline-none focus:ring-2 focus:ring-gray-300
         active:scale-95
       "
     >
       <span>Sign In</span>
 
-      {/* SVG icon flipped horizontally */}
       <svg
         xmlns="http://www.w3.org/2000/svg"
         className="w-5 h-5 transform rotate-180"

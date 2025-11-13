@@ -1,8 +1,8 @@
 .landing {
-  background-color: #0a0a0a;
+  background-color: #0b0b0b;
   background-image:
-    linear-gradient(rgba(76, 76, 76, 0.08) 1px, transparent 2px),
-    linear-gradient(90deg, rgba(76, 76, 76, 0.08) 1px, transparent 2px);
+    linear-gradient(rgba(76, 76, 76, 0.08) 3px, transparent 2px),
+    linear-gradient(90deg, rgba(76, 76, 76, 0.08) 3px, transparent 2px);
   background-size: 60px 60px;
   background-position: center;
 } 

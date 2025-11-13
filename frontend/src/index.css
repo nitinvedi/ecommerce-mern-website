@@ -1,9 +1,11 @@
+@import "tailwindcss";
+
 body {
   background-color: #0a0a0a;
   background-image:
-    linear-gradient(rgba(255,255,255,0.08) 2px, transparent 2px),
-    linear-gradient(90deg, rgba(255,255,255,0.08) 2px, transparent 2px);
-  background-size: 80px 80px; /* Bigger grid cells */
-  filter: blur(0.5px); /* Adds subtle softness */
+    linear-gradient(rgba(255,255,255,0.08) 2px, transparent 3px),
+    linear-gradient(90deg, rgba(255,255,255,0.08) 2px, transparent 3px);
+  background-size: 70px 70px;
+  filter: blur(0.2px); 
   background-position: center;
-}
+} 

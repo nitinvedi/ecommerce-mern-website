@@ -1,0 +1,123 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;                     /* reduced spacing */
+  background-color: #111;
+  padding: 20px;               /* was 30px */
+  width: 360px;                /* narrower */
+  border-radius: 16px;
+  font-family: system-ui;
+  color: #e5e5e5;
+}
+
+/* Input row */
+.inputForm {
+  border: 1.5px solid #333;
+  border-radius: 8px;
+  height: 40px;                /* was 50px */
+  display: flex;
+  align-items: center;
+  padding-left: 8px;
+  background-color: #1a1a1a;
+}
+
+/* Input */
+.input {
+  margin-left: 8px;
+  border: none;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  color: #e5e5e5;
+  font-size: 14px;             /* smaller */
+}
+
+.inputForm:focus-within {
+  border-color: #2d79f3;
+}
+
+/* Remember me + Forgot password row */
+.flex-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2px;             /* tighter */
+}
+
+.button-submit {
+  margin-top: 12px;            /* reduced */
+  background-color: #000000;
+  border: none;
+  color: white;
+  font-size: 14px;
+  border-radius: 8px;
+  height: 42px;                /* smaller */
+  width: 100%;
+  cursor: pointer;
+}
+
+.p {
+  text-align: center;
+  color: #ccc;
+  font-size: 13px;             /* smaller */
+  margin: 4px 0;               /* smaller */
+}
+
+/* Social buttons */
+.btn {
+  margin-top: 6px;
+  height: 42px;                /* smaller */
+  border-radius: 8px;
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  color: #eee;
+  font-size: 14px;
+}
+.flex-row.buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.flex-row.buttons .btn {
+  width: 50%;        /* equal width */
+  height: 42px;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #111 inset !important; /* your background color */
+  box-shadow: 0 0 0 30px #111 inset !important;
+  -webkit-text-fill-color: white !important;
+  caret-color: white;
+}
+.btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;          /* space between icon & text */
+    width: 100%;
+    padding: 10px 0;
+    border-radius: 8px;
+}
+
+.google-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* centers icon + text together */
+    gap: 10px;               /* spacing between icon + text */
+    padding: 10px 0;
+    
+    background: #222;
+    color: white;
+    border: 1px solid #333;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.google-btn:hover {
+    background: #333;
+}

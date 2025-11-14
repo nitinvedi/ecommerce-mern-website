@@ -19,7 +19,6 @@ import Navbar from "./components/Navbar";
 export default function App() {
   return (
     <Router>
-      <Navbar />
       <div>
         <Routes>
           <Route path="/" element={<Landing />} />

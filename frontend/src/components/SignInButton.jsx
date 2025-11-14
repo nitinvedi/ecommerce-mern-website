@@ -1,8 +1,9 @@
 import React from "react";
 
-export default function SignInButton() {
+export default function SignInButton({ onClick }) {
   return (
     <button
+      onClick={onClick}
       className="
         flex items-center gap-2
         bg-white text-gray-900 font-semibold

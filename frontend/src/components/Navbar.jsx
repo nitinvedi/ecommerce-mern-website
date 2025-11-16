@@ -48,7 +48,7 @@ export default function Navbar({ openSignUp }) {
         {showBanner && (
           <motion.div
             key="banner"
-            initial={{ y: -40, opacity: 0 }}
+            initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -40, opacity: 0 }}
             transition={{ duration: 0.35, ease: "easeOut" }}
@@ -63,7 +63,7 @@ export default function Navbar({ openSignUp }) {
               <AnimatePresence mode="wait">
                 <motion.div
                   key={textIndex}
-                  initial={{ y: -12, opacity: 0 }}
+                  initial={{ y: 12, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   exit={{ y: 12, opacity: 0 }}
                   transition={{ duration: 0.35 }}

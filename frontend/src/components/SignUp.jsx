@@ -19,7 +19,7 @@ export default function SignUp({ onClose }) {
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* content here */}
-                <h2 className="text-white text-2xl font-bold mb-4">Welcome to PhoneSphere</h2>
+                <h2 className="text-white text-2xl font-bold mb-4">Welcome to Marammat</h2>
 
                 <form className="form">
 

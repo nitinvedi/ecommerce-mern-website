@@ -100,7 +100,7 @@ export default function Landing() {
             className="bg-black/30 backdrop-blur-sm border border-white/10 px-6 py-2 rounded-full text-white text-sm font-medium shadow-md"
             style={{ transform: `translate(${mouse.x * 4}px, ${mouse.y * 3}px)` }}
           >
-            Start using PhoneSphere ❤️
+            Start using Marammat ❤️
           </motion.div>
 
           {/* -------------------------------- */}

@@ -2,14 +2,14 @@
 
 .landing {
   position: relative;
-  background-color: #0b0b0b;
+  background-color: #030304;
 
   /* Brighter + more visible white grid */
   background-image:
-    linear-gradient(rgba(220, 220, 220, 0.35) 1px, transparent 2px),
-    linear-gradient(90deg, rgba(220, 220, 220, 0.35) 1px, transparent 2px);
+    linear-gradient(rgb(62, 62, 62) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(57, 57, 57) 1px, transparent 1px);
 
-  background-size: 60px 60px;
+  background-size: 55px 50px;
   background-position: center;
 }
 
@@ -20,16 +20,17 @@
   inset: 0;
 
   /* Darker overlay for more contrast */
-  background: rgba(10, 10, 10, 0.55);
+  background: rgba(0, 0, 0, 0.556);
 
-  -webkit-backdrop-filter: blur( 1.5px);
-  backdrop-filter: blur(1.5px);
+  -webkit-backdrop-filter: blur(1px);
+  backdrop-filter: blur(1px);
 
   z-index: 0;
 }
 
 /* Ensure all page content stays above overlay */
-.landing > * {
+/* All direct children EXCEPT the modal stay above overlay */
+.landing > *:not(.signup-modal) {
   position: relative;
   z-index: 1;
 }

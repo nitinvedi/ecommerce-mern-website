@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import React from "react";
 import "../styles/signup.css";
@@ -18,12 +17,10 @@ export default function SignUp({ onClose }) {
                 className="bg-[#111] min-w-[350px] max-w-[90%] p-6 rounded-xl shadow-xl border border-white/10"
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* content here */}
                 <h2 className="text-white text-2xl font-bold mb-4">Welcome to Marammat</h2>
 
                 <form className="form">
 
-                    {/* Email */}
                     <div className="flex-column">
                         <label>Email</label>
                     </div>
@@ -37,7 +34,6 @@ export default function SignUp({ onClose }) {
                         <input placeholder="Enter your Email" className="input" type="text" />
                     </div>
 
-                    {/* Password */}
                     <div className="flex-column">
                         <label>Password</label>
                     </div>
@@ -50,7 +46,6 @@ export default function SignUp({ onClose }) {
                         <input placeholder="Enter your Password" className="input" type="password" />
                     </div>
 
-                    {/* Remember me */}
                     <div className="flex-row">
                         <div>
                             <input type="radio" name="remember" />
@@ -66,7 +61,6 @@ export default function SignUp({ onClose }) {
                         </p>
                     {/* <p className="p line">Sign Up With</p> */}
 
-                    {/* Buttons */}
                     <button className="google-btn">
                         <svg width="20" height="20" viewBox="0 0 48 48">
                             <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.06 17.74 9.5 24 9.5z" />

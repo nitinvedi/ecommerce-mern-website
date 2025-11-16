@@ -6,8 +6,8 @@
 
   /* Brighter + more visible white grid */
   background-image:
-    linear-gradient(rgb(62, 62, 62) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(57, 57, 57) 1px, transparent 1px);
+    linear-gradient(rgb(186, 185, 185) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(186, 186, 186) 1px, transparent 1px);
 
   background-size: 55px 50px;
   background-position: center;
@@ -20,7 +20,7 @@
   inset: 0;
 
   /* Darker overlay for more contrast */
-  background: rgba(0, 0, 0, 0.556);
+  background: rgba(0, 0, 0, 0.763);
 
   -webkit-backdrop-filter: blur(1px);
   backdrop-filter: blur(1px);
@@ -47,4 +47,36 @@
 
 .heading-font {
   font-family: 'ZodiakBold', sans-serif;
+}
+
+
+
+
+/* Shine effect for Tailwind button */
+.shine-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  animation: shine 5s ease-in-out infinite;
+}
+
+@keyframes shine {
+  0% {
+    left: -100%;
+  }
+  12% {
+    left: 100%;
+  }
+  100% {
+    left: 100%;
+  }
 }

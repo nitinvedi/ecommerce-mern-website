@@ -6,8 +6,8 @@
 
   /* Brighter + more visible white grid */
   background-image:
-    linear-gradient(rgb(186, 185, 185) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(186, 186, 186) 1px, transparent 1px);
+    linear-gradient(rgb(186, 185, 185) 1px, transparent 1.1px),
+    linear-gradient(90deg, rgb(186, 186, 186) 1px, transparent 1.1px);
 
   background-size: 55px 50px;
   background-position: center;

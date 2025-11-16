@@ -149,13 +149,26 @@ export default function Landing() {
             style={{ transform: `translate(${mouse.x * 12}px, ${mouse.y * 10}px)` }}
             className="flex items-center gap-4 mt-8"
           >
-            <button className="text-[15px] bg-white text-black font-semibold px-4 py-1 rounded-xl text-lg hover:bg-gray-200 transition">
+            <button className="text-[15px] text-nowrap bg-white text-black font-semibold px-5 py-2 rounded-md text-lg hover:bg-gray-200 transition">
               Try Now →
             </button>
 
-            <button className="text-[15px] bg-white/10 backdrop-blur-md text-white border border-white/20 px-4 py-1 rounded-xl text-lg hover:bg-white/20 transition">
-              Become Pro
-            </button>
+            <button className="shine-btn relative overflow-hidden flex items-center text-[15px] bg-black/10 backdrop-blur-md text-white border border-white/20 px-5 py-2 rounded-md text-lg hover:bg-white/10 transition">
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="#ffffff"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path d="M12 4l3 5 5-3-2 10H6L4 6l5 3 3-5z" />
+  </svg>
+
+  <span className="mx-1">
+    Become Pro
+  </span>
+</button>
+
           </motion.div>
         </section>
 

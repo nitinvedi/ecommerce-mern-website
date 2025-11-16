@@ -94,7 +94,7 @@ export default function Landing() {
           {/* TOP BADGE LABEL                  */}
           {/* -------------------------------- */}
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="bg-black/30 backdrop-blur-sm border border-white/10 px-6 py-2 rounded-full text-white text-sm font-medium shadow-md"
@@ -107,7 +107,7 @@ export default function Landing() {
           {/* MAIN HEADING (PARALLAX)          */}
           {/* -------------------------------- */}
           <motion.h1
-            initial={{ opacity: 0, y: -15 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1 }}
             style={{ transform: `translate(${mouse.x * 8}px, ${mouse.y * 6}px)` }}
@@ -126,7 +126,7 @@ export default function Landing() {
           {/* SUBHEADING                       */}
           {/* -------------------------------- */}
           <motion.p
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.15 }}
             style={{ transform: `translate(${mouse.x * 5}px, ${mouse.y * 4}px)` }}

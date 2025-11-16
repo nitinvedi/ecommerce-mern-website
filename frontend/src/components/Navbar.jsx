@@ -8,9 +8,9 @@ export default function Navbar({ openSignUp }) {
   const [scrolled, setScrolled] = useState(false);
 
   const messages = [
-    "🔧 Get your device repaired with 100% trusted experts",
-    "⚡ Fastest doorstep pickup & delivery",
-    "💰 Best prices guaranteed for all repairs",
+    "Get your device repaired with 100% trusted experts",
+    "Fastest doorstep pickup & delivery",
+    "Best prices guaranteed for all repairs",
   ];
 
   // Auto-hide after X seconds (8 sec example)
@@ -19,17 +19,15 @@ export default function Navbar({ openSignUp }) {
 
     const timer = setTimeout(() => {
       setShowBanner(false);
-    }, 8000); // <-- CHANGE TO CONTROL AUTO-HIDE TIME
+    }, 10000);
 
     return () => clearTimeout(timer);
   }, [showBanner]);
 
-  // Manual close
   const closeBanner = () => {
     setShowBanner(false);
   };
 
-  // Rotating banner text
   useEffect(() => {
     const interval = setInterval(
       () => setTextIndex((prev) => (prev + 1) % messages.length),
@@ -38,7 +36,6 @@ export default function Navbar({ openSignUp }) {
     return () => clearInterval(interval);
   }, []);
 
-  // Shrink navbar on scroll
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
     window.addEventListener("scroll", onScroll);
@@ -47,14 +44,13 @@ export default function Navbar({ openSignUp }) {
 
   return (
     <>
-      {/* ========================= BANNER ========================= */}
       <AnimatePresence>
         {showBanner && (
           <motion.div
             key="banner"
             initial={{ y: -40, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -40, opacity: 0 }}    // SLIDE UP CLOSE
+            exit={{ y: -40, opacity: 0 }}
             transition={{ duration: 0.35, ease: "easeOut" }}
             className="
               w-full fixed top-0 left-0
@@ -129,7 +125,7 @@ export default function Navbar({ openSignUp }) {
               font-extrabold text-2xl tracking-wide
             "
           >
-            Maramat
+            Marammat
           </motion.div>
 
           {/* Links */}

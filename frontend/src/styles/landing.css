@@ -1,19 +1,49 @@
-@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 .landing {
+  position: relative;
   background-color: #0b0b0b;
+
+  /* Brighter + more visible white grid */
   background-image:
-    linear-gradient(rgba(124, 124, 124, 0.15) 0.8px, transparent 2px),
-    linear-gradient(90deg, rgba(124, 124, 124, 0.15) 0.8px, transparent 2px);
+    linear-gradient(rgba(220, 220, 220, 0.35) 1px, transparent 2px),
+    linear-gradient(90deg, rgba(220, 220, 220, 0.35) 1px, transparent 2px);
+
   background-size: 60px 60px;
   background-position: center;
-} 
+}
+
+/* Dark overlay behind content + blur */
+.landing::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  /* Darker overlay for more contrast */
+  background: rgba(10, 10, 10, 0.55);
+
+  -webkit-backdrop-filter: blur( 1.5px);
+  backdrop-filter: blur(1.5px);
+
+  z-index: 0;
+}
+
+/* Ensure all page content stays above overlay */
+.landing > * {
+  position: relative;
+  z-index: 1;
+}
 
 
 
-.oswald {
-  font-family: "Oswald", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: 550;
+
+@font-face {
+  font-family: 'ZodiakBold';
+  src: url('/fonts/OTF/Zodiak-Bold.otf') format('opentype');
+  font-weight: bold;
   font-style: normal;
+}
+
+.heading-font {
+  font-family: 'ZodiakBold', sans-serif;
 }

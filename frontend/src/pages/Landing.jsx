@@ -2,14 +2,18 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import "../styles/landing.css";
 import Navbar from "../components/Navbar";
+import SignIn from "../components/SignIn";
 import SignUp from "../components/SignUp";
 import FeatureCards from "../components/FeatureCards";
 import Footer from "../components/Footer";
 
 export default function Landing() {
-  const [signUp, setSignUp] = useState(false);
-  const openSignUp = () => setSignUp(true);
-  const closeSignUp = () => setSignUp(false);
+  const [authModal, setAuthModal] = useState(null); // null, 'signin', or 'signup'
+  const openSignIn = () => setAuthModal('signin');
+  const openSignUp = () => setAuthModal('signup');
+  const closeAuth = () => setAuthModal(null);
+  const switchToSignUp = () => setAuthModal('signup');
+  const switchToSignIn = () => setAuthModal('signin');
 
   // GLOBAL PARALLAX LOGIC
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
@@ -39,7 +43,7 @@ export default function Landing() {
 
   return (
     <>
-      <Navbar openSignUp={openSignUp} />
+      <Navbar openSignUp={openSignIn} />
 
       <div className="landing min-h-screen flex flex-col items-center pt-28">
 
@@ -163,10 +167,15 @@ export default function Landing() {
         <FeatureCards />
         <Footer />
 
-        {/* SIGNUP MODAL */}
-        {signUp && (
+        {/* AUTH MODAL */}
+        {authModal === 'signin' && (
           <div className="signup-modal fixed inset-0 z-99999">
-            <SignUp onClose={closeSignUp} />
+            <SignIn onClose={closeAuth} onSwitchToSignUp={switchToSignUp} />
+          </div>
+        )}
+        {authModal === 'signup' && (
+          <div className="signup-modal fixed inset-0 z-99999">
+            <SignUp onClose={closeAuth} onSwitchToSignIn={switchToSignIn} />
           </div>
         )}
       </div>

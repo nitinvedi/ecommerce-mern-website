@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import React from "react";
 import "../styles/signup.css";
 
-export default function SignUp({ onClose, onSwitchToSignIn }) {
+export default function SignIn({ onClose, onSwitchToSignUp }) {
     return (
         <div
             className="signup-modal fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-999"
@@ -17,21 +17,9 @@ export default function SignUp({ onClose, onSwitchToSignIn }) {
                 className="bg-[#111] min-w-[350px] max-w-[90%] p-6 rounded-xl shadow-xl border border-white/10"
                 onClick={(e) => e.stopPropagation()}
             >
-                <h2 className="text-white text-2xl font-bold mb-4">Create Account</h2>
+                <h2 className="text-white text-2xl font-bold mb-4">Welcome to Marammat</h2>
 
                 <form className="form">
-
-                    <div className="flex-column">
-                        <label>Name</label>
-                    </div>
-
-                    <div className="inputForm">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#e5e5e5' }}>
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                        <input placeholder="Enter your Name" className="input" type="text" />
-                    </div>
 
                     <div className="flex-column">
                         <label>Email</label>
@@ -58,25 +46,21 @@ export default function SignUp({ onClose, onSwitchToSignIn }) {
                         <input placeholder="Enter your Password" className="input" type="password" />
                     </div>
 
-                    <div className="flex-column">
-                        <label>Confirm Password</label>
+                    <div className="flex-row">
+                        <div>
+                            <input type="radio" name="remember" />
+                            <label> Remember me </label>
+                        </div>
+                        <span className="span">Forgot password?</span>
                     </div>
 
-                    <div className="inputForm">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="-64 0 512 512" fill="currentColor">
-                            <path d="m336 512h-288c-26.453125 0-48-21.523438-48-48v-224c0-26.476562 21.546875-48 48-48h288c26.453125 0 48 21.523438 48 48v224c0 26.476562-21.546875 48-48 48zm-288-288c-8.8125 0-16 7.167969-16 16v224c0 8.832031 7.1875 16 16 16h288c8.8125 0 16-7.167969 16-16v-224c0-8.832031-7.1875-16-16-16zm0 0" fill="currentColor" />
-                            <path d="m304 224c-8.832031 0-16-7.167969-16-16v-80c0-52.929688-43.070312-96-96-96s-96 43.070312-96 96v80c0 8.832031-7.167969 16-16 16s-16-7.167969-16-16v-80c0-70.59375 57.40625-128 128-128s128 57.40625 128 128v80c0 8.832031-7.167969 16-16 16zm0 0" fill="currentColor" />
-                        </svg>
-                        <input placeholder="Confirm your Password" className="input" type="password" />
-                    </div>
+                    <button className="button-submit">Sign In</button>
 
-                    <button className="button-submit">Sign Up</button>
-
-                    <p className="p">Already have an account? 
+                    <p className="p">Don't have an account? 
                         <span 
                             className="span" 
-                            onClick={onSwitchToSignIn}
-                        > Sign In</span>
+                            onClick={onSwitchToSignUp}
+                        > Sign Up</span>
                     </p>
 
                     <button className="google-btn">
@@ -87,7 +71,7 @@ export default function SignUp({ onClose, onSwitchToSignIn }) {
                             <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.9-5.78l-7.33-5.67c-2.04 1.37-4.66 2.16-8.57 2.16-6.26 0-11.57-3.56-13.46-8.91L2.56 31.7C6.51 39.52 14.62 48 24 48z" />
                         </svg>
 
-                        <span>Sign up with Google</span>
+                        <span>Sign in with Google</span>
                     </button>
 
                 </form>
@@ -95,3 +79,4 @@ export default function SignUp({ onClose, onSwitchToSignIn }) {
         </div>
     );
 }
+

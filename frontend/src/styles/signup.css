@@ -10,6 +10,21 @@
   color: #e5e5e5;
 }
 
+/* Prevent text selection on labels and buttons */
+.form label,
+.button-submit,
+.google-btn {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Smooth transitions for all interactive elements */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* Input row */
 .inputForm {
   border: 1.5px solid #333;
@@ -19,6 +34,12 @@
   align-items: center;
   padding-left: 8px;
   background-color: #1a1a1a;
+  transition: all 0.2s ease;
+}
+
+.inputForm:hover {
+  border-color: #444;
+  background-color: #1f1f1f;
 }
 
 /* Input */
@@ -30,10 +51,45 @@
   background: transparent;
   color: #e5e5e5;
   font-size: 14px;             /* smaller */
+  outline: none;
+  transition: color 0.2s ease;
+  caret-color: #2d79f3;
+}
+
+.input::placeholder {
+  color: #666;
+  transition: color 0.2s ease;
+}
+
+.input:focus::placeholder {
+  color: #888;
 }
 
 .inputForm:focus-within {
   border-color: #2d79f3;
+  background-color: #1f1f1f;
+  box-shadow: 0 0 0 3px rgba(45, 121, 243, 0.1);
+}
+
+.inputForm:focus-within svg {
+  opacity: 0.8;
+}
+
+.inputForm svg {
+  transition: opacity 0.2s ease;
+  opacity: 0.7;
+  flex-shrink: 0;
+  color: #e5e5e5;
+  fill: #e5e5e5;
+}
+
+.inputForm svg path {
+  fill: #e5e5e5;
+  stroke: #e5e5e5;
+}
+
+.inputForm svg g path {
+  fill: #e5e5e5;
 }
 
 /* Remember me + Forgot password row */
@@ -44,16 +100,99 @@
   margin-top: 2px;             /* tighter */
 }
 
+.flex-row input[type="radio"] {
+  cursor: pointer;
+  accent-color: #2d79f3;
+  margin-right: 6px;
+  transition: transform 0.15s ease;
+}
+
+.flex-row input[type="radio"]:hover {
+  transform: scale(1.1);
+}
+
+.flex-row input[type="radio"]:active {
+  transform: scale(0.95);
+}
+
+.flex-row label {
+  cursor: pointer;
+  color: #e5e5e5;
+  font-size: 13px;
+  user-select: none;
+  transition: color 0.2s ease;
+}
+
+.flex-row label:hover {
+  color: #fff;
+}
+
+.flex-row .span {
+  color: #2d79f3;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.flex-row .span:hover {
+  color: #4a8ef4;
+  text-decoration: underline;
+}
+
+.flex-row .span:active {
+  color: #1e5fc7;
+}
+
 .button-submit {
   margin-top: 12px;            /* reduced */
   background-color: #000000;
   border: none;
   color: white;
   font-size: 14px;
+  font-weight: 600;
   border-radius: 8px;
   height: 42px;                /* smaller */
   width: 100%;
   cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.button-submit::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+}
+
+.button-submit:hover {
+  background-color: #1a1a1a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.button-submit:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.button-submit:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+.button-submit:focus {
+  outline: 2px solid #2d79f3;
+  outline-offset: 2px;
 }
 
 .p {
@@ -61,6 +200,45 @@
   color: #ccc;
   font-size: 13px;             /* smaller */
   margin: 4px 0;               /* smaller */
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.flex-column label {
+  color: #e5e5e5;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.span {
+  color: #2d79f3;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: all 0.2s ease;
+  user-select: none;
+  display: inline-block;
+  position: relative;
+}
+
+.span:hover {
+  color: #4a8ef4;
+  text-decoration-color: #4a8ef4;
+  transform: translateY(-1px);
+}
+
+.span:active {
+  color: #1e5fc7;
+  transform: translateY(0);
+}
+
+.span:focus {
+  outline: 2px solid #2d79f3;
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 
 /* Social buttons */
@@ -87,10 +265,18 @@ input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 30px #111 inset !important; /* your background color */
-  box-shadow: 0 0 0 30px #111 inset !important;
-  -webkit-text-fill-color: white !important;
-  caret-color: white;
+  -webkit-box-shadow: 0 0 0 30px #1a1a1a inset !important; /* your background color */
+  box-shadow: 0 0 0 30px #1a1a1a inset !important;
+  -webkit-text-fill-color: #e5e5e5 !important;
+  caret-color: #2d79f3;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Remove default focus outline and add custom */
+input:focus,
+button:focus,
+input[type="radio"]:focus {
+  outline: none;
 }
 .btn {
     display: flex;
@@ -109,15 +295,61 @@ input:-webkit-autofill:active {
     justify-content: center; /* centers icon + text together */
     gap: 10px;               /* spacing between icon + text */
     padding: 10px 0;
+    margin-top: 8px;
     
     background: #222;
     color: white;
     border: 1px solid #333;
     border-radius: 8px;
     cursor: pointer;
-    transition: 0.2s ease;
+    transition: all 0.2s ease;
+    outline: none;
+    font-size: 14px;
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+}
+
+.google-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
 }
 
 .google-btn:hover {
-    background: #333;
+    background: #2a2a2a;
+    border-color: #444;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.google-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    background: #1f1f1f;
+}
+
+.google-btn:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+.google-btn:focus {
+    outline: 2px solid #2d79f3;
+    outline-offset: 2px;
+}
+
+.google-btn svg {
+  transition: transform 0.2s ease;
+}
+
+.google-btn:hover svg {
+  transform: scale(1.05);
 }

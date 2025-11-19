@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
 import SignInButton from "./SignInButton";
 
 export default function Navbar({ openSignUp }) {
@@ -129,7 +130,7 @@ export default function Navbar({ openSignUp }) {
           </motion.div>
 
           {/* Links */}
-          <div className="hidden md:flex space-x-10 text-white font-medium">
+          <div className="hidden md:flex space-x-10 text-white font-medium items-center">
             {["Store", "Features", "Service", "Support", "FAQ"].map((text) => (
               <motion.a
                 key={text}
@@ -143,6 +144,19 @@ export default function Navbar({ openSignUp }) {
                 {text}
               </motion.a>
             ))}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileHover={{ opacity: 0.8 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Link
+                to="/repair"
+                className="cursor-pointer"
+              >
+                Repair
+              </Link>
+            </motion.div>
           </div>
 
           {/* Sign In */}

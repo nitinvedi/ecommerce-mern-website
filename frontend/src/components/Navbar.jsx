@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import SignInButton from "./SignInButton";
 
 export default function Navbar({ openSignUp }) {
@@ -42,6 +42,7 @@ export default function Navbar({ openSignUp }) {
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+  const { pathname } = useLocation();
 
   return (
     <>
@@ -120,43 +121,52 @@ export default function Navbar({ openSignUp }) {
           <motion.div
             animate={{ scale: scrolled ? 0.88 : 1 }}
             transition={{ duration: 0.25 }}
-            className="
-              text-transparent bg-clip-text
-              bg-linear-to-r from-white to-gray-400
-              font-extrabold text-2xl tracking-wide
-            "
+            className="flex items-center gap-3 cursor-pointer"
           >
-            Marammat
+            <Link to="/" className="flex items-center">
+              <img src="logo3.png" alt="no image" className="w-16 h-10 object-contain" />
+
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-white to-gray-400 font-extrabold text-2xl tracking-wide">
+                Marammat
+              </span>
+            </Link>
           </motion.div>
+
 
           {/* Links */}
           <div className="hidden md:flex space-x-10 text-white font-medium items-center">
-            {["Store", "Features", "Service", "Support", "FAQ"].map((text) => (
-              <motion.a
+
+            {/* ROUTE LINKS */}
+            {["Store", "Service", "Repair"].map((text) => (
+              <motion.div
                 key={text}
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 whileHover={{ opacity: 0.8 }}
                 transition={{ duration: 0.2 }}
-                className="cursor-pointer"
-                href={`#${text.toLowerCase()}`}
               >
-                {text}
-              </motion.a>
+                <Link to={`/${text.toLowerCase()}`} className="cursor-pointer">
+                  {text}
+                </Link>
+              </motion.div>
             ))}
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileHover={{ opacity: 0.8 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Link
-                to="/repair"
-                className="cursor-pointer"
-              >
-                Repair
-              </Link>
-            </motion.div>
+
+            {/* HASH LINKS (only show on "/") */}
+            {pathname === "/" &&
+              ["Features", "Support", "FAQ"].map((text) => (
+                <motion.div
+                  key={text}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  whileHover={{ opacity: 0.8 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <a href={`#${text.toLowerCase()}`} className="cursor-pointer">
+                    {text}
+                  </a>
+                </motion.div>
+              ))}
+
           </div>
 
           {/* Sign In */}

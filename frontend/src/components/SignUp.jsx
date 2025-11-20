@@ -74,7 +74,7 @@ export default function SignUp({ onClose, onSwitchToSignIn }) {
 
                     <p className="p">Already have an account? 
                         <span 
-                            className="span" 
+                            className="span p-1" 
                             onClick={onSwitchToSignIn}
                         > Sign In</span>
                     </p>

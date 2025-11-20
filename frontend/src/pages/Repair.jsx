@@ -71,7 +71,7 @@ export default function Repair() {
   };
 
   return (
-    <div className="repair-page min-h-screen bg-gradient-to-b from-black via-gray-900 to-black">
+    <div className="repair-page min-h-screen bg-linear-to-b from-black via-gray-900 to-black">
       <Navbar openSignUp={openSignIn} />
       
       <div className="repair-container py-12 px-4 md:px-8">

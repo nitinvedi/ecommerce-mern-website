@@ -58,7 +58,7 @@ export default function SignIn({ onClose, onSwitchToSignUp }) {
 
                     <p className="p">Don't have an account? 
                         <span 
-                            className="span" 
+                            className="span m-1" 
                             onClick={onSwitchToSignUp}
                         > Sign Up</span>
                     </p>

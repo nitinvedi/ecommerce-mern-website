@@ -1,78 +1,81 @@
-import { lazy, Suspense } from "react";
 import { motion } from "framer-motion";
+import {
+  SearchCheck,
+  Wrench,
+  Cpu,
+  Timer,
+  ShoppingBag,
+  ShieldCheck,
+  Truck,
+  Percent
+} from "lucide-react";
 
-// Dynamic Icon Loader
-function DynamicIcon(name) {
-  return lazy(() =>
-    import("lucide-react").then((m) => ({ default: m[name] }))
-  );
-}
+// Icon Map
+const icons = {
+  SearchCheck,
+  Wrench,
+  Cpu,
+  Timer,
+  ShoppingBag,
+  ShieldCheck,
+  Truck,
+  Percent
+};
 
-// Icons
-const SearchCheck = DynamicIcon("SearchCheck");
-const Wrench = DynamicIcon("Wrench");
-const Cpu = DynamicIcon("Cpu");
-const Timer = DynamicIcon("Timer");
-const ShoppingBag = DynamicIcon("ShoppingBag");
-const ShieldCheck = DynamicIcon("ShieldCheck");
-const Truck = DynamicIcon("Truck");
-const Percent = DynamicIcon("Percent");
-
-// Features
 const features = [
   {
-    icon: <SearchCheck className="w-10 h-10 text-white" />,
+    icon: "SearchCheck",
     title: "Quick Mobile Diagnosis",
     desc: "Identify issues like screen damage, battery drain, overheating, and software errors within minutes."
   },
   {
-    icon: <Wrench className="w-10 h-10 text-white" />,
+    icon: "Wrench",
     title: "Expert Mobile Repairs",
     desc: "Certified technicians fix screens, batteries, cameras, speakers, and charging ports with precision."
   },
   {
-    icon: <Cpu className="w-10 h-10 text-white" />,
+    icon: "Cpu",
     title: "Genuine Spare Parts",
-    desc: "We use original and premium components for every repair, ensuring long-lasting device performance."
+    desc: "We use premium components for every repair to ensure long-lasting performance."
   },
   {
-    icon: <Timer className="w-10 h-10 text-white" />,
+    icon: "Timer",
     title: "Fast Same-Day Service",
-    desc: "Most repairs are completed within 30–60 minutes so you get your device back quickly and safely."
+    desc: "Most repairs are done in 30–60 minutes so you get your device back quickly."
   },
   {
-    icon: <ShoppingBag className="w-10 h-10 text-white" />,
+    icon: "ShoppingBag",
     title: "Shop Mobile Accessories",
-    desc: "Browse cases, chargers, cables, earbuds, and tempered glass at the best prices in our online store."
+    desc: "Browse chargers, cases, earbuds, and more at the best prices."
   },
   {
-    icon: <ShieldCheck className="w-10 h-10 text-white" />,
+    icon: "ShieldCheck",
     title: "Warranty on Repairs & Products",
-    desc: "Every repair and accessory comes with warranty protection to ensure quality and peace of mind."
+    desc: "Every repair & accessory comes with warranty protection."
   },
   {
-    icon: <Truck className="w-10 h-10 text-white" />,
-    title: "Pickup & Doorstep Delivery",
-    desc: "We offer convenient pickup for repairs and home delivery for all online accessory orders."
+    icon: "Truck",
+    title: "Pickup & Home Delivery",
+    desc: "We offer pickup for repairs and doorstep delivery for accessories."
   },
   {
-    icon: <Percent className="w-10 h-10 text-white" />,
-    title: "Offers & Exclusive Discounts",
-    desc: "Enjoy regular deals on repairs, accessories, combo packs, and festive sales to save more."
+    icon: "Percent",
+    title: "Offers & Discounts",
+    desc: "Enjoy deals on repairs and accessories during festive seasons."
   }
 ];
 
 export default function FeatureCards() {
   return (
-    <div className="bg-black/50 pb-20 pt-10">
+    <section className="bg-black/20 min-h-[85vh] flex flex-col items-center justify-center py-10 px-6">
 
-      {/* Heading Animation */}
+      {/* Heading */}
       <motion.h2
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7 }}
-        viewport={{ once: true, amount: 0.2 }}
-        className="text-4xl md:text-6xl mt-10 font-bold text-center text-white"
+        viewport={{ once: true }}
+        className="text-3xl md:text-5xl font-bold text-center text-white"
       >
         Offering Services You'll Love 🎉
       </motion.h2>
@@ -81,43 +84,54 @@ export default function FeatureCards() {
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, delay: 0.2 }}
-        viewport={{ once: true, amount: 0.2 }}
-        className="text-xl text-gray-500 text-center mt-2"
+        viewport={{ once: true }}
+        className="text-lg md:text-xl text-gray-400 text-center mt-2"
       >
-        All in one place for electronic devices
+        All in one place for your devices
       </motion.h2>
 
-      <div className="w-full flex justify-center py-20 px-6">
+      {/* Grid */}
+      <div className="w-full flex justify-center mt-14">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl w-full">
 
-        {/* Card Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl w-full">
+          {features.map((f, i) => {
+            const Icon = icons[f.icon];
 
-          {features.map((f, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 60 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: i * 0.1 }}
-              viewport={{ once: true, amount: 0.15 }}
-              className="bg-black/75 border border-white/10 rounded-2xl p-6 shadow-lg hover:bg-[#161616] transition"
-            >
+            return (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: i * 0.1 }}
+                whileHover={{
+                  scale: 1.05,
+                  boxShadow: "0 20px 30px rgba(0,0,0,0.3)"
+                }}
+                className="bg-black/80 border border-white/10 rounded-2xl p-5 
+                           shadow-xl hover:border-white/20 hover:bg-black/90
+                           cursor-pointer transition-transform"
+              >
+                {/* Icon */}
+                <motion.div whileHover={{ scale: 1.15 }} className="text-white">
+                  <Icon className="w-9 h-9" />
+                </motion.div>
 
-              <Suspense fallback={<div className="w-10 h-10 bg-white/10 rounded"></div>}>
-                {f.icon}
-              </Suspense>
+                {/* Title */}
+                <h3 className="text-white text-lg font-semibold mt-4">
+                  {f.title}
+                </h3>
 
-              <h3 className="text-white text-xl font-semibold mt-4">
-                {f.title}
-              </h3>
-
-              <p className="text-gray-400 text-sm leading-relaxed mt-2">
-                {f.desc}
-              </p>
-            </motion.div>
-          ))}
+                {/* Description */}
+                <p className="text-gray-400 text-sm leading-relaxed mt-1.5">
+                  {f.desc}
+                </p>
+              </motion.div>
+            );
+          })}
 
         </div>
       </div>
-    </div>
+    </section>
   );
 }

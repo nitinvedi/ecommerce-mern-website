@@ -15,6 +15,7 @@ import ManageUsers from './pages/admin/ManageUsers';
 import NotFound from './pages/NotFound';
 import Landing from "./pages/Landing";
 import Navbar from "./components/Navbar";
+import LiveUpdates from "./pages/LiveUpdates";
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="/repair" element={<Repair />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/status" element={<LiveUpdates />} />
 
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/products" element={<ManageProducts />} />

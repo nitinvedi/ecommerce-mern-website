@@ -424,18 +424,6 @@ export default function Repair() {
                   <span className="price-label">Estimated inspection fee:</span>
                   <span className="price-value">₹0 - ₹199</span>
                 </div>
-                
-                <div className="form-group">
-                  <label>Estimated Repair Cost (if known)</label>
-                  <input
-                    type="text"
-                    name="estimatedRepairCost"
-                    value={formData.estimatedRepairCost}
-                    onChange={handleChange}
-                    placeholder="Enter estimated cost (optional)"
-                    className="form-input"
-                  />
-                </div>
               </div>
             </section>
 

@@ -19,5 +19,5 @@ npm install        # Install dependencies
 npm run dev        # Start the backend server
 
 Your Project is Now Running!
-Frontend → usually runs at: http://localhost:5173/
-Backend → usually runs at: http://localhost:3000/
+Frontend → usually runs at: http://localhost:3000/
+Backend → usually runs at: http://localhost:5173/

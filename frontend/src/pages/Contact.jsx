@@ -25,34 +25,42 @@ export default function Contact() {
     e.preventDefault();
     setLoading(true);
 
-    // Simulate form submission (replace with actual API call)
     setTimeout(() => {
-      toast.success('Message sent successfully! We will get back to you soon.', 'Success');
+      toast.success(
+        'Message sent successfully! We will get back to you soon.',
+        'Success'
+      );
       setFormData({ name: '', email: '', subject: '', message: '' });
       setLoading(false);
     }, 1000);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-black bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:40px_40px]">
       <Navbar />
-      
+
       <div className="container mx-auto px-4 py-8 pt-24">
+        {/* Heading */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-4">Contact Us</h1>
-          <p className="text-slate-400 text-lg">Get in touch with us for any queries or support</p>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
+            Contact Us
+          </h1>
+          <p className="text-slate-400 text-lg max-w-xl mx-auto">
+            Get in touch with us for any queries or support
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Contact Information */}
+          {/* Contact Info */}
           <div className="space-y-6">
+            {/* Email */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-slate-800 rounded-lg p-6"
+              className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6 shadow-lg hover:border-white/20 transition"
             >
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/10 ring-1 ring-white/20 rounded-xl flex items-center justify-center">
                   <Mail className="w-6 h-6 text-blue-400" />
                 </div>
                 <div>
@@ -62,14 +70,15 @@ export default function Contact() {
               </div>
             </motion.div>
 
+            {/* Phone */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-slate-800 rounded-lg p-6"
+              className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6 shadow-lg hover:border-white/20 transition"
             >
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/10 ring-1 ring-white/20 rounded-xl flex items-center justify-center">
                   <Phone className="w-6 h-6 text-green-400" />
                 </div>
                 <div>
@@ -79,30 +88,33 @@ export default function Contact() {
               </div>
             </motion.div>
 
+            {/* Address */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-slate-800 rounded-lg p-6"
+              className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6 shadow-lg hover:border-white/20 transition"
             >
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/10 ring-1 ring-white/20 rounded-xl flex items-center justify-center">
                   <MapPin className="w-6 h-6 text-purple-400" />
                 </div>
                 <div>
                   <h3 className="text-white font-semibold">Address</h3>
-                  <p className="text-slate-400 text-sm">123 Tech Street, Mumbai, India - 400001</p>
+                  <p className="text-slate-400 text-sm">
+                    123 Tech Street, Mumbai, India - 400001
+                  </p>
                 </div>
               </div>
             </motion.div>
           </div>
 
-          {/* Contact Form */}
+          {/* Form */}
           <div className="lg:col-span-2">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-slate-800 rounded-lg p-8"
+              className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-8 shadow-xl"
             >
               <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
                 <MessageSquare className="w-6 h-6" />
@@ -118,7 +130,7 @@ export default function Contact() {
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 bg-black/40 border border-white/10 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/30"
                       required
                     />
                   </div>
@@ -130,7 +142,7 @@ export default function Contact() {
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 bg-black/40 border border-white/10 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/30"
                       required
                     />
                   </div>
@@ -143,7 +155,7 @@ export default function Contact() {
                     name="subject"
                     value={formData.subject}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 bg-black/40 border border-white/10 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/30"
                     required
                   />
                 </div>
@@ -154,8 +166,8 @@ export default function Contact() {
                     name="message"
                     value={formData.message}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     rows="6"
+                    className="w-full px-4 py-3 bg-black/40 border border-white/10 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/30"
                     required
                   />
                 </div>
@@ -163,7 +175,7 @@ export default function Contact() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full px-6 py-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+                  className="w-full px-6 py-4 bg-white text-black hover:bg-slate-200 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-lg transition-all duration-300 disabled:opacity-50"
                 >
                   <Send className="w-5 h-5" />
                   {loading ? 'Sending...' : 'Send Message'}

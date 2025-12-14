@@ -1,0 +1,5 @@
+[2025-11-30T09:49:34.680Z] [INFO] MongoDB connection established
+[2025-11-30T09:49:34.694Z] [INFO] 🚀 Server running on port 5000
+[2025-11-30T09:49:34.696Z] [INFO] 📦 Environment: development
+[2025-11-30T09:49:34.697Z] [INFO] 🌐 API URL: http://localhost:5000/api/v1
+[2025-11-30T09:49:34.700Z] [INFO] 📝 Health Check: http://localhost:5000/health

@@ -10,7 +10,7 @@ export default function Footer() {
 
   return (
     <section
-      className="relative w-full min-h-[85vh] flex flex-col items-center justify-between 
+      className="relative w-full min-h-[95vh] flex flex-col items-center justify-between 
       text-center bg-black/30 py-10 px-6 md:px-10 overflow-hidden"
     >
       {/* Top Content */}
@@ -35,9 +35,9 @@ export default function Footer() {
         </motion.p>
 
         {/* Button */}
-        <motion.div {...fadeUp(0.4)} className="flex justify-center mt-6">
+        <motion.div {...fadeUp(0.4)} className="flex justify-center mt-16">
           <button className="relative overflow-hidden bg-white/90 text-black px-6 py-2.5 
-          rounded-md text-lg font-semibold shadow-md hover:shadow-xl transition-all duration-300 hover:bg-white">
+          rounded-md text-lg font-semibold shadow-md hover:shadow-xl transition-all duration-300 hover:bg-white cursor-pointer">
             Join Now
           </button>
         </motion.div>

@@ -110,7 +110,7 @@ export default function FeatureCards() {
                 }}
                 className="bg-black/80 border border-white/10 rounded-2xl p-5 
                            shadow-xl hover:border-white/20 hover:bg-black/90
-                           cursor-pointer transition-transform"
+                           cursor-pointer transition-transform bg-[#020202]"
               >
                 {/* Icon */}
                 <motion.div whileHover={{ scale: 1.15 }} className="text-white">

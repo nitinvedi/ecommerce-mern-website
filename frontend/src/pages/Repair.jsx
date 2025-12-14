@@ -1,11 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import '../styles/repair.css';
 import Navbar from '../components/Navbar';
 import SignIn from '../components/SignIn';
 import SignUp from '../components/SignUp';
+import { api, API_ENDPOINTS, uploadFile } from '../config/api.js';
+import useAuth from '../hooks/useAuth.js';
+import { useToast } from '../context/ToastContext.jsx';
 
 export default function Repair() {
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const toast = useToast();
+  const [loading, setLoading] = useState(false);
+
+  // Debug: Log when component mounts
+  useEffect(() => {
+    console.log('Repair component mounted, user:', user);
+  }, [user]);
+
+  // Don't block rendering while auth is loading
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
+  
   const [formData, setFormData] = useState({
     // Device Information
     deviceType: '',
@@ -63,15 +86,59 @@ export default function Repair() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Repair Form Submitted:', formData);
-    // Handle form submission here
-    alert('Repair request submitted successfully! We will contact you soon.');
+    
+    if (!user) {
+      toast.error('Please sign in to submit a repair request');
+      // Store current URL to return after login
+      sessionStorage.setItem('returnUrl', '/repair');
+      openSignIn();
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Create FormData for file upload
+      const submitFormData = new FormData();
+      
+      // Add all form fields
+      Object.keys(formData).forEach(key => {
+        if (key !== 'images') {
+          submitFormData.append(key, formData[key] || '');
+        }
+      });
+
+      // Add images with correct field name for backend
+      formData.images.forEach((image) => {
+        submitFormData.append('repairImages', image);
+      });
+
+      // Submit repair request
+      const response = await uploadFile(API_ENDPOINTS.REPAIRS.BASE, submitFormData);
+      
+      toast.success('Repair request submitted successfully!', 'Success');
+      
+      // Redirect to tracking page or dashboard
+      const repairData = response.data || response;
+      if (repairData?.trackingId) {
+        navigate(`/status/${repairData.trackingId}`);
+      } else if (repairData?._id) {
+        // If we have the repair ID, we can still navigate to dashboard
+        navigate('/dashboard');
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      console.error('Error submitting repair:', error);
+      toast.error(error.message || 'Failed to submit repair request. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="repair-page min-h-screen bg-linear-to-b from-black via-gray-900 to-black">
+    <div className="repair-page min-h-screen bg-gradient-to-b from-black via-gray-900 to-black">
       <Navbar openSignUp={openSignIn} />
       
       <div className="repair-container py-12 px-4 md:px-8">
@@ -374,8 +441,12 @@ export default function Repair() {
 
             {/* Submit Button */}
             <div className="submit-section">
-              <button type="submit" className="submit-btn">
-                Book Repair
+              <button 
+                type="submit" 
+                className="submit-btn"
+                disabled={loading}
+              >
+                {loading ? 'Submitting...' : 'Book Repair'}
               </button>
             </div>
           </form>

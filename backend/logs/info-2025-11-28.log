@@ -1,0 +1,20 @@
+[2025-11-28T07:23:04.177Z] [INFO] MongoDB connection established
+[2025-11-28T07:23:04.204Z] [INFO] 🚀 Server running on port 5000
+[2025-11-28T07:23:04.206Z] [INFO] 📦 Environment: development
+[2025-11-28T07:23:04.222Z] [INFO] 🌐 API URL: http://localhost:5000/api/v1
+[2025-11-28T07:23:04.306Z] [INFO] 📝 Health Check: http://localhost:5000/health
+[2025-11-28T07:24:09.826Z] [INFO] MongoDB connection established
+[2025-11-28T07:24:09.909Z] [INFO] 🚀 Server running on port 5000
+[2025-11-28T07:24:09.942Z] [INFO] 📦 Environment: development
+[2025-11-28T07:24:09.951Z] [INFO] 🌐 API URL: http://localhost:5000/api/v1
+[2025-11-28T07:24:09.956Z] [INFO] 📝 Health Check: http://localhost:5000/health
+[2025-11-28T07:49:29.640Z] [INFO] MongoDB connection established
+[2025-11-28T07:49:29.685Z] [INFO] 🚀 Server running on port 5000
+[2025-11-28T07:49:29.689Z] [INFO] 📦 Environment: development
+[2025-11-28T07:49:29.701Z] [INFO] 🌐 API URL: http://localhost:5000/api/v1
+[2025-11-28T07:49:29.719Z] [INFO] 📝 Health Check: http://localhost:5000/health
+[2025-11-28T07:53:30.698Z] [INFO] MongoDB connection established
+[2025-11-28T07:53:30.712Z] [INFO] 🚀 Server running on port 5000
+[2025-11-28T07:53:30.719Z] [INFO] 📦 Environment: development
+[2025-11-28T07:53:30.723Z] [INFO] 🌐 API URL: http://localhost:5000/api/v1
+[2025-11-28T07:53:30.726Z] [INFO] 📝 Health Check: http://localhost:5000/health

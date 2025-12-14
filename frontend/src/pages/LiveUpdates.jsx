@@ -1,22 +1,56 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import io from "socket.io-client";
+import { SOCKET_URL, api, API_ENDPOINTS } from "../config/api.js";
 
-const socket = io("http://localhost:4000"); // change to your backend URL
+const socket = io(SOCKET_URL, {
+  transports: ['websocket', 'polling']
+});
 
 export default function LiveUpdates() {
   const { id } = useParams();
-
+  const navigate = useNavigate();
+  const [repair, setRepair] = useState(null);
   const [statusUpdates, setStatusUpdates] = useState([]);
-  const [currentStatus, setCurrentStatus] = useState("Connecting...");
+  const [currentStatus, setCurrentStatus] = useState("Loading...");
   const [connected, setConnected] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!id) return;
 
-    // Connect
-    socket.emit("join_repair", id);
+    // Fetch repair by tracking ID
+    const fetchRepair = async () => {
+      try {
+        const response = await api.get(API_ENDPOINTS.REPAIRS.TRACK(id));
+        if (response.data) {
+          setRepair(response.data);
+          setCurrentStatus(response.data.status || 'Pending');
+          if (response.data.statusUpdates && response.data.statusUpdates.length > 0) {
+            setStatusUpdates(response.data.statusUpdates.map(update => ({
+              status: update.status,
+              note: update.note || '',
+              time: new Date(update.createdAt).toLocaleTimeString(),
+            })));
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching repair:', error);
+        setCurrentStatus('Not Found');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRepair();
+  }, [id]);
+
+  useEffect(() => {
+    if (!repair?._id) return;
+
+    // Connect to socket with repair ID
+    socket.emit("join_repair", repair._id);
 
     socket.on("connect", () => {
       setConnected(true);
@@ -24,22 +58,48 @@ export default function LiveUpdates() {
 
     // Receive updates LIVE
     socket.on("repair_update", (data) => {
-      setCurrentStatus(data.status);
-      setStatusUpdates((prev) => [
-        {
-          status: data.status,
-          note: data.note,
-          time: new Date().toLocaleTimeString(),
-        },
-        ...prev,
-      ]);
+      if (data.repairId === repair._id) {
+        setCurrentStatus(data.status);
+        setStatusUpdates((prev) => [
+          {
+            status: data.status,
+            note: data.note || '',
+            time: new Date().toLocaleTimeString(),
+          },
+          ...prev,
+        ]);
+      }
     });
 
     return () => {
-      socket.emit("leave_repair", id);
+      socket.emit("leave_repair", repair._id);
       socket.off("repair_update");
     };
-  }, [id]);
+  }, [repair]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!repair) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-xl mb-4">Repair not found</p>
+          <Link
+            to="/"
+            className="px-6 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition inline-block"
+          >
+            Go Home
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -52,9 +112,12 @@ export default function LiveUpdates() {
           className="text-center mb-10"
         >
           <div className="text-green-500 text-5xl mb-4">✓</div>
-          <h1 className="text-3xl font-bold">Repair Request Submitted</h1>
+          <h1 className="text-3xl font-bold">Repair Request Tracking</h1>
           <p className="text-gray-400 mt-1">
-            Tracking ID: <span className="text-blue-400 font-medium">{id}</span>
+            Tracking ID: <span className="text-blue-400 font-medium">{repair.trackingId}</span>
+          </p>
+          <p className="text-gray-400 mt-1">
+            Device: <span className="text-white">{repair.brand} {repair.model}</span>
           </p>
 
           <p className="mt-2">
@@ -107,10 +170,16 @@ export default function LiveUpdates() {
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-10">
+        <div className="text-center mt-10 space-x-4">
+          <Link
+            to="/dashboard"
+            className="px-6 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition inline-block"
+          >
+            Go to Dashboard
+          </Link>
           <Link
             to="/"
-            className="px-6 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition"
+            className="px-6 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition inline-block"
           >
             Go Home
           </Link>

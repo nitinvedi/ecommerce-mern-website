@@ -1,0 +1,43 @@
+[2025-12-14T06:23:10.012Z] [INFO] MongoDB connection established
+[2025-12-14T06:23:10.017Z] [INFO] 🚀 Server running on port 5000
+[2025-12-14T06:23:10.018Z] [INFO] 📦 Environment: development
+[2025-12-14T06:23:10.020Z] [INFO] 🌐 API URL: http://localhost:5000/api/v1
+[2025-12-14T06:23:10.021Z] [INFO] 📝 Health Check: http://localhost:5000/health
+[2025-12-14T06:27:50.581Z] [INFO] MongoDB connection established
+[2025-12-14T06:27:50.693Z] [INFO] 🚀 Server running on port 5000
+[2025-12-14T06:27:50.711Z] [INFO] 📦 Environment: development
+[2025-12-14T06:27:50.716Z] [INFO] 🌐 API URL: http://localhost:5000/api/v1
+[2025-12-14T06:27:50.724Z] [INFO] 📝 Health Check: http://localhost:5000/health
+[2025-12-14T06:34:07.422Z] [INFO] MongoDB connection established
+[2025-12-14T06:34:07.431Z] [INFO] 🚀 Server running on port 5000
+[2025-12-14T06:34:07.437Z] [INFO] 📦 Environment: development
+[2025-12-14T06:34:07.438Z] [INFO] 🌐 API URL: http://localhost:5000/api/v1
+[2025-12-14T06:34:07.439Z] [INFO] 📝 Health Check: http://localhost:5000/health
+[2025-12-14T06:34:24.847Z] [INFO] MongoDB connection established
+[2025-12-14T06:34:24.855Z] [INFO] 🚀 Server running on port 5000
+[2025-12-14T06:34:24.858Z] [INFO] 📦 Environment: development
+[2025-12-14T06:34:24.859Z] [INFO] 🌐 API URL: http://localhost:5000/api/v1
+[2025-12-14T06:34:24.860Z] [INFO] 📝 Health Check: http://localhost:5000/health
+[2025-12-14T06:34:38.850Z] [INFO] MongoDB connection established
+[2025-12-14T06:34:38.859Z] [INFO] 🚀 Server running on port 5000
+[2025-12-14T06:34:38.861Z] [INFO] 📦 Environment: development
+[2025-12-14T06:34:38.862Z] [INFO] 🌐 API URL: http://localhost:5000/api/v1
+[2025-12-14T06:34:38.864Z] [INFO] 📝 Health Check: http://localhost:5000/health
+[2025-12-14T06:44:05.400Z] [INFO] SIGINT received. Starting graceful shutdown...
+[2025-12-14T06:45:24.793Z] [INFO] MongoDB connection established
+[2025-12-14T06:45:24.802Z] [INFO] 🚀 Server running on port 5000
+[2025-12-14T06:45:24.803Z] [INFO] 📦 Environment: development
+[2025-12-14T06:45:24.805Z] [INFO] 🌐 API URL: http://localhost:5000/api/v1
+[2025-12-14T06:45:24.807Z] [INFO] 📝 Health Check: http://localhost:5000/health
+[2025-12-14T06:46:30.151Z] [INFO] MongoDB connection established
+[2025-12-14T06:46:30.160Z] [INFO] 🚀 Server running on port 5000
+[2025-12-14T06:46:30.162Z] [INFO] 📦 Environment: development
+[2025-12-14T06:46:30.165Z] [INFO] 🌐 API URL: http://localhost:5000/api/v1
+[2025-12-14T06:46:30.167Z] [INFO] 📝 Health Check: http://localhost:5000/health
+[2025-12-14T06:56:33.413Z] [INFO] SIGINT received. Starting graceful shutdown...
+[2025-12-14T06:56:38.308Z] [INFO] MongoDB connection established
+[2025-12-14T06:56:38.316Z] [INFO] 🚀 Server running on port 5000
+[2025-12-14T06:56:38.319Z] [INFO] 📦 Environment: development
+[2025-12-14T06:56:38.325Z] [INFO] 🌐 API URL: http://localhost:5000/api/v1
+[2025-12-14T06:56:38.327Z] [INFO] 📝 Health Check: http://localhost:5000/health
+[2025-12-14T07:14:16.234Z] [INFO] SIGINT received. Starting graceful shutdown...

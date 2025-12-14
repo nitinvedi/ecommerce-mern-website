@@ -1,16 +1,32 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import "../styles/landing.css";
 import Navbar from "../components/Navbar";
 import SignIn from "../components/SignIn";
 import SignUp from "../components/SignUp";
 import FeatureCards from "../components/FeatureCards";
 import Footer from "../components/Footer";
+import useAuth from "../hooks/useAuth.js";
 
 export default function Landing() {
   const [authModal, setAuthModal] = useState(null); // null, 'signin', or 'signup'
-  const openSignIn = () => setAuthModal('signin');
-  const openSignUp = () => setAuthModal('signup');
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const openSignIn = () => {
+    if (user) {
+      navigate("/dashboard");
+      return;
+    }
+    setAuthModal('signin');
+  };
+  const openSignUp = () => {
+    if (user) {
+      navigate("/dashboard");
+      return;
+    }
+    setAuthModal('signup');
+  };
   const closeAuth = () => setAuthModal(null);
   const switchToSignUp = () => setAuthModal('signup');
   const switchToSignIn = () => setAuthModal('signin');
@@ -106,7 +122,10 @@ export default function Landing() {
             style={{ transform: `translate(${mouse.x * 12}px, ${mouse.y * 10}px)` }}
             className="flex items-center gap-4 mt-8"
           >
-            <button className="text-[15px] bg-white text-black font-semibold px-5 py-2 rounded-md text-lg hover:bg-gray-200 transition cursor-pointer">
+            <button
+              className="text-[15px] bg-white text-black font-semibold px-5 py-2 rounded-md text-lg hover:bg-gray-200 transition cursor-pointer"
+              onClick={openSignUp}
+            >
               Try Now →
             </button>
 

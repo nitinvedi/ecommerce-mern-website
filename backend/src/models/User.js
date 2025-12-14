@@ -1,68 +1,183 @@
-import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs';
+import { getDB } from "../config/mongo.js";
+import bcrypt from "bcryptjs";
+import { ObjectId } from "mongodb";
 
-const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, 'Name is required'],
-    trim: true,
-    minlength: 2,
-    maxlength: 100
-  },
-  email: {
-    type: String,
-    required: [true, 'Email is required'],
-    unique: true,
-    lowercase: true,
-    trim: true
-  },
-  password: {
-    type: String,
-    required: [true, 'Password is required'],
-    minlength: 6,
-    select: false
-  },
-  phone: {
-    type: String,
-    default: null
-  },
-  role: {
-    type: String,
-    enum: ['user', 'technician', 'admin'],
-    default: 'user'
-  },
-  address: {
-    street: { type: String, default: null },
-    city: { type: String, default: null },
-    state: { type: String, default: null },
-    zip: { type: String, default: null }
-  }
-}, {
-  timestamps: true
-});
+// Collection name
+const COLLECTION_NAME = "users";
 
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
-
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (err) {
-    next(err);
-  }
-});
-
-userSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
+// Get collection
+const getCollection = () => {
+  const db = getDB();
+  return db.collection(COLLECTION_NAME);
 };
 
-userSchema.methods.toJSON = function () {
-  const obj = this.toObject();
-  delete obj.password;
-  delete obj.__v;
-  return obj;
+// Validation function
+export const validateUser = (userData) => {
+  const errors = [];
+
+  if (!userData.name || userData.name.trim().length < 2) {
+    errors.push("Name must be at least 2 characters long");
+  } else if (userData.name.length > 100) {
+    errors.push("Name cannot exceed 100 characters");
+  }
+
+  if (!userData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userData.email)) {
+    errors.push("Valid email is required");
+  }
+
+  if (userData.password && userData.password.length < 6) {
+    errors.push("Password must be at least 6 characters long");
+  }
+
+  const validRoles = ['user', 'technician', 'admin'];
+  if (userData.role && !validRoles.includes(userData.role)) {
+    errors.push("Invalid role");
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
 };
 
-const User = mongoose.model('User', userSchema);
-export default User;
+// Hash password
+export const hashPassword = async (password) => {
+  const salt = await bcrypt.genSalt(10);
+  return await bcrypt.hash(password, salt);
+};
+
+// Match password
+export const matchPassword = async (enteredPassword, hashedPassword) => {
+  return await bcrypt.compare(enteredPassword, hashedPassword);
+};
+
+// Create user
+export const createUser = async (userData) => {
+  const validation = validateUser(userData);
+  if (!validation.isValid) {
+    throw new Error(validation.errors.join(", "));
+  }
+
+  const collection = getCollection();
+  
+  // Check if user already exists
+  const existingUser = await collection.findOne({ email: userData.email.toLowerCase().trim() });
+  if (existingUser) {
+    throw new Error("Email already registered");
+  }
+
+  const hashedPassword = userData.password ? await hashPassword(userData.password) : null;
+
+  const user = {
+    name: userData.name.trim(),
+    email: userData.email.toLowerCase().trim(),
+    password: hashedPassword,
+    phone: userData.phone ? userData.phone.trim() : null,
+    role: userData.role || 'user',
+    address: {
+      street: userData.address?.street ? userData.address.street.trim() : null,
+      city: userData.address?.city ? userData.address.city.trim() : null,
+      state: userData.address?.state ? userData.address.state.trim() : null,
+      zip: userData.address?.zip ? userData.address.zip.trim() : null
+    },
+    createdAt: new Date(),
+    updatedAt: new Date()
+  };
+
+  const result = await collection.insertOne(user);
+  const createdUser = { ...user, _id: result.insertedId };
+  
+  // Remove password from returned object
+  delete createdUser.password;
+  return createdUser;
+};
+
+// Get user by ID
+export const getUserById = async (userId) => {
+  const collection = getCollection();
+  const user = await collection.findOne({ _id: new ObjectId(userId) });
+  if (user && user.password) {
+    delete user.password;
+  }
+  return user;
+};
+
+// Get user by email
+export const getUserByEmail = async (email, includePassword = false) => {
+  const collection = getCollection();
+  const user = await collection.findOne({ email: email.toLowerCase().trim() });
+  if (user && !includePassword && user.password) {
+    delete user.password;
+  }
+  return user;
+};
+
+// Get all users
+export const getAllUsers = async (filter = {}) => {
+  const collection = getCollection();
+  const users = await collection.find(filter).toArray();
+  // Remove passwords from all users
+  return users.map(user => {
+    const { password, ...userWithoutPassword } = user;
+    return userWithoutPassword;
+  });
+};
+
+// Update user
+export const updateUser = async (userId, updateData) => {
+  const collection = getCollection();
+  
+  // Hash password if it's being updated
+  if (updateData.password) {
+    updateData.password = await hashPassword(updateData.password);
+  }
+
+  // Trim string fields
+  if (updateData.name) updateData.name = updateData.name.trim();
+  if (updateData.email) updateData.email = updateData.email.toLowerCase().trim();
+  if (updateData.phone) updateData.phone = updateData.phone.trim();
+  
+  if (updateData.address) {
+    if (updateData.address.street) updateData.address.street = updateData.address.street.trim();
+    if (updateData.address.city) updateData.address.city = updateData.address.city.trim();
+    if (updateData.address.state) updateData.address.state = updateData.address.state.trim();
+    if (updateData.address.zip) updateData.address.zip = updateData.address.zip.trim();
+  }
+
+  const updateDoc = {
+    ...updateData,
+    updatedAt: new Date()
+  };
+
+  const result = await collection.updateOne(
+    { _id: new ObjectId(userId) },
+    { $set: updateDoc }
+  );
+  return result;
+};
+
+// Delete user
+export const deleteUser = async (userId) => {
+  const collection = getCollection();
+  return await collection.deleteOne({ _id: new ObjectId(userId) });
+};
+
+// Helper to remove password from user object
+export const removePassword = (user) => {
+  if (!user) return user;
+  const { password, ...userWithoutPassword } = user;
+  return userWithoutPassword;
+};
+
+export default {
+  createUser,
+  getUserById,
+  getUserByEmail,
+  getAllUsers,
+  updateUser,
+  deleteUser,
+  validateUser,
+  hashPassword,
+  matchPassword,
+  removePassword
+};

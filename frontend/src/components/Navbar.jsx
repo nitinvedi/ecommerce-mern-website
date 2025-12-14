@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import SignInButton from "./SignInButton";
+import useAuth from "../hooks/useAuth.js";
 
 export default function Navbar({ openSignUp }) {
   const [showBanner, setShowBanner] = useState(true);
   const [textIndex, setTextIndex] = useState(0);
   const [scrolled, setScrolled] = useState(false);
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   const messages = [
     "Get your device repaired with 100% trusted experts",
@@ -43,6 +46,19 @@ export default function Navbar({ openSignUp }) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
   const { pathname } = useLocation();
+
+  const handleAuthClick = () => {
+    if (user) {
+      navigate("/dashboard");
+      return;
+    }
+    openSignUp?.();
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   return (
     <>
@@ -137,19 +153,30 @@ export default function Navbar({ openSignUp }) {
           <div className="hidden md:flex space-x-10 text-white font-medium items-center">
 
             {/* ROUTE LINKS */}
-            {["Store", "Service", "Repair"].map((text) => (
-              <motion.div
-                key={text}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                whileHover={{ opacity: 0.8 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Link to={`/${text.toLowerCase()}`} className="cursor-pointer">
-                  {text}
-                </Link>
-              </motion.div>
-            ))}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileHover={{ opacity: 0.8 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Link to="/home" className="cursor-pointer">Store</Link>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileHover={{ opacity: 0.8 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Link to="/repair" className="cursor-pointer">Repair</Link>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileHover={{ opacity: 0.8 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Link to="/contact" className="cursor-pointer">Contact</Link>
+            </motion.div>
 
             {/* HASH LINKS (only show on "/") */}
             {pathname === "/" &&
@@ -174,7 +201,13 @@ export default function Navbar({ openSignUp }) {
             animate={{ scale: scrolled ? 0.92 : 1 }}
             transition={{ duration: 0.25 }}
           >
-            <SignInButton onClick={openSignUp} />
+            <SignInButton
+              onClick={handleAuthClick}
+              isAuthenticated={Boolean(user)}
+              userName={user?.name}
+              onDashboard={() => navigate("/dashboard")}
+              onLogout={handleLogout}
+            />
           </motion.div>
         </motion.div>
       </motion.nav>

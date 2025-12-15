@@ -24,14 +24,31 @@ export default function ManageOrders() {
   }, [user]);
 
   const fetchOrders = async () => {
-    const res = await api.get(API_ENDPOINTS.ORDERS.BASE);
-    setOrders(res.data || []);
-    setLoading(false);
+    try {
+      const res = await api.get(API_ENDPOINTS.ORDERS.BASE);
+      const items =
+        res?.data?.items ||
+        res?.data?.orders ||
+        res?.data?.data ||
+        res?.data ||
+        [];
+      setOrders(Array.isArray(items) ? items : []);
+    } catch (err) {
+      console.error("Failed to load orders", err);
+      setOrders([]);
+      alert("Failed to load orders");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const updateStatus = async (id, status) => {
-    await api.put(API_ENDPOINTS.ORDERS.STATUS(id), { status });
-    fetchOrders();
+    try {
+      await api.put(API_ENDPOINTS.ORDERS.STATUS(id), { status });
+      fetchOrders();
+    } catch (err) {
+      console.error("Status update failed", err);
+    }
   };
 
   const filtered = orders.filter(o => {

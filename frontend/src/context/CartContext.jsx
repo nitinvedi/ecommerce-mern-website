@@ -12,17 +12,23 @@ export function CartProvider({ children }) {
     localStorage.setItem('cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
+  const clampToStock = (product, desiredQty) => {
+    if (product.stock === undefined || product.stock === null) return desiredQty;
+    return Math.min(desiredQty, Number(product.stock));
+  };
+
   const addToCart = (product, quantity = 1) => {
     setCartItems((prev) => {
       const existing = prev.find((item) => item._id === product._id);
       if (existing) {
+        const nextQty = clampToStock(product, existing.quantity + quantity);
         return prev.map((item) =>
           item._id === product._id
-            ? { ...item, quantity: item.quantity + quantity }
+            ? { ...item, quantity: nextQty }
             : item
         );
       }
-      return [...prev, { ...product, quantity }];
+      return [...prev, { ...product, quantity: clampToStock(product, quantity) }];
     });
   };
 
@@ -30,14 +36,15 @@ export function CartProvider({ children }) {
     setCartItems((prev) => prev.filter((item) => item._id !== productId));
   };
 
-  const updateQuantity = (productId, quantity) => {
+  const updateQuantity = (productId, quantity, stock) => {
     if (quantity <= 0) {
       removeFromCart(productId);
       return;
     }
+    const capped = stock !== undefined ? Math.min(quantity, Number(stock)) : quantity;
     setCartItems((prev) =>
       prev.map((item) =>
-        item._id === productId ? { ...item, quantity } : item
+        item._id === productId ? { ...item, quantity: capped } : item
       )
     );
   };

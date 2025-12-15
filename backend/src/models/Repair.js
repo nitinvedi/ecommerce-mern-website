@@ -167,7 +167,18 @@ export const getRepairsByTechnician = async (technicianId) => {
 // Get all repairs
 export const getAllRepairs = async (filter = {}) => {
   const collection = getCollection();
-  return await collection.find(filter).sort({ createdAt: -1 }).toArray();
+
+  const normalizedFilter = { ...filter };
+
+  // Normalize IDs to ObjectId where applicable
+  if (normalizedFilter.user && typeof normalizedFilter.user === "string") {
+    normalizedFilter.user = new ObjectId(normalizedFilter.user);
+  }
+  if (normalizedFilter.technician && typeof normalizedFilter.technician === "string") {
+    normalizedFilter.technician = new ObjectId(normalizedFilter.technician);
+  }
+
+  return await collection.find(normalizedFilter).sort({ createdAt: -1 }).toArray();
 };
 
 // Update repair

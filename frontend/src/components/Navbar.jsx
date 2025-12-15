@@ -51,6 +51,20 @@ function ProfileMenu() {
                 label="Dashboard"
                 onClick={() => navigate("/dashboard")}
               />
+              {user.role === "admin" && (
+                <MenuItem
+                  icon={<LayoutDashboard size={16} />}
+                  label="Admin"
+                  onClick={() => navigate("/admin")}
+                />
+              )}
+              {user.role === "technician" && (
+                <MenuItem
+                  icon={<LayoutDashboard size={16} />}
+                  label="Technician"
+                  onClick={() => navigate("/technician")}
+                />
+              )}
               <MenuItem
                 icon={<Settings size={16} />}
                 label="Update profile"
@@ -166,6 +180,13 @@ export default function Header({ openSignUp }) {
               { path: "/home", label: "Store" },
               { path: "/repair", label: "Repair" },
               { path: "/contact", label: "Contact" },
+              ...(user
+                ? [
+                    { path: "/dashboard", label: "Dashboard" },
+                    { path: "/orders", label: "Orders" },
+                    { path: "/cart", label: "Cart" },
+                  ]
+                : []),
             ].map(({ path, label }) => (
               <Link
                 key={path}

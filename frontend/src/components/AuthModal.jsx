@@ -12,7 +12,7 @@ const variants = {
 };
 
 export default function AuthModal({ onClose }) {
-  const [mode, setMode] = useState("signin"); // signin | signup
+  const [mode, setMode] = useState("signin"); // signin | signup | forgot | reset
   const navigate = useNavigate();
   const { login, register, refreshProfile } = useAuth();
 
@@ -20,7 +20,8 @@ export default function AuthModal({ onClose }) {
     name: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
+    resetToken: ""
   });
 
   const [loading, setLoading] = useState(false);
@@ -173,6 +174,17 @@ export default function AuthModal({ onClose }) {
                 onChange={(e) => update("password", e.target.value)}
               />
 
+              <div className="flex justify-between text-xs text-gray-600">
+                <span />
+                <button
+                  type="button"
+                  className="text-gray-900 font-medium"
+                  onClick={() => setMode("forgot")}
+                >
+                  Forgot password?
+                </button>
+              </div>
+
               <button
                 disabled={loading}
                 className="w-full rounded-xl bg-black text-white py-2.5 text-sm font-medium hover:bg-gray-900 transition"
@@ -242,6 +254,134 @@ export default function AuthModal({ onClose }) {
 
               <p className="text-sm text-center text-gray-600">
                 Already have an account?
+                <span
+                  className="ml-1 text-gray-900 font-medium cursor-pointer"
+                  onClick={() => setMode("signin")}
+                >
+                  Sign in
+                </span>
+              </p>
+            </motion.form>
+          )}
+
+          {mode === "forgot" && (
+            <motion.form
+              layout
+              key="forgot"
+              variants={variants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="mt-6 space-y-4"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setError("");
+                setLoading(true);
+                try {
+                  const res = await api.post(API_ENDPOINTS.AUTH.FORGOT, { email: form.email });
+                  setLoading(false);
+                  setError("");
+                  // Show token for testing purposes
+                  const token = res?.data?.resetToken || res?.resetToken || res?.data?.data?.resetToken;
+                  if (token) {
+                    setForm((f) => ({ ...f, resetToken: token }));
+                  }
+                  setMode("reset");
+                } catch (err) {
+                  setLoading(false);
+                  setError(err.message || "Failed to request reset");
+                }
+              }}
+            >
+              <p className="text-sm text-gray-600">
+                Enter your email and we will generate a reset link.
+              </p>
+              <input
+                className="w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm"
+                placeholder="Email"
+                type="email"
+                value={form.email}
+                onChange={(e) => update("email", e.target.value)}
+              />
+              <button
+                disabled={loading}
+                className="w-full rounded-xl bg-black text-white py-2.5 text-sm font-medium hover:bg-gray-900 transition"
+              >
+                {loading ? "Sending..." : "Send reset link"}
+              </button>
+              <p className="text-sm text-center text-gray-600">
+                Remembered it?
+                <span
+                  className="ml-1 text-gray-900 font-medium cursor-pointer"
+                  onClick={() => setMode("signin")}
+                >
+                  Sign in
+                </span>
+              </p>
+            </motion.form>
+          )}
+
+          {mode === "reset" && (
+            <motion.form
+              layout
+              key="reset"
+              variants={variants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="mt-6 space-y-4"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setError("");
+                if (form.password !== form.confirmPassword) {
+                  setError("Passwords do not match");
+                  return;
+                }
+                setLoading(true);
+                try {
+                  await api.post(API_ENDPOINTS.AUTH.RESET, {
+                    token: form.resetToken,
+                    newPassword: form.password
+                  });
+                  setLoading(false);
+                  setMode("signin");
+                  setError("");
+                } catch (err) {
+                  setLoading(false);
+                  setError(err.message || "Reset failed");
+                }
+              }}
+            >
+              <input
+                className="w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm"
+                placeholder="Reset token"
+                value={form.resetToken}
+                onChange={(e) => update("resetToken", e.target.value)}
+              />
+              <input
+                className="w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm"
+                placeholder="New password"
+                type="password"
+                value={form.password}
+                onChange={(e) => update("password", e.target.value)}
+              />
+              <input
+                className="w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm"
+                placeholder="Confirm password"
+                type="password"
+                value={form.confirmPassword}
+                onChange={(e) => update("confirmPassword", e.target.value)}
+              />
+              <button
+                disabled={loading}
+                className="w-full rounded-xl bg-black text-white py-2.5 text-sm font-medium hover:bg-gray-900 transition"
+              >
+                {loading ? "Resetting..." : "Reset password"}
+              </button>
+              <p className="text-sm text-center text-gray-600">
+                Back to
                 <span
                   className="ml-1 text-gray-900 font-medium cursor-pointer"
                   onClick={() => setMode("signin")}

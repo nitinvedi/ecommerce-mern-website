@@ -46,7 +46,9 @@ export const getAllRepairs = asyncHandler(async (req, res) => {
 
   // Filter by technician
   if (req.query.technician) {
-    filter.technician = req.query.technician;
+    // Allow "me" alias for technician users
+    filter.technician =
+      req.query.technician === "me" ? req.user._id.toString() : req.query.technician;
   }
 
   // Filter by device type

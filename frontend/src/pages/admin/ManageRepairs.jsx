@@ -33,9 +33,9 @@ export default function ManageRepairs() {
   const [update, setUpdate] = useState({ status: "", note: "" });
 
   /* ---------------- Fetch ---------------- */
-  useEffect(() => {
-    if (user?.role === "admin") fetchRepairs();
-  }, [user]);
+useEffect(() => {
+  if (user?.role === "admin" || user?.role === "technician") fetchRepairs();
+}, [user]);
 
   const fetchRepairs = async () => {
     try {

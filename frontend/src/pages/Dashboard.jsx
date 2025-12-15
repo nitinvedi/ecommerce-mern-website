@@ -8,9 +8,10 @@ import {
   Info,
   ArrowRight,
 } from "lucide-react";
-import { api, API_ENDPOINTS, SOCKET_URL } from "../config/api";
+import { api, API_ENDPOINTS, SOCKET_URL, uploadFile } from "../config/api";
 import useAuth from "../hooks/useAuth";
 import Navbar from "../components/Navbar";
+import { useToast } from "../context/ToastContext";
 import { io } from "socket.io-client";
 
 /* ----------------- Helper Components ----------------- */
@@ -37,11 +38,28 @@ function ActionCard({ icon: Icon, title, onClick }) {
 export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
 
   const [orders, setOrders] = useState([]);
   const [repairs, setRepairs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [socket, setSocket] = useState(null);
+  const [showRepairForm, setShowRepairForm] = useState(false);
+  const [submittingRepair, setSubmittingRepair] = useState(false);
+  const [repairForm, setRepairForm] = useState({
+    deviceType: "",
+    brand: "",
+    model: "",
+    issue: "",
+    problemDescription: "",
+    fullName: "",
+    phoneNumber: "",
+    pickupAddress: "",
+    city: "",
+    pincode: "",
+    pickupDate: "",
+    pickupTimeSlot: "",
+  });
 
   /* ----------------- Fetch Data ----------------- */
   useEffect(() => {
@@ -66,6 +84,62 @@ export default function Dashboard() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toggleRepairForm = () => {
+    setShowRepairForm((v) => !v);
+  };
+
+  const submitRepair = async () => {
+    if (submittingRepair) return;
+    const required = [
+      "deviceType",
+      "brand",
+      "model",
+      "issue",
+      "problemDescription",
+      "fullName",
+      "phoneNumber",
+      "pickupAddress",
+      "city",
+      "pincode",
+      "pickupDate",
+      "pickupTimeSlot",
+    ];
+    for (const field of required) {
+      if (!repairForm[field]) {
+        toast.error("Please fill all fields");
+        return;
+      }
+    }
+    setSubmittingRepair(true);
+    try {
+      const fd = new FormData();
+      Object.entries(repairForm).forEach(([k, v]) => fd.append(k, v));
+      await uploadFile(API_ENDPOINTS.REPAIRS.BASE, fd);
+      await fetchData();
+      setShowRepairForm(false);
+      setRepairForm({
+        deviceType: "",
+        brand: "",
+        model: "",
+        issue: "",
+        problemDescription: "",
+        fullName: "",
+        phoneNumber: "",
+        pickupAddress: "",
+        city: "",
+        pincode: "",
+        pickupDate: "",
+        pickupTimeSlot: "",
+      });
+      toast.success("Repair request submitted");
+    } catch (err) {
+      console.error("Repair submit failed", err);
+      toast.error("Failed to submit repair");
+    } finally {
+      setSubmittingRepair(false);
     }
   };
 
@@ -181,7 +255,7 @@ export default function Dashboard() {
           <ActionCard
             icon={Wrench}
             title="Request Repair"
-            onClick={() => navigate("/repair")}
+            onClick={toggleRepairForm}
           />
           <ActionCard
             icon={ShoppingCart}
@@ -247,6 +321,119 @@ export default function Dashboard() {
             )}
           </div>
         </section>
+
+        {showRepairForm && (
+          <section className="bg-white rounded-3xl p-6 shadow space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold">Request a Repair</h3>
+              <button
+                onClick={toggleRepairForm}
+                className="text-sm text-gray-500 hover:text-black"
+              >
+                Close
+              </button>
+            </div>
+            <div className="grid md:grid-cols-2 gap-4 text-sm">
+              <select
+                value={repairForm.deviceType}
+                onChange={(e) => setRepairForm({ ...repairForm, deviceType: e.target.value })}
+                className="rounded-lg border border-gray-200 px-3 py-2"
+              >
+                <option value="">Device type</option>
+                <option>Mobile</option>
+                <option>Tablet</option>
+                <option>Laptop</option>
+              </select>
+              <input
+                placeholder="Brand"
+                value={repairForm.brand}
+                onChange={(e) => setRepairForm({ ...repairForm, brand: e.target.value })}
+                className="rounded-lg border border-gray-200 px-3 py-2"
+              />
+              <input
+                placeholder="Model"
+                value={repairForm.model}
+                onChange={(e) => setRepairForm({ ...repairForm, model: e.target.value })}
+                className="rounded-lg border border-gray-200 px-3 py-2"
+              />
+              <select
+                value={repairForm.issue}
+                onChange={(e) => setRepairForm({ ...repairForm, issue: e.target.value })}
+                className="rounded-lg border border-gray-200 px-3 py-2"
+              >
+                <option value="">Issue</option>
+                <option>Screen Damage</option>
+                <option>Battery</option>
+                <option>Camera</option>
+                <option>Mic</option>
+                <option>Not Turning On</option>
+                <option>Other</option>
+              </select>
+              <textarea
+                placeholder="Problem description"
+                value={repairForm.problemDescription}
+                onChange={(e) => setRepairForm({ ...repairForm, problemDescription: e.target.value })}
+                className="rounded-lg border border-gray-200 px-3 py-2 md:col-span-2"
+                rows={3}
+              />
+              <input
+                placeholder="Full name"
+                value={repairForm.fullName}
+                onChange={(e) => setRepairForm({ ...repairForm, fullName: e.target.value })}
+                className="rounded-lg border border-gray-200 px-3 py-2"
+              />
+              <input
+                placeholder="Phone number"
+                value={repairForm.phoneNumber}
+                onChange={(e) => setRepairForm({ ...repairForm, phoneNumber: e.target.value })}
+                className="rounded-lg border border-gray-200 px-3 py-2"
+              />
+              <input
+                placeholder="Pickup address"
+                value={repairForm.pickupAddress}
+                onChange={(e) => setRepairForm({ ...repairForm, pickupAddress: e.target.value })}
+                className="rounded-lg border border-gray-200 px-3 py-2 md:col-span-2"
+              />
+              <input
+                placeholder="City"
+                value={repairForm.city}
+                onChange={(e) => setRepairForm({ ...repairForm, city: e.target.value })}
+                className="rounded-lg border border-gray-200 px-3 py-2"
+              />
+              <input
+                placeholder="Pincode"
+                value={repairForm.pincode}
+                onChange={(e) => setRepairForm({ ...repairForm, pincode: e.target.value })}
+                className="rounded-lg border border-gray-200 px-3 py-2"
+              />
+              <input
+                type="date"
+                value={repairForm.pickupDate}
+                onChange={(e) => setRepairForm({ ...repairForm, pickupDate: e.target.value })}
+                className="rounded-lg border border-gray-200 px-3 py-2"
+              />
+              <select
+                value={repairForm.pickupTimeSlot}
+                onChange={(e) => setRepairForm({ ...repairForm, pickupTimeSlot: e.target.value })}
+                className="rounded-lg border border-gray-200 px-3 py-2"
+              >
+                <option value="">Pickup slot</option>
+                <option>9–12</option>
+                <option>12–3</option>
+                <option>3–6</option>
+              </select>
+            </div>
+            <div className="flex justify-end">
+              <button
+                onClick={submitRepair}
+                disabled={submittingRepair}
+                className="rounded-lg bg-black px-5 py-2 text-sm text-white hover:bg-gray-900 disabled:opacity-60"
+              >
+                {submittingRepair ? "Submitting…" : "Submit request"}
+              </button>
+            </div>
+          </section>
+        )}
       </main>
     </div>
   );

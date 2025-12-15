@@ -10,6 +10,9 @@ export const API_ENDPOINTS = {
     SIGNUP: `${API_BASE_URL}/auth/signup`,
     LOGIN: `${API_BASE_URL}/auth/login`,
     GOOGLE_LOGIN: `${API_BASE_URL}/auth/google`,
+    FORGOT: `${API_BASE_URL}/auth/forgot-password`,
+    RESET: `${API_BASE_URL}/auth/reset-password`,
+    CHANGE_PASSWORD: `${API_BASE_URL}/auth/change-password`,
   },
   // Products
   PRODUCTS: {
@@ -131,7 +134,7 @@ export const uploadFile = async (url, formData, options = {}) => {
   try {
     const response = await fetch(url, {
       ...options,
-      method: 'POST',
+      method: options.method || 'POST',
       headers,
       body: formData,
     });
@@ -147,6 +150,11 @@ export const uploadFile = async (url, formData, options = {}) => {
     console.error('File Upload Error:', error);
     throw error;
   }
+};
+
+// Generic form-data helper (supports PUT/PATCH)
+export const uploadForm = async (url, formData, method = 'POST', options = {}) => {
+  return uploadFile(url, formData, { ...options, method });
 };
 
 export { SOCKET_URL };

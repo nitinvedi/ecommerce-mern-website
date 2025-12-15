@@ -8,7 +8,7 @@ import {
   Search,
   X
 } from "lucide-react";
-import { api, API_ENDPOINTS } from "../../config/api";
+import { api, API_ENDPOINTS, uploadForm } from "../../config/api";
 import useAuth from "../../hooks/useAuth";
 import AdminLayout from "../../layouts/AdminLayout";
 
@@ -36,8 +36,10 @@ export default function ManageProducts() {
     price: "",
     stock: "",
     category: "Mobile",
-    isActive: true
+    isActive: true,
+    images: [],
   });
+  const [files, setFiles] = useState([]);
 
   /* ---------------- Fetch ---------------- */
   useEffect(() => {
@@ -84,8 +86,10 @@ export default function ManageProducts() {
       price: "",
       stock: "",
       category: "Mobile",
-      isActive: true
+      isActive: true,
+      images: [],
     });
+    setFiles([]);
     setShowModal(true);
   };
 
@@ -98,26 +102,34 @@ export default function ManageProducts() {
       price: p.price || "",
       stock: p.stock || "",
       category: p.category || "Mobile",
-      isActive: p.isActive !== false
+      isActive: p.isActive !== false,
+      images: p.images || [],
     });
+    setFiles([]);
     setShowModal(true);
   };
 
   const save = async (e) => {
     e.preventDefault();
 
-    const payload = {
-      ...form,
-      price: Number(form.price),
-      stock: Number(form.stock),
-      images: ["/uploads/products/default.png"]
-    };
+    const fd = new FormData();
+    fd.append("name", form.name);
+    fd.append("brand", form.brand);
+    fd.append("description", form.description);
+    fd.append("price", Number(form.price));
+    fd.append("stock", Number(form.stock));
+    fd.append("category", form.category);
+    fd.append("isActive", form.isActive);
+    if (form.images?.length) {
+      fd.append("existingImages", JSON.stringify(form.images));
+    }
+    files.forEach((file) => fd.append("productImages", file));
 
     try {
       if (editing) {
-        await api.put(API_ENDPOINTS.PRODUCTS.BY_ID(editing._id), payload);
+        await uploadForm(API_ENDPOINTS.PRODUCTS.BY_ID(editing._id), fd, "PUT");
       } else {
-        await api.post(API_ENDPOINTS.PRODUCTS.BASE, payload);
+        await uploadForm(API_ENDPOINTS.PRODUCTS.BASE, fd, "POST");
       }
       setShowModal(false);
       fetchProducts();
@@ -272,6 +284,21 @@ export default function ManageProducts() {
                 <div className="sm:col-span-2">
                   <label className={label}>Description</label>
                   <textarea rows={3} className={input} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className={label}>Images</label>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    className={input}
+                    onChange={(e) => setFiles(Array.from(e.target.files || []))}
+                  />
+                  {form.images?.length > 0 && (
+                    <p className="mt-1 text-xs text-gray-500">
+                      Existing images will be kept unless you upload new ones.
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className={label}>Price</label>

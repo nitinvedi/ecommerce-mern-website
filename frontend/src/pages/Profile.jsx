@@ -14,6 +14,12 @@ export default function Profile() {
 
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [changingPwd, setChangingPwd] = useState(false);
+  const [pwdForm, setPwdForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
 
   const [form, setForm] = useState({
     name: "",
@@ -69,6 +75,20 @@ export default function Profile() {
 
   const saveProfile = async (e) => {
     e.preventDefault();
+    // Basic validation
+    if (!form.name || form.name.trim().length < 2) {
+      toast.error("Name must be at least 2 characters");
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      toast.error("Enter a valid email");
+      return;
+    }
+    if (form.phone && !/^\d{10}$/.test(form.phone)) {
+      toast.error("Enter a valid 10-digit phone");
+      return;
+    }
     setLoading(true);
     try {
       await api.put(API_ENDPOINTS.USERS.PROFILE, form);
@@ -79,6 +99,31 @@ export default function Profile() {
       toast.error("Failed to update profile");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const changePassword = async (e) => {
+    e.preventDefault();
+    if (!pwdForm.currentPassword || !pwdForm.newPassword) {
+      toast.error("Fill all password fields");
+      return;
+    }
+    if (pwdForm.newPassword !== pwdForm.confirmPassword) {
+      toast.error("New passwords do not match");
+      return;
+    }
+    setChangingPwd(true);
+    try {
+      await api.post(API_ENDPOINTS.AUTH.CHANGE_PASSWORD, {
+        currentPassword: pwdForm.currentPassword,
+        newPassword: pwdForm.newPassword
+      });
+      toast.success("Password updated");
+      setPwdForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    } catch (err) {
+      toast.error(err.message || "Failed to update password");
+    } finally {
+      setChangingPwd(false);
     }
   };
 
@@ -198,6 +243,45 @@ export default function Profile() {
               </div>
             )}
           </form>
+
+        {/* Change password */}
+        <div className="mt-8 border-t pt-6">
+          <h3 className="text-sm font-medium text-gray-900 mb-4">
+            Change password
+          </h3>
+          <form onSubmit={changePassword} className="grid md:grid-cols-3 gap-4">
+            <input
+              type="password"
+              placeholder="Current password"
+              value={pwdForm.currentPassword}
+              onChange={(e) => setPwdForm({ ...pwdForm, currentPassword: e.target.value })}
+              className="rounded-xl border border-black/10 px-4 py-2.5 text-sm"
+            />
+            <input
+              type="password"
+              placeholder="New password"
+              value={pwdForm.newPassword}
+              onChange={(e) => setPwdForm({ ...pwdForm, newPassword: e.target.value })}
+              className="rounded-xl border border-black/10 px-4 py-2.5 text-sm"
+            />
+            <input
+              type="password"
+              placeholder="Confirm new password"
+              value={pwdForm.confirmPassword}
+              onChange={(e) => setPwdForm({ ...pwdForm, confirmPassword: e.target.value })}
+              className="rounded-xl border border-black/10 px-4 py-2.5 text-sm"
+            />
+            <div className="md:col-span-3">
+              <button
+                type="submit"
+                disabled={changingPwd}
+                className="rounded-xl bg-black px-6 py-3 text-sm font-medium text-white hover:bg-gray-900 disabled:opacity-60"
+              >
+                {changingPwd ? "Updating..." : "Update password"}
+              </button>
+            </div>
+          </form>
+        </div>
         </motion.div>
       </div>
     </div>

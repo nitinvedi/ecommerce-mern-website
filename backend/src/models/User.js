@@ -112,6 +112,23 @@ export const getUserByEmail = async (email, includePassword = false) => {
   return user;
 };
 
+// Get user by reset token (and ensure not expired)
+export const getUserByResetToken = async (token) => {
+  const collection = getCollection();
+  const now = new Date();
+  const user = await collection.findOne({
+    passwordResetToken: token,
+    passwordResetExpires: { $gt: now }
+  });
+  return user;
+};
+
+// Get user by ID including password (internal use)
+export const getUserByIdWithPassword = async (userId) => {
+  const collection = getCollection();
+  return await collection.findOne({ _id: new ObjectId(userId) });
+};
+
 // Get all users
 export const getAllUsers = async (filter = {}) => {
   const collection = getCollection();
@@ -154,6 +171,23 @@ export const updateUser = async (userId, updateData) => {
     { $set: updateDoc }
   );
   return result;
+};
+
+// Update password directly (helper)
+export const updatePassword = async (userId, newPassword) => {
+  const hashed = await hashPassword(newPassword);
+  const collection = getCollection();
+  return await collection.updateOne(
+    { _id: new ObjectId(userId) },
+    {
+      $set: {
+        password: hashed,
+        passwordResetToken: null,
+        passwordResetExpires: null,
+        updatedAt: new Date()
+      }
+    }
+  );
 };
 
 // Delete user

@@ -1,9 +1,17 @@
-import jwt from "jsonwebtoken";
-import { createUser, getUserByEmail, matchPassword } from "../models/User.js";
+import crypto from "crypto";
+import {
+  createUser,
+  getUserByEmail,
+  matchPassword,
+  getUserByResetToken,
+  getUserByIdWithPassword,
+  updatePassword
+} from "../models/User.js";
 import { generateToken } from "../config/jwt.js";
 import { sendSuccess, sendError, sendCreated } from "../utils/response.js";
 import logger from "../utils/logger.js";
 import { OAuth2Client } from "google-auth-library";
+import { getDB } from "../config/mongo.js";
 
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -81,6 +89,90 @@ export const loginUser = async (req, res) => {
 };
 
 
+// Change password (authenticated)
+export const changePassword = async (req, res) => {
+    try {
+        const userId = req.user._id.toString();
+        const { currentPassword, newPassword } = req.body;
+
+        if (!currentPassword || !newPassword) {
+            return sendError(res, "Current and new password are required", 400);
+        }
+
+        const user = await getUserByIdWithPassword(userId);
+        if (!user || !user.password) {
+            return sendError(res, "User not found", 404);
+        }
+
+        const isMatch = await matchPassword(currentPassword, user.password);
+        if (!isMatch) {
+            return sendError(res, "Current password is incorrect", 401);
+        }
+
+        await updatePassword(userId, newPassword);
+        return sendSuccess(res, "Password updated successfully");
+    } catch (err) {
+        logger.error("Change password error", err);
+        return sendError(res, "Server error", 500);
+    }
+};
+
+// Forgot password (request reset)
+export const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return sendError(res, "Email is required", 400);
+        }
+
+        const user = await getUserByEmail(email, true);
+        if (!user) {
+            return sendSuccess(res, "If an account exists, a reset link has been generated");
+        }
+
+        const resetToken = crypto.randomBytes(32).toString("hex");
+        const expires = new Date(Date.now() + 60 * 60 * 1000);
+
+        const db = getDB();
+        await db.collection("users").updateOne(
+            { _id: user._id },
+            {
+                $set: {
+                    passwordResetToken: resetToken,
+                    passwordResetExpires: expires,
+                    updatedAt: new Date()
+                }
+            }
+        );
+
+        return sendSuccess(res, "Reset token generated", { resetToken, expires });
+    } catch (err) {
+        logger.error("Forgot password error", err);
+        return sendError(res, "Server error", 500);
+    }
+};
+
+// Reset password
+export const resetPassword = async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+        if (!token || !newPassword) {
+            return sendError(res, "Token and new password are required", 400);
+        }
+
+        const user = await getUserByResetToken(token);
+        if (!user) {
+            return sendError(res, "Invalid or expired token", 400);
+        }
+
+        await updatePassword(user._id.toString(), newPassword);
+        return sendSuccess(res, "Password reset successful");
+    } catch (err) {
+        logger.error("Reset password error", err);
+        return sendError(res, "Server error", 500);
+    }
+};
+
 export const googleLogin = async (req, res) => {
     try {
         const { credential } = req.body;
@@ -96,31 +188,33 @@ export const googleLogin = async (req, res) => {
 
         const payload = ticket.getPayload();
 
-        const db = getDB();
-        const usersCollection = db.collection("users");
+        // Prefer model helpers to keep validation consistent
+        let user = await getUserByEmail(payload.email, true);
 
-        // check existing user
-        let user = await usersCollection.findOne({ email: payload.email });
-
-        // if new user → create in DB
         if (!user) {
-            user = {
+            // Create a lightweight user record for Google sign-in
+            const db = getDB();
+            const usersCollection = db.collection("users");
+
+            const result = await usersCollection.insertOne({
                 name: payload.name,
-                email: payload.email,
+                email: payload.email.toLowerCase().trim(),
                 picture: payload.picture,
                 googleId: payload.sub,
-                createdAt: new Date()
-            };
+                role: "user",
+                createdAt: new Date(),
+                updatedAt: new Date()
+            });
 
-            await usersCollection.insertOne(user);
+            user = {
+                _id: result.insertedId,
+                name: payload.name,
+                email: payload.email
+            };
         }
 
-        // generate app token
-        const token = jwt.sign(
-            { id: user._id },
-            process.env.JWT_SECRET,
-            { expiresIn: "7d" }
-        );
+        // generate app token via existing JWT helper
+        const token = generateToken({ id: user._id.toString() });
 
         return res.json({
             success: true,

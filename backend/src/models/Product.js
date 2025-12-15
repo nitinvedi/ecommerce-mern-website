@@ -11,6 +11,8 @@ const getCollection = () => {
 };
 
 // Validation function
+const DEFAULT_IMAGE = "/uploads/products/default.png";
+
 export const validateProduct = (productData) => {
   const errors = [];
 
@@ -30,9 +32,7 @@ export const validateProduct = (productData) => {
     errors.push("Price cannot be negative");
   }
 
-  if (!productData.images || !Array.isArray(productData.images) || productData.images.length === 0) {
-    errors.push("At least one product image is required");
-  }
+  // Images are optional; a default image will be applied if none provided.
 
   const validCategories = ['Mobile', 'Tablet', 'Laptop', 'Accessories', 'Parts', 'Other'];
   if (!productData.category || !validCategories.includes(productData.category)) {
@@ -74,11 +74,16 @@ export const createProduct = async (productData) => {
   const reviews = productData.reviews || [];
   const { rating, numReviews } = calculateRating(reviews);
 
+  const images =
+    productData.images && Array.isArray(productData.images) && productData.images.length > 0
+      ? productData.images
+      : [DEFAULT_IMAGE];
+
   const product = {
     name: productData.name.trim(),
     description: productData.description.trim(),
     price: productData.price,
-    images: productData.images,
+    images,
     category: productData.category || 'Other',
     brand: productData.brand ? productData.brand.trim() : null,
     stock: productData.stock !== undefined ? productData.stock : 0,

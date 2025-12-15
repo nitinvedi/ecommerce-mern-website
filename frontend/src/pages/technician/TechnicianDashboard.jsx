@@ -1,12 +1,53 @@
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Wrench, Clock, CheckCircle2, PackagePlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import useAuth from "../../hooks/useAuth";
+import { api, API_ENDPOINTS } from "../../config/api";
+import { useToast } from "../../context/ToastContext";
 
 export default function TechnicianDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
+
+  const [repairs, setRepairs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user?.role === "technician") {
+      fetchRepairs();
+    }
+  }, [user]);
+
+  const fetchRepairs = async () => {
+    try {
+      const res = await api.get(`${API_ENDPOINTS.REPAIRS.BASE}?technician=me`);
+      const items =
+        res?.data?.items ||
+        res?.data?.repairs ||
+        res?.data?.data?.items ||
+        res?.data?.data ||
+        [];
+      setRepairs(Array.isArray(items) ? items : []);
+    } catch (err) {
+      console.error("Failed to load technician dashboard data", err);
+      toast.error("Failed to load your repairs");
+      setRepairs([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const stats = useMemo(() => {
+    const total = repairs.length;
+    const inProgress = repairs.filter((r) =>
+      ["In Progress", "Diagnosed", "Repairing", "Quality Check", "Confirmed"].includes(r.status)
+    ).length;
+    const completed = repairs.filter((r) => r.status === "Completed" || r.status === "Delivered").length;
+    return { total, inProgress, completed };
+  }, [repairs]);
 
   return (
     <div className="min-h-screen bg-neutral-50">
@@ -30,17 +71,17 @@ export default function TechnicianDashboard() {
         <section className="grid sm:grid-cols-3 gap-6">
           <StatCard
             title="Assigned Jobs"
-            value="—"
+            value={loading ? "…" : stats.total}
             icon={<Wrench />}
           />
           <StatCard
             title="In Progress"
-            value="—"
+            value={loading ? "…" : stats.inProgress}
             icon={<Clock />}
           />
           <StatCard
             title="Completed"
-            value="—"
+            value={loading ? "…" : stats.completed}
             icon={<CheckCircle2 />}
           />
         </section>

@@ -63,7 +63,26 @@ export const getProductById = asyncHandler(async (req, res) => {
 
 // Create product (admin only)
 export const createProduct = asyncHandler(async (req, res) => {
-  const productData = req.body;
+  const productData = { ...req.body };
+
+  // Normalize numbers/booleans from form-data
+  if (productData.price !== undefined) productData.price = Number(productData.price);
+  if (productData.stock !== undefined) productData.stock = Number(productData.stock);
+  if (productData.isActive !== undefined) {
+    productData.isActive = productData.isActive === "true" || productData.isActive === true;
+  }
+  if (productData.featured !== undefined) {
+    productData.featured = productData.featured === "true" || productData.featured === true;
+  }
+
+  // If images were sent as JSON string (when no new uploads), parse them
+  if (typeof productData.images === "string") {
+    try {
+      productData.images = JSON.parse(productData.images);
+    } catch {
+      // ignore parse error; fallback handled below
+    }
+  }
 
   // Add images if uploaded
   if (req.files && req.files.length > 0) {
@@ -83,7 +102,36 @@ export const updateProduct = asyncHandler(async (req, res) => {
     return sendNotFound(res, "Product");
   }
 
-  const updateData = req.body;
+  const updateData = { ...req.body };
+
+  // Normalize numbers/booleans from form-data
+  if (updateData.price !== undefined) updateData.price = Number(updateData.price);
+  if (updateData.stock !== undefined) updateData.stock = Number(updateData.stock);
+  if (updateData.isActive !== undefined) {
+    updateData.isActive = updateData.isActive === "true" || updateData.isActive === true;
+  }
+  if (updateData.featured !== undefined) {
+    updateData.featured = updateData.featured === "true" || updateData.featured === true;
+  }
+
+  // Parse persisted images if provided (when no new uploads)
+  if (typeof updateData.images === "string") {
+    try {
+      updateData.images = JSON.parse(updateData.images);
+    } catch {
+      // ignore
+    }
+  }
+  if (typeof updateData.existingImages === "string") {
+    try {
+      const existing = JSON.parse(updateData.existingImages);
+      if (!updateData.images && Array.isArray(existing)) {
+        updateData.images = existing;
+      }
+    } catch {
+      // ignore
+    }
+  }
 
   // Update images if new files uploaded
   if (req.files && req.files.length > 0) {

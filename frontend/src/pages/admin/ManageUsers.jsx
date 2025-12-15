@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+
 import {
   Users,
   Search,
@@ -36,6 +37,8 @@ export default function ManageUsers() {
 
   const [search, setSearch] = useState("");
   const [role, setRole] = useState("all");
+  const [editing, setEditing] = useState(null);
+  const [form, setForm] = useState({ name: "", email: "", role: "user", phone: "" });
 
   /* ---------------- Fetch ---------------- */
   useEffect(() => {
@@ -77,6 +80,29 @@ export default function ManageUsers() {
     }
   };
 
+  const openEdit = (user) => {
+    setEditing(user);
+    setForm({
+      name: user.name || "",
+      email: user.email || "",
+      role: user.role || "user",
+      phone: user.phone || ""
+    });
+  };
+
+  const saveUser = async () => {
+    if (!editing) return;
+    try {
+      await api.put(API_ENDPOINTS.USERS.BY_ID(editing._id), form);
+      toast.success("User updated");
+      setEditing(null);
+      fetchUsers();
+    } catch (err) {
+      console.error(err);
+      toast.error("Update failed");
+    }
+  };
+
   /* ---------------- Derived ---------------- */
   const filtered = useMemo(() => {
     return users.filter((u) => {
@@ -91,6 +117,7 @@ export default function ManageUsers() {
 
   /* ---------------- Render ---------------- */
   return (
+    <>
     <AdminLayout>
       {/* Header */}
       <div className="mb-8">
@@ -184,9 +211,7 @@ export default function ManageUsers() {
               <div className="mt-4 flex gap-2">
                 <button
                   className="flex-1 rounded-lg border border-black/10 px-3 py-2 text-sm hover:bg-black/5"
-                  onClick={() =>
-                    toast.info("Edit user coming soon")
-                  }
+                  onClick={() => openEdit(u)}
                 >
                   <Edit2 size={14} className="inline mr-1" />
                   Edit
@@ -206,5 +231,83 @@ export default function ManageUsers() {
         </div>
       )}
     </AdminLayout>
+
+    <AnimatePresence>
+      {editing && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+        >
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Edit user</h2>
+              <button onClick={() => setEditing(null)}>✕</button>
+            </div>
+
+            <div className="space-y-4 text-sm">
+              <div>
+                <label className="text-xs text-gray-500">Name</label>
+                <input
+                  className={input}
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">Email</label>
+                <input
+                  className={input}
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">Phone</label>
+                <input
+                  className={input}
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">Role</label>
+                <select
+                  className={input}
+                  value={form.role}
+                  onChange={(e) => setForm({ ...form, role: e.target.value })}
+                >
+                  <option value="user">User</option>
+                  <option value="technician">Technician</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={saveUser}
+                className="flex-1 rounded-lg bg-black py-2 text-sm text-white hover:bg-gray-900"
+              >
+                Save
+              </button>
+              <button
+                onClick={() => setEditing(null)}
+                className="rounded-lg border border-black/10 px-4 py-2 text-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+    </>
   );
 }

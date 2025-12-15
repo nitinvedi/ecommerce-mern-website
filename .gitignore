@@ -30,6 +30,11 @@ frontend/*.sw?
 backend/.env.local
 backend/node_modules
 
+# Logs
+*.log
+logs/
+backend/logs/
+
 # environment variable
 .env
 backend/.env

@@ -1,457 +1,278 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import '../styles/repair.css';
-import Navbar from '../components/Navbar';
-import SignIn from '../components/SignIn';
-import SignUp from '../components/SignUp';
-import { api, API_ENDPOINTS, uploadFile } from '../config/api.js';
-import useAuth from '../hooks/useAuth.js';
-import { useToast } from '../context/ToastContext.jsx';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import Navbar from "../components/Navbar";
+import AuthModal from "../components/AuthModal";
+import useAuth from "../hooks/useAuth";
+import { useToast } from "../context/ToastContext";
+import { API_ENDPOINTS, uploadFile } from "../config/api";
+
+/* ---------------- Config ---------------- */
+const STEPS = [
+  { title: "Device", subtitle: "Tell us about your device" },
+  { title: "Problem", subtitle: "Describe the issue" },
+  { title: "Pickup", subtitle: "Pickup details" },
+  { title: "Review", subtitle: "Confirm & submit" },
+];
+
+const input =
+  "w-full rounded-xl bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none ring-1 ring-black/10 focus:ring-2 focus:ring-black/20 transition";
+
+const label = "text-xs font-medium text-gray-500";
+
+const pageVariants = {
+  initial: (d) => ({ opacity: 0, x: d > 0 ? 40 : -40 }),
+  animate: { opacity: 1, x: 0 },
+  exit: (d) => ({ opacity: 0, x: d > 0 ? -40 : 40 }),
+};
 
 export default function Repair() {
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
+
+  const [step, setStep] = useState(0);
+  const [direction, setDirection] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [authModal, setAuthModal] = useState(false);
 
-  // Debug: Log when component mounts
-  useEffect(() => {
-    console.log('Repair component mounted, user:', user);
-  }, [user]);
-
-  // Don't block rendering while auth is loading
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black flex items-center justify-center">
-        <div className="text-white">Loading...</div>
-      </div>
-    );
-  }
-  
   const [formData, setFormData] = useState({
-    // Device Information
-    deviceType: '',
-    brand: '',
-    model: '',
-    deviceColor: '',
-    imeiNumber: '',
-    
-    // Problem Details
-    issue: '',
-    problemDescription: '',
-    images: [],
-    
-    // Pickup & Contact Details
-    fullName: '',
-    phoneNumber: '',
-    pickupAddress: '',
-    city: '',
-    pincode: '',
-    pickupDate: '',
-    pickupTimeSlot: '',
-    
-    // Price Section
-    estimatedRepairCost: ''
+    deviceType: "",
+    brand: "",
+    model: "",
+    deviceColor: "",
+    issue: "",
+    problemDescription: "",
+    fullName: "",
+    phoneNumber: "",
+    pickupAddress: "",
+    city: "",
+    pincode: "",
+    pickupDate: "",
+    pickupTimeSlot: "",
   });
 
-  // Auth modal state
-  const [authModal, setAuthModal] = useState(null); // null, 'signin', or 'signup'
-  const openSignIn = () => setAuthModal('signin');
-  const closeAuth = () => setAuthModal(null);
-  const switchToSignUp = () => setAuthModal('signup');
-  const switchToSignIn = () => setAuthModal('signin');
+  const handleChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
 
+  /* ---------------- Validation (Toast only) ---------------- */
+  const validateStep = () => {
+    if (step === 0) {
+      if (!formData.deviceType)
+        return toast.error("Please select a device type"), false;
+      if (!formData.brand)
+        return toast.error("Brand is required"), false;
+      if (!formData.model)
+        return toast.error("Model is required"), false;
+    }
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    if (step === 1) {
+      if (!formData.issue)
+        return toast.error("Please select an issue"), false;
+      if (!formData.problemDescription)
+        return toast.error("Please describe the problem"), false;
+    }
+
+    if (step === 2) {
+      if (!formData.fullName)
+        return toast.error("Full name is required"), false;
+      if (!/^\d{10}$/.test(formData.phoneNumber))
+        return toast.error("Enter a valid 10-digit phone number"), false;
+      if (!formData.pickupAddress)
+        return toast.error("Pickup address is required"), false;
+      if (!formData.city)
+        return toast.error("City is required"), false;
+      if (!/^\d{6}$/.test(formData.pincode))
+        return toast.error("Invalid pincode"), false;
+      if (!formData.pickupDate)
+        return toast.error("Pickup date is required"), false;
+      if (!formData.pickupTimeSlot)
+        return toast.error("Please select a pickup time slot"), false;
+    }
+
+    return true;
   };
 
-  const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-    setFormData(prev => ({
-      ...prev,
-      images: [...prev.images, ...files]
-    }));
+  const next = () => {
+    if (!validateStep()) return;
+    setDirection(1);
+    setStep((s) => s + 1);
   };
 
-  const removeImage = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index)
-    }));
+  const back = () => {
+    setDirection(-1);
+    setStep((s) => s - 1);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
+  const submit = async () => {
     if (!user) {
-      toast.error('Please sign in to submit a repair request');
-      // Store current URL to return after login
-      sessionStorage.setItem('returnUrl', '/repair');
-      openSignIn();
+      toast.error("Please sign in to continue");
+      setAuthModal(true);
       return;
     }
 
     setLoading(true);
     try {
-      // Create FormData for file upload
-      const submitFormData = new FormData();
-      
-      // Add all form fields
-      Object.keys(formData).forEach(key => {
-        if (key !== 'images') {
-          submitFormData.append(key, formData[key] || '');
-        }
-      });
+      const fd = new FormData();
+      Object.entries(formData).forEach(([k, v]) => fd.append(k, v));
 
-      // Add images with correct field name for backend
-      formData.images.forEach((image) => {
-        submitFormData.append('repairImages', image);
-      });
+      await uploadFile(API_ENDPOINTS.REPAIRS.BASE, fd);
 
-      // Submit repair request
-      const response = await uploadFile(API_ENDPOINTS.REPAIRS.BASE, submitFormData);
-      
-      toast.success('Repair request submitted successfully!', 'Success');
-      
-      // Redirect to tracking page or dashboard
-      const repairData = response.data || response;
-      if (repairData?.trackingId) {
-        navigate(`/status/${repairData.trackingId}`);
-      } else if (repairData?._id) {
-        // If we have the repair ID, we can still navigate to dashboard
-        navigate('/dashboard');
-      } else {
-        navigate('/dashboard');
-      }
-    } catch (error) {
-      console.error('Error submitting repair:', error);
-      toast.error(error.message || 'Failed to submit repair request. Please try again.');
+      toast.success("Repair request submitted successfully");
+      navigate("/dashboard");
+    } catch {
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="repair-page min-h-screen bg-gradient-to-b from-black via-gray-900 to-black">
-      <Navbar openSignUp={openSignIn} />
-      
-      <div className="repair-container py-12 px-4 md:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="max-w-4xl mx-auto"
-        >
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-white text-4xl md:text-5xl font-bold mb-4">
-              Book Your Repair
-            </h1>
-            <p className="text-gray-400 text-lg">
-              Fill out the form below and we'll schedule a pickup for your device
-            </p>
+    <div className="min-h-screen bg-[#f9fafb]">
+      <Navbar />
+
+      <div className="max-w-4xl mx-auto px-6 py-24">
+        {/* Progress */}
+        <div className="mb-10">
+          <div className="flex gap-3">
+            {STEPS.map((_, i) => (
+              <div
+                key={i}
+                className={`h-1 flex-1 rounded-full ${
+                  i <= step ? "bg-black" : "bg-black/10"
+                }`}
+              />
+            ))}
           </div>
 
-          <form onSubmit={handleSubmit} className="repair-form">
-            {/* A. Device Information */}
-            <section className="form-section">
-              <h2 className="section-title">Device Information</h2>
-              
-              <div className="form-grid">
-                <div className="form-group">
-                  <label>Device Type <span className="required">*</span></label>
-                  <select 
-                    name="deviceType" 
-                    value={formData.deviceType}
-                    onChange={handleChange}
-                    className="form-input"
-                    required
-                  >
-                    <option value="">Select Device Type</option>
-                    <option value="Mobile">Mobile</option>
-                    <option value="Tablet">Tablet</option>
-                    <option value="Laptop">Laptop</option>
-                  </select>
-                </div>
+          <h1 className="mt-6 text-2xl font-semibold text-gray-900">
+            {STEPS[step].title}
+          </h1>
+          <p className="text-sm text-gray-500">
+            {STEPS[step].subtitle}
+          </p>
+        </div>
 
-                <div className="form-group">
-                  <label>Brand <span className="required">*</span></label>
-                  <input
-                    type="text"
-                    name="brand"
-                    value={formData.brand}
-                    onChange={handleChange}
-                    placeholder="e.g., Apple, Samsung, OnePlus"
-                    className="form-input"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Model <span className="required">*</span></label>
-                  <input
-                    type="text"
-                    name="model"
-                    value={formData.model}
-                    onChange={handleChange}
-                    placeholder="e.g., iPhone 14, Galaxy S23"
-                    className="form-input"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Device Color</label>
-                  <input
-                    type="text"
-                    name="deviceColor"
-                    value={formData.deviceColor}
-                    onChange={handleChange}
-                    placeholder="e.g., Black, White, Blue"
-                    className="form-input"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>IMEI Number <span className="optional-text">(Optional)</span></label>
-                  <input
-                    type="text"
-                    name="imeiNumber"
-                    value={formData.imeiNumber}
-                    onChange={handleChange}
-                    placeholder="15-digit IMEI (optional)"
-                    className="form-input"
-                  />
-                </div>
-              </div>
-            </section>
-
-            {/* B. Problem Details */}
-            <section className="form-section">
-              <h2 className="section-title">Problem Details</h2>
-              
-              <div className="form-group">
-                <label>Select Issue <span className="required">*</span></label>
-                <select 
-                  name="issue" 
-                  value={formData.issue}
-                  onChange={handleChange}
-                  className="form-input"
-                  required
-                >
-                  <option value="">Select Issue</option>
-                  <option value="Screen Damage">Screen Damage</option>
-                  <option value="Battery">Battery</option>
-                  <option value="Camera">Camera</option>
-                  <option value="Mic">Mic</option>
-                  <option value="Not Turning On">Not Turning On</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label>Describe the Problem <span className="required">*</span></label>
-                <textarea
-                  name="problemDescription"
-                  value={formData.problemDescription}
-                  onChange={handleChange}
-                  placeholder="Please describe the issue in detail..."
-                  className="form-input form-textarea"
-                  rows="5"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Upload Images (Optional)</label>
-                <div className="file-upload-area">
-                  <input
-                    type="file"
-                    id="imageUpload"
-                    accept="image/*"
-                    multiple
-                    onChange={handleImageChange}
-                    className="file-input"
-                  />
-                  <label htmlFor="imageUpload" className="file-label">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="17 8 12 3 7 8" />
-                      <line x1="12" y1="3" x2="12" y2="15" />
-                    </svg>
-                    <span>Click to upload or drag and drop</span>
-                    <span className="file-hint">PNG, JPG, GIF up to 10MB</span>
-                  </label>
-                </div>
-                
-                {formData.images.length > 0 && (
-                  <div className="image-preview-grid">
-                    {formData.images.map((image, index) => (
-                      <div key={index} className="image-preview">
-                        <img 
-                          src={URL.createObjectURL(image)} 
-                          alt={`Preview ${index + 1}`}
-                          className="preview-image"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          className="remove-image-btn"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
+        {/* Card */}
+        <div className="rounded-2xl bg-white border border-black/5 p-8 shadow-sm overflow-hidden">
+          <AnimatePresence mode="wait" custom={direction}>
+            <motion.div
+              key={step}
+              custom={direction}
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={{ duration: 0.3, ease: "easeOut" }}
+            >
+              {step === 0 && (
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className={label}>Device type</label>
+                    <select name="deviceType" onChange={handleChange} className={input}>
+                      <option value="">Select</option>
+                      <option>Mobile</option>
+                      <option>Tablet</option>
+                      <option>Laptop</option>
+                    </select>
                   </div>
-                )}
-              </div>
-            </section>
-
-            {/* C. Pickup & Contact Details */}
-            <section className="form-section">
-              <h2 className="section-title">Pickup & Contact Details</h2>
-              
-              <div className="form-grid">
-                <div className="form-group">
-                  <label>Full Name <span className="required">*</span></label>
-                  <input
-                    type="text"
-                    name="fullName"
-                    value={formData.fullName}
-                    onChange={handleChange}
-                    placeholder="Enter your full name"
-                    className="form-input"
-                    required
-                  />
+                  <div>
+                    <label className={label}>Brand</label>
+                    <input name="brand" onChange={handleChange} className={input} />
+                  </div>
+                  <div>
+                    <label className={label}>Model</label>
+                    <input name="model" onChange={handleChange} className={input} />
+                  </div>
+                  <div>
+                    <label className={label}>Color (optional)</label>
+                    <input name="deviceColor" onChange={handleChange} className={input} />
+                  </div>
                 </div>
+              )}
 
-                <div className="form-group">
-                  <label>Phone Number <span className="required">*</span></label>
-                  <input
-                    type="tel"
-                    name="phoneNumber"
-                    value={formData.phoneNumber}
-                    onChange={handleChange}
-                    placeholder="10-digit mobile number"
-                    className="form-input"
-                    required
-                  />
+              {step === 1 && (
+                <div className="space-y-6">
+                  <div>
+                    <label className={label}>Issue</label>
+                    <select name="issue" onChange={handleChange} className={input}>
+                      <option value="">Select</option>
+                      <option>Screen</option>
+                      <option>Battery</option>
+                      <option>Camera</option>
+                      <option>Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className={label}>Description</label>
+                    <textarea
+                      rows={4}
+                      name="problemDescription"
+                      onChange={handleChange}
+                      className={input}
+                    />
+                  </div>
                 </div>
+              )}
 
-                <div className="form-group full-width">
-                  <label>Pickup Address <span className="required">*</span></label>
+              {step === 2 && (
+                <div className="grid md:grid-cols-2 gap-6">
+                  <input name="fullName" placeholder="Full name" onChange={handleChange} className={input} />
+                  <input name="phoneNumber" placeholder="Phone number" onChange={handleChange} className={input} />
                   <textarea
+                    rows={3}
                     name="pickupAddress"
-                    value={formData.pickupAddress}
+                    placeholder="Pickup address"
                     onChange={handleChange}
-                    placeholder="Enter complete address"
-                    className="form-input form-textarea"
-                    rows="3"
-                    required
+                    className={`${input} md:col-span-2`}
                   />
-                </div>
-
-                <div className="form-group">
-                  <label>City <span className="required">*</span></label>
-                  <input
-                    type="text"
-                    name="city"
-                    value={formData.city}
-                    onChange={handleChange}
-                    placeholder="Enter city"
-                    className="form-input"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Pincode <span className="required">*</span></label>
-                  <input
-                    type="text"
-                    name="pincode"
-                    value={formData.pincode}
-                    onChange={handleChange}
-                    placeholder="6-digit pincode"
-                    className="form-input"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Preferred Pickup Date <span className="required">*</span></label>
-                  <input
-                    type="date"
-                    name="pickupDate"
-                    value={formData.pickupDate}
-                    onChange={handleChange}
-                    className="form-input"
-                    min={new Date().toISOString().split('T')[0]}
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Preferred Pickup Time Slot <span className="required">*</span></label>
-                  <select 
-                    name="pickupTimeSlot" 
-                    value={formData.pickupTimeSlot}
-                    onChange={handleChange}
-                    className="form-input"
-                    required
-                  >
-                    <option value="">Select Time Slot</option>
-                    <option value="9:00 AM - 12:00 PM">9:00 AM - 12:00 PM</option>
-                    <option value="12:00 PM - 3:00 PM">12:00 PM - 3:00 PM</option>
-                    <option value="3:00 PM - 6:00 PM">3:00 PM - 6:00 PM</option>
-                    <option value="6:00 PM - 9:00 PM">6:00 PM - 9:00 PM</option>
+                  <input name="city" placeholder="City" onChange={handleChange} className={input} />
+                  <input name="pincode" placeholder="Pincode" onChange={handleChange} className={input} />
+                  <input type="date" name="pickupDate" onChange={handleChange} className={input} />
+                  <select name="pickupTimeSlot" onChange={handleChange} className={input}>
+                    <option value="">Time slot</option>
+                    <option>9–12</option>
+                    <option>12–3</option>
+                    <option>3–6</option>
                   </select>
                 </div>
-              </div>
-            </section>
+              )}
 
-            {/* D. Price Section */}
-            <section className="form-section">
-              <h2 className="section-title">Price Information</h2>
-              
-              <div className="price-info">
-                <div className="price-item">
-                  <span className="price-label">Estimated inspection fee:</span>
-                  <span className="price-value">₹0 - ₹199</span>
+              {step === 3 && (
+                <div className="space-y-3 text-sm">
+                  {Object.entries(formData).map(([k, v]) => (
+                    <div key={k} className="flex justify-between border-b py-2">
+                      <span className="text-gray-500 capitalize">
+                        {k.replace(/([A-Z])/g, " $1")}
+                      </span>
+                      <span>{v || "-"}</span>
+                    </div>
+                  ))}
                 </div>
-              </div>
-            </section>
+              )}
+            </motion.div>
+          </AnimatePresence>
 
-            {/* Submit Button */}
-            <div className="submit-section">
-              <button 
-                type="submit" 
-                className="submit-btn"
-                disabled={loading}
-              >
-                {loading ? 'Submitting...' : 'Book Repair'}
+          {/* Actions */}
+          <div className="mt-10 flex items-center justify-between">
+            {step > 0 && (
+              <button onClick={back} className="text-sm text-gray-500 hover:text-black">
+                ← Back
               </button>
-            </div>
-          </form>
-        </motion.div>
+            )}
+
+            <button
+              onClick={step < 3 ? next : submit}
+              disabled={loading}
+              className="ml-auto rounded-xl bg-black px-6 py-3 text-sm font-medium text-white hover:bg-gray-900 disabled:opacity-60"
+            >
+              {step < 3 ? "Continue" : loading ? "Submitting…" : "Submit request"}
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* AUTH MODAL */}
-      {authModal === 'signin' && (
-        <div className="signup-modal fixed inset-0 z-99999">
-          <SignIn onClose={closeAuth} onSwitchToSignUp={switchToSignUp} />
-        </div>
-      )}
-      {authModal === 'signup' && (
-        <div className="signup-modal fixed inset-0 z-99999">
-          <SignUp onClose={closeAuth} onSwitchToSignIn={switchToSignIn} />
-        </div>
-      )}
+      {authModal && <AuthModal onClose={() => setAuthModal(false)} />}
     </div>
   );
 }

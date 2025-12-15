@@ -2,42 +2,44 @@
 
 .landing {
   position: relative;
-  background-color: #030303;
+  background-color: #f9fafb; /* light background */
 
-  /* Brighter + more visible white grid */
+  /* Light theme grid (black lines) */
   background-image:
-    linear-gradient(rgb(186, 185, 185) 1px, transparent 1.1px),
-    linear-gradient(90deg, rgb(186, 186, 186) 1px, transparent 1.1px);
+    linear-gradient(
+      rgba(0, 0, 0, 0.433) 1px,
+      transparent 0.4px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.501) 1px,
+      transparent 0.4px
+    );
 
   background-size: 55px 50px;
   background-position: center;
 }
 
-/* Dark overlay behind content + blur */
+/* Soft white overlay */
 .landing::before {
   content: "";
   position: absolute;
   inset: 0;
 
-  /* Darker overlay for more contrast */
-  background: rgba(0, 0, 0, 0.763);
-
+  background: rgba(255, 255, 255, 0.6);
   -webkit-backdrop-filter: blur(1px);
   backdrop-filter: blur(1px);
 
   z-index: 0;
 }
 
-/* Ensure all page content stays above overlay */
-/* All direct children EXCEPT the modal stay above overlay */
+/* Keep content above overlay */
 .landing > *:not(.signup-modal) {
   position: relative;
   z-index: 1;
 }
 
-
-
-
+/* Fonts */
 @font-face {
   font-family: 'ZodiakBold';
   src: url('/fonts/OTF/Zodiak-Bold.otf') format('opentype');
@@ -47,12 +49,21 @@
 
 .heading-font {
   font-family: 'ZodiakBold', sans-serif;
+  color: #111827; /* dark heading */
 }
 
+/* Text helpers */
+.text-light {
+  color: #374151;
+}
 
+/* Shine button (light theme version) */
+.shine-btn {
+  color: #111;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.65);
+}
 
-
-/* Shine effect for Tailwind button */
 .shine-btn::before {
   content: "";
   position: absolute;
@@ -63,7 +74,7 @@
   background: linear-gradient(
     120deg,
     transparent,
-    rgba(255, 255, 255, 0.2),
+    rgba(0, 0, 0, 0.15),
     transparent
   );
   animation: shine 5s ease-in-out infinite;

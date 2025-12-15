@@ -21,9 +21,15 @@ import ManageOrders from "./pages/admin/ManageOrders";
 import ManageUsers from "./pages/admin/ManageUsers";
 import ManageRepairs from "./pages/admin/ManageRepairs";
 
+// TECHNICIAN (NEW)
+import TechnicianDashboard from "./pages/technician/TechnicianDashboard";
+import TechnicianJobs from "./pages/technician/TechnicianJobs";
+import TechnicianProfile from "./pages/technician/TechnicianProfile";
+
 // ROUTE GUARDS
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
+import TechnicianRoute from "./components/TechnicianRoute";
 
 // FALLBACK
 import NotFound from "./pages/NotFound";
@@ -31,6 +37,7 @@ import NotFound from "./pages/NotFound";
 export default function App() {
   return (
     <Routes>
+      {/* PUBLIC */}
       <Route path="/" element={<Landing />} />
       <Route path="/home" element={<Home />} />
       <Route path="/product/:id" element={<Product />} />
@@ -41,7 +48,7 @@ export default function App() {
       <Route path="/orders/:id" element={<OrderDetail />} />
       <Route path="/status/:id" element={<LiveUpdates />} />
 
-      {/* USER PROTECTED */}
+      {/* USER */}
       <Route
         path="/dashboard"
         element={
@@ -101,6 +108,33 @@ export default function App() {
         }
       />
 
+      {/* TECHNICIAN (NEW) */}
+      <Route
+        path="/technician"
+        element={
+          <TechnicianRoute>
+            <TechnicianDashboard />
+          </TechnicianRoute>
+        }
+      />
+      <Route
+        path="/technician/jobs"
+        element={
+          <TechnicianRoute>
+            <TechnicianJobs />
+          </TechnicianRoute>
+        }
+      />
+      <Route
+        path="/technician/profile"
+        element={
+          <TechnicianRoute>
+            <TechnicianProfile />
+          </TechnicianRoute>
+        }
+      />
+
+      {/* FALLBACK */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

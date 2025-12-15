@@ -3,35 +3,32 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import "../styles/landing.css";
 import Navbar from "../components/Navbar";
-import SignIn from "../components/SignIn";
+import SignIn from "../components/AuthModal.jsx";
 import SignUp from "../components/SignUp";
 import FeatureCards from "../components/FeatureCards";
 import Footer from "../components/Footer";
 import useAuth from "../hooks/useAuth.js";
 
 export default function Landing() {
-  const [authModal, setAuthModal] = useState(null); // null, 'signin', or 'signup'
+  const [authModal, setAuthModal] = useState(null);
   const navigate = useNavigate();
   const { user } = useAuth();
-  const openSignIn = () => {
-    if (user) {
-      navigate("/dashboard");
-      return;
-    }
-    setAuthModal('signin');
-  };
-  const openSignUp = () => {
-    if (user) {
-      navigate("/dashboard");
-      return;
-    }
-    setAuthModal('signup');
-  };
-  const closeAuth = () => setAuthModal(null);
-  const switchToSignUp = () => setAuthModal('signup');
-  const switchToSignIn = () => setAuthModal('signin');
 
-  // GLOBAL PARALLAX LOGIC
+  const openSignIn = () => {
+    if (user) return navigate("/dashboard");
+    setAuthModal("signin");
+  };
+
+  const openSignUp = () => {
+    if (user) return navigate("/dashboard");
+    setAuthModal("signup");
+  };
+
+  const closeAuth = () => setAuthModal(null);
+  const switchToSignUp = () => setAuthModal("signup");
+  const switchToSignIn = () => setAuthModal("signin");
+
+  /* PARALLAX */
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -41,12 +38,11 @@ export default function Landing() {
         y: (e.clientY / window.innerHeight - 0.5) * 2,
       });
     };
-
     window.addEventListener("mousemove", handleMove);
     return () => window.removeEventListener("mousemove", handleMove);
   }, []);
 
-  // IMAGE SLIDER
+  /* SLIDER */
   const images = ["image1.png", "image2.png", "image3.png"];
   const [index, setIndex] = useState(0);
 
@@ -63,9 +59,7 @@ export default function Landing() {
 
       <div className="landing min-h-screen flex flex-col items-center pt-28">
 
-        {/* ----------------------------------- */}
-        {/* HERO SECTION - SCROLL TRIGGERED     */}
-        {/* ----------------------------------- */}
+        {/* HERO */}
         <section className="relative flex flex-col items-center justify-center mt-4 md:mt-10 px-6 text-center max-w-5xl">
 
           {/* BADGE */}
@@ -74,24 +68,20 @@ export default function Landing() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true, amount: 0.4 }}
-            className="bg-black/30 backdrop-blur-sm border border-white/10 px-6 py-2 rounded-full text-white text-sm font-medium shadow-md"
             style={{ transform: `translate(${mouse.x * 4}px, ${mouse.y * 3}px)` }}
+            className="bg-white/70 backdrop-blur-sm border border-black/10 px-6 py-2 rounded-full text-gray-800 text-sm font-medium shadow-md"
           >
             Start using Marammat ❤️
           </motion.div>
 
-          {/* MAIN HEADING */}
+          {/* HEADING */}
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1 }}
             viewport={{ once: true, amount: 0.4 }}
             style={{ transform: `translate(${mouse.x * 8}px, ${mouse.y * 6}px)` }}
-            className="
-              heading-font text-gray-200 font-bold
-              text-3xl sm:text-4xl md:text-5xl lg:text-6xl
-              leading-[1.15] mt-6
-            "
+            className="heading-font text-gray-900 font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.15] mt-6"
           >
             Effortless Phone Repairs,
             <br className="hidden sm:block" />
@@ -105,10 +95,7 @@ export default function Landing() {
             transition={{ duration: 0.7, delay: 0.15 }}
             viewport={{ once: true, amount: 0.4 }}
             style={{ transform: `translate(${mouse.x * 5}px, ${mouse.y * 4}px)` }}
-            className="
-              text-gray-300 text-base sm:text-[10px] md:text-[15px]
-              mt-4 max-w-2xl mx-auto leading-relaxed font-inter
-            "
+            className="text-gray-600 text-base sm:text-[10px] md:text-[15px] mt-4 max-w-2xl mx-auto leading-relaxed font-inter"
           >
             Transfer your broken device to experts—fast, safe, and tracked in real time.
           </motion.p>
@@ -123,14 +110,14 @@ export default function Landing() {
             className="flex items-center gap-4 mt-8"
           >
             <button
-              className="text-[15px] bg-white text-black font-semibold px-5 py-2 rounded-md text-lg hover:bg-gray-200 transition cursor-pointer"
               onClick={openSignUp}
+              className="text-[15px] bg-black text-white font-semibold px-5 py-2 rounded-md text-lg hover:bg-gray-800 transition cursor-pointer"
             >
               Try Now →
             </button>
 
-            <button className="shine-btn relative overflow-hidden flex items-center text-[15px] bg-black/10 backdrop-blur-md text-white border border-white/20 px-5 py-2 cursor-pointer rounded-md text-lg hover:bg-white/10 transition">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="#ffffff">
+            <button className="shine-btn relative overflow-hidden flex items-center text-[15px] bg-white/70 backdrop-blur-md text-gray-900 border border-black/15 px-5 py-2 cursor-pointer rounded-md text-lg hover:bg-white transition">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#000">
                 <path d="M12 4l3 5 5-3-2 10H6L4 6l5 3 3-5z" />
               </svg>
               <span className="mx-1">Become Pro</span>
@@ -138,34 +125,19 @@ export default function Landing() {
           </motion.div>
         </section>
 
-        {/* ----------------------------------- */}
-        {/* SLIDER – SCROLL TRIGGERED          */}
-        {/* ----------------------------------- */}
+        {/* SLIDER */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9 }}
-          // viewport={{ once: true, amount: 0.3 }}
           className="w-full flex justify-center mt-10"
         >
           <div
-            className="
-              relative
-              w-[600px] h-[360px]
-              sm:w-[750px] sm:h-[450px]
-              md:w-[900px] md:h-[560px]
-              overflow-hidden rounded-3xl
-              shadow-[0_0_40px_-10px_rgba(0,0,0,0.7)]
-              border border-white/10
-              bg-linear-to-br from-black/60 via-zinc-900/60 to-black/40
-              backdrop-blur-xl
-            "
-            style={{
-              transform: `translate(${mouse.x * 4}px, ${mouse.y * 3}px)`
-            }}
+            className="relative w-[600px] h-[360px] sm:w-[750px] sm:h-[450px] md:w-[900px] md:h-[560px] overflow-hidden rounded-3xl shadow-[0_0_40px_-10px_rgba(0,0,0,0.25)] border border-black/10 bg-linear-to-br from-white/70 via-gray-100/60 to-white/80 backdrop-blur-xl"
+            style={{ transform: `translate(${mouse.x * 4}px, ${mouse.y * 3}px)` }}
           >
-            <div className="absolute inset-0 pointer-events-none opacity-40 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.18),transparent_60%)]"></div>
-            <div className="absolute inset-0 pointer-events-none opacity-30 bg-[linear-gradient(to_bottom,transparent,rgba(0,0,0,0.4))]"></div>
+            <div className="absolute inset-0 pointer-events-none opacity-30 bg-[radial-gradient(circle_at_top,rgba(0,0,0,0.12),transparent_60%)]"></div>
+            <div className="absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(to_bottom,transparent,rgba(0,0,0,0.15))]"></div>
 
             <AnimatePresence mode="wait">
               <motion.img
@@ -182,17 +154,16 @@ export default function Landing() {
           </div>
         </motion.div>
 
-        {/* FEATURES + FOOTER */}
         <FeatureCards />
         <Footer />
 
-        {/* AUTH MODAL */}
-        {authModal === 'signin' && (
+        {authModal === "signin" && (
           <div className="signup-modal fixed inset-0 z-99999">
             <SignIn onClose={closeAuth} onSwitchToSignUp={switchToSignUp} />
           </div>
         )}
-        {authModal === 'signup' && (
+
+        {authModal === "signup" && (
           <div className="signup-modal fixed inset-0 z-99999">
             <SignUp onClose={closeAuth} onSwitchToSignIn={switchToSignIn} />
           </div>

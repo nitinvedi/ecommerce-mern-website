@@ -1,7 +1,12 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Search, Filter, ShoppingCart, Star, Package } from "lucide-react";
+import {
+  Search,
+  SlidersHorizontal,
+  ShoppingCart,
+  Package
+} from "lucide-react";
 
 import { api, API_ENDPOINTS } from "../config/api.js";
 import { useCart } from "../context/CartContext.jsx";
@@ -13,83 +18,51 @@ export default function Home() {
   const { addToCart } = useCart();
   const toast = useToast();
 
-  const [products, setProducts] = useState([]); // ALWAYS ARRAY
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [priceFilter, setPriceFilter] = useState("all");
+  const [category, setCategory] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
 
   useEffect(() => {
     fetchProducts();
   }, []);
 
-  /* =========================
-     FETCH PRODUCTS (FIXED)
-  ========================= */
   const fetchProducts = async () => {
     try {
-      const response = await api.get(API_ENDPOINTS.PRODUCTS.BASE);
-
-      // ✅ Handle paginated backend safely
+      const res = await api.get(API_ENDPOINTS.PRODUCTS.BASE);
       const items =
-        response?.data?.data?.items ??
-        response?.data?.items ??
-        response?.data?.products ??
+        res?.data?.data?.items ??
+        res?.data?.items ??
+        res?.data?.products ??
         [];
-
       setProducts(Array.isArray(items) ? items : []);
-    } catch (error) {
-      console.error("Error fetching products:", error);
+    } catch {
       toast.error("Failed to load products");
-      setProducts([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAddToCart = (product) => {
-    addToCart(product, 1);
-    toast.success(`${product.name} added to cart!`);
-  };
-
-  /* =========================
-     FILTER + SORT (SAFE)
-  ========================= */
   const filteredProducts = useMemo(() => {
     return products
-      .filter((product) => {
-        const matchesSearch =
-          product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          product.description?.toLowerCase().includes(searchTerm.toLowerCase());
+      .filter((p) => {
+        const matchSearch =
+          p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          p.description?.toLowerCase().includes(searchTerm.toLowerCase());
 
-        const matchesCategory =
-          categoryFilter === "all" || product.category === categoryFilter;
+        const matchCategory =
+          category === "all" || p.category === category;
 
-        const matchesPrice =
-          priceFilter === "all" ||
-          (priceFilter === "low" && product.price < 10000) ||
-          (priceFilter === "medium" &&
-            product.price >= 10000 &&
-            product.price < 50000) ||
-          (priceFilter === "high" && product.price >= 50000);
-
-        return matchesSearch && matchesCategory && matchesPrice;
+        return matchSearch && matchCategory;
       })
       .sort((a, b) => {
-        switch (sortBy) {
-          case "price-low":
-            return a.price - b.price;
-          case "price-high":
-            return b.price - a.price;
-          case "rating":
-            return (b.rating || 0) - (a.rating || 0);
-          default:
-            return new Date(b.createdAt) - new Date(a.createdAt);
-        }
+        if (sortBy === "price-low") return a.price - b.price;
+        if (sortBy === "price-high") return b.price - a.price;
+        return new Date(b.createdAt) - new Date(a.createdAt);
       });
-  }, [products, searchTerm, categoryFilter, priceFilter, sortBy]);
+  }, [products, searchTerm, category, sortBy]);
 
   const categories = [
     "all",
@@ -97,94 +70,108 @@ export default function Home() {
     "Tablet",
     "Laptop",
     "Accessories",
-    "Parts",
-    "Other",
+    "Parts"
   ];
 
-  /* =========================
-     LOADING STATE
-  ========================= */
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center">
-        <div className="text-white text-xl">Loading products...</div>
+      <div className="min-h-screen flex items-center justify-center bg-[#f9fafb]">
+        <p className="text-gray-500">Loading products…</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-[#f9fafb]">
       <Navbar />
 
-      <div className="container mx-auto px-4 py-8 pt-24">
-        <h1 className="text-4xl font-bold text-white mb-2">Our Products</h1>
-        <p className="text-slate-400 mb-8">
-          Browse our collection of devices and accessories
-        </p>
+      <div className="max-w-7xl mx-auto px-6 pt-28 pb-16">
 
-        {/* SEARCH */}
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-          <input
-            type="text"
-            placeholder="Search products..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white"
-          />
+        {/* ================= Header ================= */}
+        <div className="mb-10">
+          <h1 className="text-4xl font-semibold text-gray-900">
+            Products
+          </h1>
+          <p className="text-gray-500 mt-1">
+            Devices, parts, and accessories you can trust
+          </p>
         </div>
 
-        {/* FILTERS */}
-        <div className="flex flex-wrap gap-4 mb-8">
-          <Filter className="text-slate-400" />
+        {/* ================= Filters ================= */}
+        <div className="flex flex-col md:flex-row md:items-center gap-4 mb-10">
 
+          {/* Search */}
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search products…"
+              className="
+                w-full pl-9 pr-4 py-2.5
+                rounded-xl border border-black/10
+                bg-white text-sm
+                focus:outline-none focus:ring-2 focus:ring-black/10
+              "
+            />
+          </div>
+
+          {/* Category */}
           <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="bg-slate-800 border border-slate-700 rounded-lg text-white px-4 py-2"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="
+              px-4 py-2.5 rounded-xl
+              bg-white border border-black/10
+              text-sm text-gray-700
+            "
           >
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
+            {categories.map((c) => (
+              <option key={c} value={c}>
+                {c}
               </option>
             ))}
           </select>
 
-          <select
-            value={priceFilter}
-            onChange={(e) => setPriceFilter(e.target.value)}
-            className="bg-slate-800 border border-slate-700 rounded-lg text-white px-4 py-2"
-          >
-            <option value="all">All Prices</option>
-            <option value="low">Under ₹10,000</option>
-            <option value="medium">₹10,000 - ₹50,000</option>
-            <option value="high">Above ₹50,000</option>
-          </select>
-
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="bg-slate-800 border border-slate-700 rounded-lg text-white px-4 py-2"
-          >
-            <option value="newest">Newest</option>
-            <option value="price-low">Price: Low → High</option>
-            <option value="price-high">Price: High → Low</option>
-            <option value="rating">Top Rated</option>
-          </select>
+          {/* Sort */}
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal className="w-4 h-4 text-gray-400" />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="
+                px-4 py-2.5 rounded-xl
+                bg-white border border-black/10
+                text-sm text-gray-700
+              "
+            >
+              <option value="newest">Newest</option>
+              <option value="price-low">Price: Low → High</option>
+              <option value="price-high">Price: High → Low</option>
+            </select>
+          </div>
         </div>
 
-        {/* PRODUCTS GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {filteredProducts.map((product, index) => (
+        {/* ================= Products ================= */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {filteredProducts.map((product, i) => (
             <motion.div
               key={product._id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
+              transition={{ duration: 0.3, delay: i * 0.03 }}
+              whileHover={{ y: -4 }}
               onClick={() => navigate(`/product/${product._id}`)}
-              className="bg-slate-800 rounded-lg overflow-hidden cursor-pointer"
+              className="
+                bg-white rounded-2xl
+                border border-black/5
+                shadow-sm hover:shadow-md
+                transition cursor-pointer
+                overflow-hidden
+              "
             >
-              <div className="h-48 bg-slate-700 flex items-center justify-center">
+              {/* Image */}
+              <div className="h-44 bg-gray-100 flex items-center justify-center">
                 {product.images?.length ? (
                   <img
                     src={
@@ -192,34 +179,45 @@ export default function Home() {
                         ? product.images[0]
                         : `http://localhost:5000${product.images[0]}`
                     }
-                    className="w-full h-full object-cover"
                     alt={product.name}
+                    className="w-full h-full object-cover"
                   />
                 ) : (
-                  <Package className="text-slate-500 w-16 h-16" />
+                  <Package className="w-10 h-10 text-gray-400" />
                 )}
               </div>
 
+              {/* Content */}
               <div className="p-4">
-                <h3 className="text-white font-bold">{product.name}</h3>
-                <p className="text-slate-400 text-sm line-clamp-2">
+                <h3 className="text-gray-900 font-medium text-sm">
+                  {product.name}
+                </h3>
+
+                <p className="text-gray-500 text-xs mt-1 line-clamp-2">
                   {product.description}
                 </p>
 
-                <div className="flex justify-between items-center mt-3">
-                  <span className="text-white font-bold">
+                <div className="flex items-center justify-between mt-4">
+                  <span className="text-gray-900 font-semibold text-sm">
                     ₹{product.price?.toLocaleString()}
                   </span>
 
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleAddToCart(product);
+                      addToCart(product, 1);
+                      toast.success("Added to cart");
                     }}
                     disabled={!product.isActive}
-                    className="bg-blue-500 px-3 py-1 rounded text-white disabled:opacity-50"
+                    className="
+                      p-2 rounded-lg
+                      bg-black text-white
+                      hover:bg-gray-900
+                      disabled:opacity-40
+                      transition
+                    "
                   >
-                    <ShoppingCart size={16} />
+                    <ShoppingCart size={14} />
                   </button>
                 </div>
               </div>
@@ -227,8 +225,9 @@ export default function Home() {
           ))}
         </div>
 
+        {/* Empty */}
         {filteredProducts.length === 0 && (
-          <p className="text-center text-slate-400 mt-12">
+          <p className="text-center text-gray-500 mt-16">
             No products found
           </p>
         )}

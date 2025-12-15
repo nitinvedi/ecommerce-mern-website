@@ -1,71 +1,83 @@
 import { motion } from "framer-motion";
-
+import { Link } from "react-router-dom";
 export default function Footer() {
   const fadeUp = (delay = 0) => ({
-    initial: { opacity: 0, y: 50 },
+    initial: { opacity: 0, y: 24 },
     whileInView: { opacity: 1, y: 0 },
-    transition: { duration: 0.7, ease: "easeOut", delay },
-    viewport: { once: true, amount: 0.2 }
+    transition: { duration: 0.5, ease: "easeOut", delay },
+    viewport: { once: true, amount: 0.25 }
   });
 
   return (
-    <section
-      className="relative w-full min-h-[95vh] flex flex-col items-center justify-between 
-      text-center bg-black/30 py-10 px-6 md:px-10 overflow-hidden"
-    >
+    <section className="relative w-full bg-transparent py-24 px-6 md:px-10">
+
       {/* Top Content */}
-      <div className="flex flex-col items-center max-w-3xl">
+      <div className="max-w-4xl mx-auto text-center">
 
         {/* Heading */}
-        <motion.h1
+        <motion.h2
           {...fadeUp(0)}
-          className="text-white text-3xl sm:text-4xl md:text-5xl font-bold leading-tight"
+          className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 leading-tight"
         >
-          Fast Repairs & Quality Mobile Accessories
-        </motion.h1>
+          Repairs & Accessories, Done Right
+        </motion.h2>
 
         {/* Subtext */}
         <motion.p
-          {...fadeUp(0.2)}
-          className="text-gray-300 mt-3 text-base sm:text-lg md:text-xl leading-relaxed px-1"
+          {...fadeUp(0.1)}
+          className="mt-4 text-base sm:text-lg text-gray-600 leading-relaxed"
         >
-          Trusted mobile repair services, genuine spare parts, and premium accessories —
-          all in one place. <br className="hidden sm:block" />
-          Experience speed, reliability, and quality with Marammat.
+          Trusted mobile repair services, genuine spare parts, and premium
+          accessories — all in one place.
         </motion.p>
 
-        {/* Button */}
-        <motion.div {...fadeUp(0.4)} className="flex justify-center mt-16">
-          <button className="relative overflow-hidden bg-white/90 text-black px-6 py-2.5 
-          rounded-md text-lg font-semibold shadow-md hover:shadow-xl transition-all duration-300 hover:bg-white cursor-pointer">
-            Join Now
+        {/* CTA */}
+        <motion.div {...fadeUp(0.2)} className="mt-10">
+          <button
+            className="
+              inline-flex items-center justify-center
+              rounded-xl bg-black text-white
+              px-7 py-3 text-sm font-medium
+              hover:bg-gray-900 transition
+            "
+          >
+            Get Started
           </button>
         </motion.div>
       </div>
 
-      {/* Footer Bottom */}
-      <div className="w-full flex flex-col md:flex-row items-center justify-between px-2 md:px-10 gap-4">
+      {/* Divider */}
+      <div className="max-w-6xl mx-auto mt-20 border-t border-black/10" />
 
-        {/* Footer Links */}
+      {/* Bottom Bar */}
+      <div className="max-w-6xl mx-auto mt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+
+        {/* Links */}
+        {/* Links */}
         <motion.div
-          {...fadeUp(0.6)}
-          className="flex flex-wrap justify-center md:justify-start gap-3 text-gray-400 text-sm"
+          {...fadeUp(0.3)}
+          className="flex flex-wrap justify-center md:justify-start gap-4 text-sm text-gray-500"
         >
-          {["Report an Issue", "Privacy Policy", "Terms of Service", "Credit for Icons"].map(
-            (item) => (
-              <a key={item} href="#" className="hover:text-white transition duration-200">
-                {item}
-              </a>
-            )
-          )}
+          {[
+            { label: "FAQ", path: "/faq" },
+            { label: "Contact", path: "/repair" }
+          ].map(({ label, path }) => (
+            <Link
+              key={label}
+              to={path}
+              className="hover:text-gray-900 transition-colors"
+            >
+              {label}
+            </Link>
+          ))}
         </motion.div>
 
-        {/* Branding */}
+        {/* Copyright */}
         <motion.span
-          {...fadeUp(0.8)}
-          className="text-white/70 text-sm tracking-wide"
+          {...fadeUp(0.4)}
+          className="text-sm text-gray-500"
         >
-          Marammat © {new Date().getFullYear()}
+          © {new Date().getFullYear()} Marammat
         </motion.span>
       </div>
     </section>

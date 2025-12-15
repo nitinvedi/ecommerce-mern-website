@@ -7,13 +7,13 @@
   /* Light theme grid (black lines) */
   background-image:
     linear-gradient(
-      rgba(0, 0, 0, 0.433) 1px,
-      transparent 0.4px
+      rgba(186, 186, 186, 0.433) 0.5px,
+      transparent 0.2px
     ),
     linear-gradient(
       90deg,
-      rgba(0, 0, 0, 0.501) 1px,
-      transparent 0.4px
+      rgba(180, 180, 180, 0.501) 0.5px,
+      transparent 0.2px
     );
 
   background-size: 55px 50px;
@@ -27,8 +27,8 @@
   inset: 0;
 
   background: rgba(255, 255, 255, 0.6);
-  -webkit-backdrop-filter: blur(1px);
-  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(0.2px);
+  backdrop-filter: blur(1.5px);
 
   z-index: 0;
 }

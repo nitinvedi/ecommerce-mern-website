@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Wrench, Clock, CheckCircle2 } from "lucide-react";
+import { Wrench, Clock, CheckCircle2, PackagePlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import useAuth from "../../hooks/useAuth";
@@ -45,27 +45,36 @@ export default function TechnicianDashboard() {
           />
         </section>
 
-        {/* Primary CTA */}
+        {/* Primary CTAs */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl bg-white border border-black/5 p-6 flex items-center justify-between"
+          className="rounded-2xl bg-white border border-black/5 p-6 flex flex-col md:flex-row gap-4 md:items-center md:justify-between"
         >
-          <div>
+          <div className="space-y-2">
             <h2 className="text-lg font-medium text-gray-900">
-              Repair Queue
+              Workbench
             </h2>
             <p className="text-sm text-gray-500">
-              View and update assigned devices
+              Jump into your repair queue or manage products you use
             </p>
           </div>
 
-          <button
-            onClick={() => navigate("/technician/jobs")}
-            className="rounded-xl bg-black px-5 py-2.5 text-sm text-white hover:bg-gray-900 transition"
-          >
-            View Jobs →
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() => navigate("/technician/jobs")}
+              className="rounded-xl bg-black px-5 py-2.5 text-sm text-white hover:bg-gray-900 transition"
+            >
+              View Jobs →
+            </button>
+            <button
+              onClick={() => navigate("/technician/products")}
+              className="inline-flex items-center gap-2 rounded-xl border border-black/10 px-4 py-2.5 text-sm text-gray-800 hover:bg-black/5 transition"
+            >
+              <PackagePlus size={16} />
+              Manage Products
+            </button>
+          </div>
         </motion.div>
       </main>
     </div>

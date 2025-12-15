@@ -25,6 +25,7 @@ import ManageRepairs from "./pages/admin/ManageRepairs";
 import TechnicianDashboard from "./pages/technician/TechnicianDashboard";
 import TechnicianJobs from "./pages/technician/TechnicianJobs";
 import TechnicianProfile from "./pages/technician/TechnicianProfile";
+import TechnicianProducts from "./pages/technician/TechnicianProducts";
 
 // ROUTE GUARDS
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -130,6 +131,14 @@ export default function App() {
         element={
           <TechnicianRoute>
             <TechnicianProfile />
+          </TechnicianRoute>
+        }
+      />
+      <Route
+        path="/technician/products"
+        element={
+          <TechnicianRoute>
+            <TechnicianProducts />
           </TechnicianRoute>
         }
       />

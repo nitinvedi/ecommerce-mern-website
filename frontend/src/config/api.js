@@ -42,12 +42,19 @@ export const API_ENDPOINTS = {
     BY_ID: (id) => `${API_BASE_URL}/users/${id}`,
   },
   // Admin
+  // Admin
   ADMIN: {
     DASHBOARD_STATS: `${API_BASE_URL}/admin/dashboard/stats`,
     DASHBOARD_ACTIVITIES: `${API_BASE_URL}/admin/dashboard/activities`,
     ORDER_STATUS: (id) => `${API_BASE_URL}/admin/orders/${id}/status`,
-    ASSIGN_TECHNICIAN: (repairId) => `${API_BASE_URL}/admin/repairs/${repairId}/assign-technician`,
+    ASSIGN_TECHNICIAN: (repairId) =>
+      `${API_BASE_URL}/admin/repairs/${repairId}/assign-technician`,
+
+    // ✅ ADD THESE 👇
+    USERS: `${API_BASE_URL}/admin/users`,
+    USER_BY_ID: (id) => `${API_BASE_URL}/admin/users/${id}`,
   },
+
 };
 
 // Get auth token from localStorage
@@ -68,7 +75,7 @@ export const removeAuthToken = () => {
 // API request helper
 export const apiRequest = async (url, options = {}) => {
   const token = getAuthToken();
-  
+
   const headers = {
     'Content-Type': 'application/json',
     ...options.headers,
@@ -122,7 +129,7 @@ export const api = {
 // File upload helper
 export const uploadFile = async (url, formData, options = {}) => {
   const token = getAuthToken();
-  
+
   const headers = {
     ...options.headers,
   };

@@ -4,23 +4,26 @@ import {
   getDashboardStats,
   getRecentActivities,
   updateOrderStatus,
-  assignTechnician
+  assignTechnician,
+  getAllUsers
 } from "../controllers/adminController.js";
 
 const router = express.Router();
 
-// All admin routes require authentication
+// All admin routes require admin access
 router.use(protectAdmin);
 
 // Dashboard
 router.get("/dashboard/stats", getDashboardStats);
 router.get("/dashboard/activities", getRecentActivities);
 
-// Order management
+// Users
+router.get("/users", getAllUsers);
+
+// Orders
 router.put("/orders/:id/status", updateOrderStatus);
 
-// Repair management
+// Repairs
 router.post("/repairs/:repairId/assign-technician", assignTechnician);
 
 export default router;
-

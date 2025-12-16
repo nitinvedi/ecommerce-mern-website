@@ -124,3 +124,13 @@ export const assignTechnician = asyncHandler(async (req, res) => {
   return sendSuccess(res, "Technician assigned successfully", updatedRepair);
 });
 
+// Get all users (admin)
+export const getAllUsers = asyncHandler(async (req, res) => {
+  const users = await UserModel.getAllUsers();
+
+  if (!users || users.length === 0) {
+    return sendSuccess(res, "No users found", []);
+  }
+
+  return sendSuccess(res, "Users retrieved successfully", users);
+});

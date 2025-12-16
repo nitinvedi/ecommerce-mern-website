@@ -47,7 +47,7 @@ export default function ManageUsers() {
 
   const fetchUsers = async () => {
     try {
-      const res = await api.get(API_ENDPOINTS.USERS.BASE);
+      const res = await api.get(API_ENDPOINTS.ADMIN.USERS);
 
       // 🔒 SAFE NORMALIZATION
       const items =
@@ -93,7 +93,7 @@ export default function ManageUsers() {
   const saveUser = async () => {
     if (!editing) return;
     try {
-      await api.put(API_ENDPOINTS.USERS.BY_ID(editing._id), form);
+      await api.put(API_ENDPOINTS.ADMIN.USER_BY_ID(editing._id), form);
       toast.success("User updated");
       setEditing(null);
       fetchUsers();

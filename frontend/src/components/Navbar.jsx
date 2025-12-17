@@ -6,7 +6,8 @@ import {
   LayoutDashboard,
   Settings,
   LogOut,
-  ShoppingCart
+  ShoppingCart,
+  Package
 } from "lucide-react";
 import useAuth from "../hooks/useAuth";
 
@@ -60,6 +61,13 @@ function ProfileMenu() {
                 icon={<LayoutDashboard size={16} />}
                 label="Dashboard"
                 onClick={() => navigate("/dashboard")}
+              />
+
+              {/* ✅ My Orders */}
+              <MenuItem
+                icon={<Package size={16} />}
+                label="My Orders"
+                onClick={() => navigate("/orders")}
               />
 
               {user.role === "admin" && (
@@ -192,26 +200,24 @@ export default function Header({ openSignUp }) {
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
-            {[
-              { path: "/home", label: "Store" },
-              { path: "/repair", label: "Repair" }
-            ].map(({ path, label }) => (
-              <Link
-                key={path}
-                to={path}
-                className={`relative after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-full after:bg-gray-900 after:origin-left after:transition-transform after:duration-200 ${isActive(
-                  path
-                )}`}
-              >
-                {label}
-              </Link>
-            ))}
+            {[{ path: "/home", label: "Store" }, { path: "/repair", label: "Repair" }].map(
+              ({ path, label }) => (
+                <Link
+                  key={path}
+                  to={path}
+                  className={`relative after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-full after:bg-gray-900 after:origin-left after:transition-transform after:duration-200 ${isActive(
+                    path
+                  )}`}
+                >
+                  {label}
+                </Link>
+              )
+            )}
           </nav>
 
           {/* Auth + Cart */}
           {user ? (
             <div className="flex items-center gap-4 relative z-[60]">
-              {/* Cart beside profile */}
               <button
                 onClick={() => navigate("/cart")}
                 className="relative text-gray-600 hover:text-gray-900 transition"

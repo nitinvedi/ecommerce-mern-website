@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { User, Mail, Phone, MapPin, Save, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../components/Navbar";
 import useAuth from "../hooks/useAuth";
 import { api, API_ENDPOINTS } from "../config/api";
 import { useToast } from "../context/ToastContext";
@@ -132,8 +131,6 @@ export default function Profile() {
   /* ---------------- UI ---------------- */
   return (
     <div className="min-h-screen bg-[#f9fafb]">
-      <Navbar />
-
       <div className="max-w-4xl mx-auto px-6 pt-28 pb-20">
         {/* Header */}
         <div className="mb-10 flex items-center justify-between">

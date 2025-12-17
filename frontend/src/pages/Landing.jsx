@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import "../styles/landing.css";
-import Navbar from "../components/Navbar";
 import SignIn from "../components/AuthModal.jsx";
 import SignUp from "../components/SignUp";
 import FeatureCards from "../components/FeatureCards";
@@ -53,15 +52,13 @@ export default function Landing() {
     return () => clearInterval(interval);
   }, []);
 
+  const [activeFAQ, setActiveFAQ] = useState(null);
+
   return (
     <>
-      <Navbar openSignUp={openSignIn} />
-
       <div className="landing min-h-screen flex flex-col items-center pt-28">
-
         {/* HERO */}
         <section className="relative flex flex-col items-center justify-center mt-4 md:mt-10 px-6 text-center max-w-5xl">
-
           {/* BADGE */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -97,7 +94,8 @@ export default function Landing() {
             style={{ transform: `translate(${mouse.x * 5}px, ${mouse.y * 4}px)` }}
             className="text-gray-600 text-base sm:text-[10px] md:text-[15px] mt-4 max-w-2xl mx-auto leading-relaxed font-inter"
           >
-            Transfer your broken device to experts—fast, safe, and tracked in real time.
+            Transfer your broken device to experts—fast, safe, and tracked in real
+            time.
           </motion.p>
 
           {/* BUTTONS */}
@@ -111,15 +109,12 @@ export default function Landing() {
           >
             <button
               onClick={openSignUp}
-              className="text-[15px] bg-black text-white font-semibold px-5 py-2 rounded-md text-lg hover:bg-gray-800 transition cursor-pointer"
+              className="text-[15px] bg-black text-white font-semibold px-5 py-2 rounded-md hover:bg-gray-800 transition cursor-pointer"
             >
               Try Now →
             </button>
 
-            <button className="shine-btn relative overflow-hidden flex items-center text-[15px] bg-white/70 backdrop-blur-md text-gray-900 border border-black/15 px-5 py-2 cursor-pointer rounded-md text-lg hover:bg-white transition">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="#000">
-                <path d="M12 4l3 5 5-3-2 10H6L4 6l5 3 3-5z" />
-              </svg>
+            <button className="shine-btn relative overflow-hidden flex items-center text-[15px] bg-white/70 backdrop-blur-md text-gray-900 border border-black/15 px-5 py-2 cursor-pointer rounded-md hover:bg-white transition">
               <span className="mx-1">Become Pro</span>
             </button>
           </motion.div>
@@ -136,9 +131,6 @@ export default function Landing() {
             className="relative w-[600px] h-[360px] sm:w-[750px] sm:h-[450px] md:w-[900px] md:h-[560px] overflow-hidden rounded-3xl shadow-[0_0_40px_-10px_rgba(0,0,0,0.25)] border border-black/10 bg-linear-to-br from-white/70 via-gray-100/60 to-white/80 backdrop-blur-xl"
             style={{ transform: `translate(${mouse.x * 4}px, ${mouse.y * 3}px)` }}
           >
-            <div className="absolute inset-0 pointer-events-none opacity-30 bg-[radial-gradient(circle_at_top,rgba(0,0,0,0.12),transparent_60%)]"></div>
-            <div className="absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(to_bottom,transparent,rgba(0,0,0,0.15))]"></div>
-
             <AnimatePresence mode="wait">
               <motion.img
                 key={index}
@@ -155,6 +147,35 @@ export default function Landing() {
         </motion.div>
 
         <FeatureCards />
+
+        {/* FAQ SECTION */}
+        <section className="w-full max-w-4xl mx-auto px-6 mt-24 mb-20">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            viewport={{ once: true }}
+            className="heading-font text-center text-3xl sm:text-4xl font-bold text-gray-900 mb-10"
+          >
+            Frequently Asked Questions
+          </motion.h2>
+
+          <div className="space-y-4">
+            {FAQ_DATA.map((item, i) => (
+              <FAQItem
+                key={i}
+                question={item.q}
+                answer={item.a}
+                open={activeFAQ === i}
+                onToggle={() =>
+                  setActiveFAQ(activeFAQ === i ? null : i)
+                }
+              />
+            ))}
+          </div>
+
+        </section>
+
         <Footer />
 
         {authModal === "signin" && (
@@ -172,3 +193,79 @@ export default function Landing() {
     </>
   );
 }
+
+/* ================= FAQ ITEM ================= */
+
+function FAQItem({ question, answer, open, onToggle }) {
+  return (
+    <motion.div
+      layout
+      transition={{ layout: { duration: 0.45, ease: "easeInOut" } }}
+      className="bg-white/70 backdrop-blur-md border border-black/10 rounded-xl shadow-sm overflow-hidden"
+    >
+      <motion.button
+        onClick={onToggle}
+        whileHover={{ backgroundColor: "rgba(0,0,0,0.03)" }}
+        whileTap={{ scale: 0.98 }}
+        className="w-full flex justify-between items-center px-6 py-4 text-left"
+      >
+        <span className="font-medium text-gray-900 text-base sm:text-lg">
+          {question}
+        </span>
+
+        <motion.span
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 22 }}
+          className="text-gray-600 text-xl"
+        >
+          ▾
+        </motion.span>
+      </motion.button>
+
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="content"
+            initial={{ opacity: 0, scaleY: 0 }}
+            animate={{ opacity: 1, scaleY: 1 }}
+            exit={{ opacity: 0, scaleY: 0 }}
+            transition={{
+              duration: 0.35,
+              ease: [0.25, 0.1, 0.25, 1],
+            }}
+            style={{ originY: 0 }}
+            className="px-6 pb-4 text-gray-600 text-sm sm:text-base leading-relaxed"
+          >
+            {answer}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+
+/* ================= FAQ DATA ================= */
+
+const FAQ_DATA = [
+  {
+    q: "How does Marammat work?",
+    a: "You book a repair, our technician picks up your device, repairs it, and delivers it back with full tracking.",
+  },
+  {
+    q: "Is my device safe?",
+    a: "Yes. All repairs are handled by verified technicians and are fully trackable and insured.",
+  },
+  {
+    q: "How long does a repair take?",
+    a: "Most repairs are completed within 24–48 hours depending on the device and issue.",
+  },
+  {
+    q: "Do you provide warranty?",
+    a: "Yes, every repair includes a service warranty based on the repair type.",
+  },
+  {
+    q: "Can I track my repair?",
+    a: "You can track your device in real time directly from your dashboard.",
+  },
+];

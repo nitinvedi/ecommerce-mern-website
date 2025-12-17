@@ -59,8 +59,8 @@ export default function Footer() {
           className="flex flex-wrap justify-center md:justify-start gap-4 text-sm text-gray-500"
         >
           {[
-            { label: "FAQ", path: "/faq" },
-            { label: "Contact", path: "/repair" }
+            // { label: "FAQ", path: "/faq" },
+            { label: "Contact", path: "/contact" }
           ].map(({ label, path }) => (
             <Link
               key={label}

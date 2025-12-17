@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Wrench, ArrowRight, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../../components/Navbar";
+
 import useAuth from "../../hooks/useAuth";
 import { api, API_ENDPOINTS } from "../../config/api";
 import { useToast } from "../../context/ToastContext";
@@ -55,7 +55,6 @@ export default function TechnicianJobs() {
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      <Navbar />
 
       <main className="max-w-5xl mx-auto px-6 pt-24 pb-12">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">

@@ -63,7 +63,9 @@ function CheckoutPage() {
 
       toast.success("Order placed successfully");
       clearCart();
-      navigate(`/orders/${res.data._id}`);
+
+      // ✅ CORRECT ACCESS
+      navigate(`/orders/${res.data.data._id}`);
     } catch (err) {
       toast.error("Failed to place order");
     } finally {
@@ -73,17 +75,8 @@ function CheckoutPage() {
 
   if (cartItems.length === 0) {
     return (
-      <div className="min-h-screen bg-neutral-50">
-        <Navbar />
-        <div className="max-w-3xl mx-auto px-6 py-32 text-center">
-          <p className="text-gray-600 mb-6">Your cart is empty</p>
-          <button
-            onClick={() => navigate("/cart")}
-            className="rounded-xl bg-black px-6 py-3 text-white text-sm"
-          >
-            Go to cart
-          </button>
-        </div>
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+        <p>Your cart is empty</p>
       </div>
     );
   }
@@ -93,166 +86,60 @@ function CheckoutPage() {
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-6 py-24">
-        <h1 className="text-3xl font-semibold text-gray-900 mb-10">
-          Checkout
-        </h1>
+        <h1 className="text-3xl font-semibold mb-10">Checkout</h1>
 
-        <form
-          onSubmit={handleSubmit}
-          className="grid grid-cols-1 lg:grid-cols-3 gap-10"
-        >
-          {/* ================= LEFT ================= */}
+        <form onSubmit={handleSubmit} className="grid lg:grid-cols-3 gap-10">
           <div className="lg:col-span-2 space-y-8">
-            {/* Shipping */}
-            <section className="bg-white rounded-2xl border border-black/5 shadow-sm p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                <MapPin size={18} />
-                Shipping address
+            <section className="bg-white p-6 rounded-2xl">
+              <h2 className="flex items-center gap-2 mb-6">
+                <MapPin size={18} /> Shipping address
               </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  label="Full name"
-                  name="fullName"
-                  value={shippingAddress.fullName}
-                  onChange={handleChange}
-                />
-                <Input
-                  label="Phone"
-                  name="phone"
-                  value={shippingAddress.phone}
-                  onChange={handleChange}
-                />
-                <Input
-                  label="Address"
-                  name="address"
-                  value={shippingAddress.address}
-                  onChange={handleChange}
-                  full
-                />
-                <Input
-                  label="City"
-                  name="city"
-                  value={shippingAddress.city}
-                  onChange={handleChange}
-                />
-                <Input
-                  label="State"
-                  name="state"
-                  value={shippingAddress.state}
-                  onChange={handleChange}
-                />
-                <Input
-                  label="ZIP code"
-                  name="zip"
-                  value={shippingAddress.zip}
-                  onChange={handleChange}
-                />
+              <div className="grid md:grid-cols-2 gap-4">
+                {Object.entries(shippingAddress).map(([key, value]) => (
+                  <input
+                    key={key}
+                    name={key}
+                    value={value}
+                    onChange={handleChange}
+                    required
+                    className="rounded-xl border px-4 py-2"
+                  />
+                ))}
               </div>
             </section>
 
-            {/* Payment */}
-            <section className="bg-white rounded-2xl border border-black/5 shadow-sm p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <CreditCard size={18} />
-                Payment method
+            <section className="bg-white p-6 rounded-2xl">
+              <h2 className="flex items-center gap-2 mb-4">
+                <CreditCard size={18} /> Payment
               </h2>
 
-              <div className="space-y-3">
-                {[
-                  "Cash on Delivery",
-                  "UPI",
-                  "Credit Card",
-                  "Debit Card",
-                  "Net Banking"
-                ].map((method) => (
-                  <label
-                    key={method}
-                    className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition ${
-                      paymentMethod === method
-                        ? "border-black bg-black/5"
-                        : "border-black/10 hover:bg-gray-50"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      checked={paymentMethod === method}
-                      onChange={() => setPaymentMethod(method)}
-                    />
-                    <span className="text-sm">{method}</span>
-                  </label>
-                ))}
-              </div>
+              {["Cash on Delivery", "UPI", "Credit Card"].map((m) => (
+                <label key={m} className="block">
+                  <input
+                    type="radio"
+                    checked={paymentMethod === m}
+                    onChange={() => setPaymentMethod(m)}
+                  />{" "}
+                  {m}
+                </label>
+              ))}
             </section>
           </div>
 
-          {/* ================= RIGHT ================= */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-24 bg-white rounded-2xl border border-black/5 shadow-sm p-6">
-              <h3 className="text-lg font-semibold mb-4">Order summary</h3>
+          <div className="bg-white p-6 rounded-2xl">
+            <h3 className="font-semibold mb-4">Order summary</h3>
+            <p>Total: ₹{total}</p>
 
-              <div className="space-y-3 text-sm mb-6">
-                {cartItems.map((item) => (
-                  <div
-                    key={item._id}
-                    className="flex justify-between text-gray-600"
-                  >
-                    <span>
-                      {item.name} × {item.quantity}
-                    </span>
-                    <span>
-                      ₹{(item.price * item.quantity).toLocaleString()}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="border-t border-black/10 pt-4 space-y-2 text-sm">
-                <Row label="Subtotal" value={`₹${subtotal.toLocaleString()}`} />
-                <Row label="GST (18%)" value={`₹${tax.toLocaleString()}`} />
-                <Row
-                  label="Shipping"
-                  value={shipping === 0 ? "Free" : `₹${shipping}`}
-                />
-                <div className="pt-3 border-t border-black/10 flex justify-between text-base font-semibold">
-                  <span>Total</span>
-                  <span>₹{total.toLocaleString()}</span>
-                </div>
-              </div>
-
-              <button
-                disabled={loading}
-                className="mt-6 w-full rounded-xl bg-black px-6 py-4 text-white font-medium disabled:opacity-60"
-              >
-                {loading ? "Placing order..." : "Place order"}
-              </button>
-            </div>
+            <button
+              disabled={loading}
+              className="mt-6 w-full bg-black text-white py-3 rounded-xl"
+            >
+              {loading ? "Placing..." : "Place order"}
+            </button>
           </div>
         </form>
       </div>
-    </div>
-  );
-}
-
-/* ---------- Helpers ---------- */
-function Input({ label, full, ...props }) {
-  return (
-    <div className={full ? "md:col-span-2" : ""}>
-      <label className="block text-sm text-gray-600 mb-1">{label}</label>
-      <input
-        {...props}
-        className="w-full rounded-xl border border-black/10 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/20"
-        required
-      />
-    </div>
-  );
-}
-
-function Row({ label, value }) {
-  return (
-    <div className="flex justify-between text-gray-600">
-      <span>{label}</span>
-      <span>{value}</span>
     </div>
   );
 }

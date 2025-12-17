@@ -129,7 +129,6 @@ export default function Repair() {
 
   return (
     <div className="min-h-screen bg-[#f9fafb]">
-      <Navbar />
 
       <div className="max-w-4xl mx-auto px-6 py-24">
         {/* Progress */}

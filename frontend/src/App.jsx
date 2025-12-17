@@ -1,5 +1,10 @@
+import { useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import "./App.css";
+
+// COMPONENTS
+import Navbar from "./components/Navbar";
+import AuthModal from "./components/AuthModal";
 
 // PAGES
 import Landing from "./pages/Landing";
@@ -13,6 +18,7 @@ import OrderDetail from "./pages/OrderDetail";
 import LiveUpdates from "./pages/LiveUpdates";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
+import MyOrders from "./pages/MyOrders";
 
 // ADMIN
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -21,7 +27,7 @@ import ManageOrders from "./pages/admin/ManageOrders";
 import ManageUsers from "./pages/admin/ManageUsers";
 import ManageRepairs from "./pages/admin/ManageRepairs";
 
-// TECHNICIAN (NEW)
+// TECHNICIAN
 import TechnicianDashboard from "./pages/technician/TechnicianDashboard";
 import TechnicianJobs from "./pages/technician/TechnicianJobs";
 import TechnicianProfile from "./pages/technician/TechnicianProfile";
@@ -36,115 +42,127 @@ import TechnicianRoute from "./components/TechnicianRoute";
 import NotFound from "./pages/NotFound";
 
 export default function App() {
+  const [authOpen, setAuthOpen] = useState(false);
+
   return (
-    <Routes>
-      {/* PUBLIC */}
-      <Route path="/" element={<Landing />} />
-      <Route path="/home" element={<Home />} />
-      <Route path="/product/:id" element={<Product />} />
-      <Route path="/repair" element={<Repair />} />
-      <Route path="/contact" element={<Contact />} />
-      <Route path="/cart" element={<Cart />} />
-      <Route path="/checkout" element={<Checkout />} />
-      <Route path="/orders/:id" element={<OrderDetail />} />
-      <Route path="/status/:id" element={<LiveUpdates />} />
+    <>
+      {/* ✅ GLOBAL NAVBAR */}
+      <Navbar openSignUp={() => setAuthOpen(true)} />
 
-      {/* USER */}
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        }
-      />
+      {/* ✅ GLOBAL AUTH MODAL */}
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
 
-      {/* ADMIN */}
-      <Route
-        path="/admin"
-        element={
-          <AdminRoute>
-            <AdminDashboard />
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/products"
-        element={
-          <AdminRoute>
-            <ManageProducts />
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/orders"
-        element={
-          <AdminRoute>
-            <ManageOrders />
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/users"
-        element={
-          <AdminRoute>
-            <ManageUsers />
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/repairs"
-        element={
-          <AdminRoute>
-            <ManageRepairs />
-          </AdminRoute>
-        }
-      />
+      {/* ROUTES */}
+      <Routes>
+        {/* PUBLIC */}
+        <Route path="/" element={<Landing />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/product/:id" element={<Product />} />
+        <Route path="/repair" element={<Repair />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/orders/:id" element={<OrderDetail />} />
+        <Route path="/status/:id" element={<LiveUpdates />} />
+        <Route path="/orders" element={ <ProtectedRoute> <MyOrders /> </ProtectedRoute>} />
 
-      {/* TECHNICIAN (NEW) */}
-      <Route
-        path="/technician"
-        element={
-          <TechnicianRoute>
-            <TechnicianDashboard />
-          </TechnicianRoute>
-        }
-      />
-      <Route
-        path="/technician/jobs"
-        element={
-          <TechnicianRoute>
-            <TechnicianJobs />
-          </TechnicianRoute>
-        }
-      />
-      <Route
-        path="/technician/profile"
-        element={
-          <TechnicianRoute>
-            <TechnicianProfile />
-          </TechnicianRoute>
-        }
-      />
-      <Route
-        path="/technician/products"
-        element={
-          <TechnicianRoute>
-            <TechnicianProducts />
-          </TechnicianRoute>
-        }
-      />
+        {/* USER */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
 
-      {/* FALLBACK */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+        {/* ADMIN */}
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/products"
+          element={
+            <AdminRoute>
+              <ManageProducts />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/orders"
+          element={
+            <AdminRoute>
+              <ManageOrders />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <AdminRoute>
+              <ManageUsers />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/repairs"
+          element={
+            <AdminRoute>
+              <ManageRepairs />
+            </AdminRoute>
+          }
+        />
+
+        {/* TECHNICIAN */}
+        <Route
+          path="/technician"
+          element={
+            <TechnicianRoute>
+              <TechnicianDashboard />
+            </TechnicianRoute>
+          }
+        />
+        <Route
+          path="/technician/jobs"
+          element={
+            <TechnicianRoute>
+              <TechnicianJobs />
+            </TechnicianRoute>
+          }
+        />
+        <Route
+          path="/technician/profile"
+          element={
+            <TechnicianRoute>
+              <TechnicianProfile />
+            </TechnicianRoute>
+          }
+        />
+        <Route
+          path="/technician/products"
+          element={
+            <TechnicianRoute>
+              <TechnicianProducts />
+            </TechnicianRoute>
+          }
+        />
+
+        {/* FALLBACK */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
   );
 }

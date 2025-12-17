@@ -1,4 +1,3 @@
-import Navbar from "../components/Navbar";
 import AdminSidebar from "../components/admin/AdminSidebar";
 
 export default function AdminLayout({ children }) {
@@ -10,7 +9,6 @@ export default function AdminLayout({ children }) {
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      <Navbar />
 
       {/* below navbar */}
       <div className="flex pt-16">

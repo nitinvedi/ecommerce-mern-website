@@ -4,15 +4,14 @@ import { useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import { api, API_ENDPOINTS, setAuthToken } from "../config/api";
 
-/* Slide animation for content */
 const variants = {
   initial: { opacity: 0, x: 24 },
   animate: { opacity: 1, x: 0 },
   exit: { opacity: 0, x: -24 }
 };
 
-export default function AuthModal({ onClose }) {
-  const [mode, setMode] = useState("signin"); // signin | signup | forgot | reset
+export default function AuthModal({ open, onClose }) {
+  const [mode, setMode] = useState("signin");
   const navigate = useNavigate();
   const { login, register, refreshProfile } = useAuth();
 
@@ -27,23 +26,21 @@ export default function AuthModal({ onClose }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const update = (k, v) => setForm({ ...form, [k]: v });
+  const update = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
   /* ---------- SIGN IN ---------- */
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
-
     try {
       const res = await login({
         email: form.email,
         password: form.password
       });
-
       if (res?.success !== false) {
         onClose();
-        setTimeout(() => navigate("/dashboard"), 250);
+        navigate("/dashboard");
       } else {
         setError("Invalid email or password");
       }
@@ -69,7 +66,7 @@ export default function AuthModal({ onClose }) {
       const res = await register(form);
       if (res?.success !== false) {
         onClose();
-        setTimeout(() => navigate("/dashboard"), 250);
+        navigate("/dashboard");
       } else {
         setError("Registration failed");
       }
@@ -103,308 +100,139 @@ export default function AuthModal({ onClose }) {
   };
 
   return (
-    <div
-      className="fixed inset-0 z-999 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      {/* 🔑 layout='size' + overflow-hidden prevents height jump */}
-      <motion.div
-        layout="size"
-        onClick={(e) => e.stopPropagation()}
-        initial={{ opacity: 0, scale: 0.96 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.96 }}
-        transition={{
-          opacity: { duration: 0.2, ease: "easeOut" },
-          scale: { duration: 0.2, ease: "easeOut" },
-          layout: { duration: 0.35, ease: "easeInOut" }
-        }}
-        className="
-          w-full max-w-md mx-4
-          bg-white/90 backdrop-blur-xl
-          border border-black/10
-          rounded-2xl p-6 shadow-xl
-          overflow-hidden
-        "
-      >
-        {/* Header */}
-        <h2 className="text-2xl font-semibold text-gray-900">
-          {mode === "signin" ? "Welcome back" : "Create your account"}
-        </h2>
-        <p className="text-sm text-gray-600 mt-1">
-          {mode === "signin"
-            ? "Sign in to continue to Marammat"
-            : "Start repairing smarter with Marammat"}
-        </p>
-
-        {/* Error */}
-        {error && (
-          <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">
-            {error}
-          </div>
-        )}
-
-        {/* Forms */}
-        <AnimatePresence mode="wait" initial={false}>
-          {mode === "signin" ? (
-            <motion.form
-              layout
-              key="signin"
-              variants={variants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={{ duration: 0.25, ease: "easeOut" }}
-              className="mt-6 space-y-4"
-              onSubmit={handleLogin}
-            >
-              <input
-                className="w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/10"
-                placeholder="Email"
-                type="email"
-                value={form.email}
-                onChange={(e) => update("email", e.target.value)}
-              />
-
-              <input
-                className="w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/10"
-                placeholder="Password"
-                type="password"
-                value={form.password}
-                onChange={(e) => update("password", e.target.value)}
-              />
-
-              <div className="flex justify-between text-xs text-gray-600">
-                <span />
-                <button
-                  type="button"
-                  className="text-gray-900 font-medium"
-                  onClick={() => setMode("forgot")}
-                >
-                  Forgot password?
-                </button>
-              </div>
-
-              <button
-                disabled={loading}
-                className="w-full rounded-xl bg-black text-white py-2.5 text-sm font-medium hover:bg-gray-900 transition"
-              >
-                {loading ? "Signing in..." : "Sign In"}
-              </button>
-
-              <p className="text-sm text-center text-gray-600">
-                Don’t have an account?
-                <span
-                  className="ml-1 text-gray-900 font-medium cursor-pointer"
-                  onClick={() => setMode("signup")}
-                >
-                  Sign up
-                </span>
-              </p>
-            </motion.form>
-          ) : (
-            <motion.form
-              layout
-              key="signup"
-              variants={variants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={{ duration: 0.25, ease: "easeOut" }}
-              className="mt-6 space-y-4"
-              onSubmit={handleRegister}
-            >
-              <input
-                className="w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm"
-                placeholder="Full name"
-                value={form.name}
-                onChange={(e) => update("name", e.target.value)}
-              />
-
-              <input
-                className="w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm"
-                placeholder="Email"
-                type="email"
-                value={form.email}
-                onChange={(e) => update("email", e.target.value)}
-              />
-
-              <input
-                className="w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm"
-                placeholder="Password"
-                type="password"
-                value={form.password}
-                onChange={(e) => update("password", e.target.value)}
-              />
-
-              <input
-                className="w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm"
-                placeholder="Confirm password"
-                type="password"
-                value={form.confirmPassword}
-                onChange={(e) => update("confirmPassword", e.target.value)}
-              />
-
-              <button
-                disabled={loading}
-                className="w-full rounded-xl bg-black text-white py-2.5 text-sm font-medium hover:bg-gray-900 transition"
-              >
-                {loading ? "Creating account..." : "Create Account"}
-              </button>
-
-              <p className="text-sm text-center text-gray-600">
-                Already have an account?
-                <span
-                  className="ml-1 text-gray-900 font-medium cursor-pointer"
-                  onClick={() => setMode("signin")}
-                >
-                  Sign in
-                </span>
-              </p>
-            </motion.form>
-          )}
-
-          {mode === "forgot" && (
-            <motion.form
-              layout
-              key="forgot"
-              variants={variants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={{ duration: 0.25, ease: "easeOut" }}
-              className="mt-6 space-y-4"
-              onSubmit={async (e) => {
-                e.preventDefault();
-                setError("");
-                setLoading(true);
-                try {
-                  const res = await api.post(API_ENDPOINTS.AUTH.FORGOT, { email: form.email });
-                  setLoading(false);
-                  setError("");
-                  // Show token for testing purposes
-                  const token = res?.data?.resetToken || res?.resetToken || res?.data?.data?.resetToken;
-                  if (token) {
-                    setForm((f) => ({ ...f, resetToken: token }));
-                  }
-                  setMode("reset");
-                } catch (err) {
-                  setLoading(false);
-                  setError(err.message || "Failed to request reset");
-                }
-              }}
-            >
-              <p className="text-sm text-gray-600">
-                Enter your email and we will generate a reset link.
-              </p>
-              <input
-                className="w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm"
-                placeholder="Email"
-                type="email"
-                value={form.email}
-                onChange={(e) => update("email", e.target.value)}
-              />
-              <button
-                disabled={loading}
-                className="w-full rounded-xl bg-black text-white py-2.5 text-sm font-medium hover:bg-gray-900 transition"
-              >
-                {loading ? "Sending..." : "Send reset link"}
-              </button>
-              <p className="text-sm text-center text-gray-600">
-                Remembered it?
-                <span
-                  className="ml-1 text-gray-900 font-medium cursor-pointer"
-                  onClick={() => setMode("signin")}
-                >
-                  Sign in
-                </span>
-              </p>
-            </motion.form>
-          )}
-
-          {mode === "reset" && (
-            <motion.form
-              layout
-              key="reset"
-              variants={variants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={{ duration: 0.25, ease: "easeOut" }}
-              className="mt-6 space-y-4"
-              onSubmit={async (e) => {
-                e.preventDefault();
-                setError("");
-                if (form.password !== form.confirmPassword) {
-                  setError("Passwords do not match");
-                  return;
-                }
-                setLoading(true);
-                try {
-                  await api.post(API_ENDPOINTS.AUTH.RESET, {
-                    token: form.resetToken,
-                    newPassword: form.password
-                  });
-                  setLoading(false);
-                  setMode("signin");
-                  setError("");
-                } catch (err) {
-                  setLoading(false);
-                  setError(err.message || "Reset failed");
-                }
-              }}
-            >
-              <input
-                className="w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm"
-                placeholder="Reset token"
-                value={form.resetToken}
-                onChange={(e) => update("resetToken", e.target.value)}
-              />
-              <input
-                className="w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm"
-                placeholder="New password"
-                type="password"
-                value={form.password}
-                onChange={(e) => update("password", e.target.value)}
-              />
-              <input
-                className="w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm"
-                placeholder="Confirm password"
-                type="password"
-                value={form.confirmPassword}
-                onChange={(e) => update("confirmPassword", e.target.value)}
-              />
-              <button
-                disabled={loading}
-                className="w-full rounded-xl bg-black text-white py-2.5 text-sm font-medium hover:bg-gray-900 transition"
-              >
-                {loading ? "Resetting..." : "Reset password"}
-              </button>
-              <p className="text-sm text-center text-gray-600">
-                Back to
-                <span
-                  className="ml-1 text-gray-900 font-medium cursor-pointer"
-                  onClick={() => setMode("signin")}
-                >
-                  Sign in
-                </span>
-              </p>
-            </motion.form>
-          )}
-        </AnimatePresence>
-
-        {/* Google */}
-        <button
-          onClick={handleGoogleLogin}
-          className="
-            mt-5 w-full rounded-xl border border-black/10
-            py-2.5 text-sm text-gray-700
-            hover:bg-black/5 transition
-          "
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
         >
-          Continue with Google
-        </button>
-      </motion.div>
-    </div>
+          <motion.div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md mx-4 bg-white rounded-2xl p-6 shadow-xl"
+          >
+            <h2 className="text-2xl font-semibold text-gray-900">
+              {mode === "signin"
+                ? "Welcome back"
+                : mode === "signup"
+                ? "Create account"
+                : "Reset password"}
+            </h2>
+
+            {error && (
+              <div className="mt-4 p-3 rounded-lg bg-red-50 text-red-600 text-sm">
+                {error}
+              </div>
+            )}
+
+            <AnimatePresence mode="wait">
+              {/* SIGN IN */}
+              {mode === "signin" && (
+                <motion.form
+                  key="signin"
+                  variants={variants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  onSubmit={handleLogin}
+                  className="mt-6 space-y-4"
+                >
+                  <input
+                    placeholder="Email"
+                    value={form.email}
+                    onChange={(e) => update("email", e.target.value)}
+                    className="w-full border rounded-xl px-4 py-2"
+                  />
+                  <input
+                    placeholder="Password"
+                    type="password"
+                    value={form.password}
+                    onChange={(e) => update("password", e.target.value)}
+                    className="w-full border rounded-xl px-4 py-2"
+                  />
+
+                  <button className="w-full bg-black text-white py-2 rounded-xl">
+                    Sign in
+                  </button>
+
+                  <p className="text-sm text-center">
+                    No account?{" "}
+                    <span
+                      className="font-medium cursor-pointer"
+                      onClick={() => setMode("signup")}
+                    >
+                      Sign up
+                    </span>
+                  </p>
+                </motion.form>
+              )}
+
+              {/* SIGN UP */}
+              {mode === "signup" && (
+                <motion.form
+                  key="signup"
+                  variants={variants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  onSubmit={handleRegister}
+                  className="mt-6 space-y-4"
+                >
+                  <input
+                    placeholder="Full name"
+                    value={form.name}
+                    onChange={(e) => update("name", e.target.value)}
+                    className="w-full border rounded-xl px-4 py-2"
+                  />
+                  <input
+                    placeholder="Email"
+                    value={form.email}
+                    onChange={(e) => update("email", e.target.value)}
+                    className="w-full border rounded-xl px-4 py-2"
+                  />
+                  <input
+                    placeholder="Password"
+                    type="password"
+                    value={form.password}
+                    onChange={(e) => update("password", e.target.value)}
+                    className="w-full border rounded-xl px-4 py-2"
+                  />
+                  <input
+                    placeholder="Confirm password"
+                    type="password"
+                    value={form.confirmPassword}
+                    onChange={(e) => update("confirmPassword", e.target.value)}
+                    className="w-full border rounded-xl px-4 py-2"
+                  />
+
+                  <button className="w-full bg-black text-white py-2 rounded-xl">
+                    Create account
+                  </button>
+
+                  <p className="text-sm text-center">
+                    Already have an account?{" "}
+                    <span
+                      className="font-medium cursor-pointer"
+                      onClick={() => setMode("signin")}
+                    >
+                      Sign in
+                    </span>
+                  </p>
+                </motion.form>
+              )}
+            </AnimatePresence>
+
+            <button
+              onClick={handleGoogleLogin}
+              className="mt-5 w-full border rounded-xl py-2"
+            >
+              Continue with Google
+            </button>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

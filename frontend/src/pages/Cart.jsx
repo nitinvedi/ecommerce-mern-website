@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ShoppingCart, Plus, Minus, Trash2, ArrowRight } from "lucide-react";
 import { useCart } from "../context/CartContext.jsx";
-import Navbar from "../components/Navbar.jsx";
 
 export default function Cart() {
   const navigate = useNavigate();
@@ -26,7 +25,6 @@ export default function Cart() {
   if (cartItems.length === 0) {
     return (
       <div className="min-h-screen bg-neutral-50">
-        <Navbar />
 
         <div className="max-w-3xl mx-auto px-6 py-32 text-center">
           <ShoppingCart className="mx-auto mb-6 text-gray-300" size={72} />
@@ -51,7 +49,7 @@ export default function Cart() {
   /* ---------- Cart ---------- */
   return (
     <div className="min-h-screen bg-neutral-50">
-      <Navbar />
+
 
       <div className="max-w-7xl mx-auto px-6 py-24">
         <h1 className="text-3xl font-semibold text-gray-900 mb-10">

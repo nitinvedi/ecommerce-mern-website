@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, Phone } from "lucide-react";
 import { useToast } from "../context/ToastContext.jsx";
-import Navbar from "../components/Navbar.jsx";
 import { api, API_ENDPOINTS } from "../config/api.js";
 
 export default function Contact() {
@@ -45,8 +44,6 @@ export default function Contact() {
 
   return (
     <div className="min-h-screen bg-[#f9fafb]">
-      <Navbar />
-
       <div className="max-w-7xl mx-auto px-6 pt-32 pb-24">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
 
@@ -61,7 +58,7 @@ export default function Contact() {
             </h1>
 
             <p className="mt-6 text-lg text-gray-500 max-w-md">
-              Questions about repairs, parts, or partnerships?  
+              Questions about repairs, parts, or partnerships?
               Our team usually replies within a few hours.
             </p>
 
@@ -89,7 +86,6 @@ export default function Contact() {
             className="bg-white rounded-2xl border border-black/5 p-8"
           >
             <form onSubmit={handleSubmit} className="space-y-6">
-
               <div>
                 <label className="text-xs text-gray-500">Your name</label>
                 <input

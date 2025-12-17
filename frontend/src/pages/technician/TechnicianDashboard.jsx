@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Wrench, Clock, CheckCircle2, PackagePlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../../components/Navbar";
 import useAuth from "../../hooks/useAuth";
 import { api, API_ENDPOINTS } from "../../config/api";
 import { useToast } from "../../context/ToastContext";
@@ -51,7 +50,6 @@ export default function TechnicianDashboard() {
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      <Navbar />
 
       <main className="max-w-5xl mx-auto px-6 pt-24 pb-12 space-y-8">
         {/* Header */}

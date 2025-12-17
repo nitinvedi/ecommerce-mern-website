@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { api, API_ENDPOINTS, uploadForm } from "../../config/api";
 import useAuth from "../../hooks/useAuth";
-import Navbar from "../../components/Navbar";
+
 import { useToast } from "../../context/ToastContext";
 
 const input =
@@ -146,8 +146,6 @@ export default function TechnicianProducts() {
 
   return (
     <div className="min-h-screen bg-[#f9fafb]">
-      <Navbar />
-
       <div className="max-w-6xl mx-auto px-6 pt-28 pb-16">
         <div className="flex items-center justify-between mb-8">
           <div>

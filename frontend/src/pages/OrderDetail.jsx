@@ -1,18 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Package, Truck, CheckCircle2, Clock, XCircle, ArrowLeft } from 'lucide-react';
-import { api, API_ENDPOINTS } from '../config/api.js';
-import useAuth from '../hooks/useAuth.js';
-import { useToast } from '../context/ToastContext.jsx';
-import Navbar from '../components/Navbar.jsx';
-import ProtectedRoute from '../components/ProtectedRoute.jsx';
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  Package,
+  Truck,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  ArrowLeft
+} from "lucide-react";
+import { api, API_ENDPOINTS } from "../config/api.js";
+import { useToast } from "../context/ToastContext.jsx";
+import Navbar from "../components/Navbar.jsx";
+import ProtectedRoute from "../components/ProtectedRoute.jsx";
 
 function OrderDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const toast = useToast();
+
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -22,183 +27,221 @@ function OrderDetailPage() {
 
   const fetchOrder = async () => {
     try {
-      const response = await api.get(API_ENDPOINTS.ORDERS.BY_ID(id));
-      setOrder(response.data);
-    } catch (error) {
-      console.error('Error fetching order:', error);
-      toast.error('Failed to load order details');
+      const res = await api.get(API_ENDPOINTS.ORDERS.BY_ID(id));
+      setOrder(res.data);
+    } catch (err) {
+      toast.error("Failed to load order");
     } finally {
       setLoading(false);
     }
   };
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'Delivered':
-        return <CheckCircle2 className="w-5 h-5 text-green-400" />;
-      case 'Cancelled':
-        return <XCircle className="w-5 h-5 text-red-400" />;
-      case 'Shipped':
-        return <Truck className="w-5 h-5 text-blue-400" />;
-      default:
-        return <Clock className="w-5 h-5 text-yellow-400" />;
-    }
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Delivered':
-        return 'bg-green-500/20 text-green-400';
-      case 'Cancelled':
-        return 'bg-red-500/20 text-red-400';
-      case 'Pending':
-        return 'bg-yellow-500/20 text-yellow-400';
-      case 'Processing':
-        return 'bg-blue-500/20 text-blue-400';
-      case 'Shipped':
-        return 'bg-purple-500/20 text-purple-400';
-      default:
-        return 'bg-gray-500/20 text-gray-400';
+  const statusMeta = {
+    Delivered: {
+      icon: <CheckCircle2 className="text-green-600" size={18} />,
+      badge: "bg-green-50 text-green-700"
+    },
+    Shipped: {
+      icon: <Truck className="text-blue-600" size={18} />,
+      badge: "bg-blue-50 text-blue-700"
+    },
+    Processing: {
+      icon: <Clock className="text-yellow-600" size={18} />,
+      badge: "bg-yellow-50 text-yellow-700"
+    },
+    Pending: {
+      icon: <Clock className="text-yellow-600" size={18} />,
+      badge: "bg-yellow-50 text-yellow-700"
+    },
+    Cancelled: {
+      icon: <XCircle className="text-red-600" size={18} />,
+      badge: "bg-red-50 text-red-700"
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center">
-        <div className="text-white text-xl">Loading order...</div>
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+        <p className="text-gray-600">Loading order…</p>
       </div>
     );
   }
 
   if (!order) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center">
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-white text-xl mb-4">Order not found</p>
+          <p className="text-gray-700 mb-4">Order not found</p>
           <button
-            onClick={() => navigate('/dashboard')}
-            className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg"
+            onClick={() => navigate("/dashboard")}
+            className="rounded-xl bg-black px-6 py-3 text-white text-sm"
           >
-            Back to Dashboard
+            Back to dashboard
           </button>
         </div>
       </div>
     );
   }
 
+  const meta = statusMeta[order.status] || statusMeta.Pending;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-neutral-50">
       <Navbar />
-      
-      <div className="container mx-auto px-4 py-8 pt-24">
+
+      <div className="max-w-7xl mx-auto px-6 py-24">
+        {/* Back */}
         <button
-          onClick={() => navigate('/dashboard')}
-          className="mb-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
+          onClick={() => navigate("/dashboard")}
+          className="mb-8 flex items-center gap-2 text-sm text-gray-600 hover:text-black"
         >
-          <ArrowLeft className="w-5 h-5" />
-          Back to Dashboard
+          <ArrowLeft size={16} />
+          Back to dashboard
         </button>
 
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Order Details</h1>
-          <p className="text-slate-400">Order ID: #{order._id?.slice(-6)}</p>
+        {/* Header */}
+        <div className="mb-10">
+          <h1 className="text-3xl font-semibold text-gray-900">
+            Order #{order._id.slice(-6)}
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Placed on {new Date(order.createdAt).toLocaleDateString()}
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Order Items */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-slate-800 rounded-lg p-6">
-              <h2 className="text-xl font-bold text-white mb-4">Order Items</h2>
-              <div className="space-y-4">
-                {order.orderItems?.map((item, index) => (
-                  <div key={index} className="flex gap-4 pb-4 border-b border-slate-700 last:border-0">
-                    <div className="w-20 h-20 bg-slate-700 rounded-lg overflow-hidden flex-shrink-0">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          {/* LEFT */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Items */}
+            <section className="bg-white rounded-2xl border border-black/5 shadow-sm p-6">
+              <h2 className="text-lg font-semibold mb-6">Items</h2>
+
+              <div className="space-y-5">
+                {order.orderItems.map((item, i) => (
+                  <div
+                    key={i}
+                    className="flex gap-4 pb-5 border-b border-black/5 last:border-0"
+                  >
+                    <div className="w-20 h-20 rounded-xl bg-gray-100 flex items-center justify-center">
                       {item.image ? (
                         <img
-                          src={item.image.startsWith('http') ? item.image : `http://localhost:5000${item.image}`}
+                          src={
+                            item.image.startsWith("http")
+                              ? item.image
+                              : `http://localhost:5000${item.image}`
+                          }
                           alt={item.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover rounded-xl"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Package className="w-8 h-8 text-slate-500" />
-                        </div>
+                        <Package className="text-gray-400" />
                       )}
                     </div>
+
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-white mb-1">{item.name}</h3>
-                      <p className="text-slate-400 text-sm">Quantity: {item.quantity}</p>
-                      <p className="text-white font-semibold mt-2">₹{(item.price * item.quantity).toLocaleString()}</p>
+                      <p className="font-medium text-gray-900">
+                        {item.name}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Quantity: {item.quantity}
+                      </p>
                     </div>
+
+                    <p className="font-semibold text-gray-900">
+                      ₹{(item.price * item.quantity).toLocaleString()}
+                    </p>
                   </div>
                 ))}
               </div>
-            </div>
+            </section>
 
-            {/* Shipping Address */}
-            <div className="bg-slate-800 rounded-lg p-6">
-              <h2 className="text-xl font-bold text-white mb-4">Shipping Address</h2>
-              <div className="text-slate-300 space-y-1">
-                <p>{order.shippingAddress?.fullName}</p>
-                <p>{order.shippingAddress?.address}</p>
-                <p>{order.shippingAddress?.city}, {order.shippingAddress?.state} - {order.shippingAddress?.zip}</p>
-                <p>Phone: {order.shippingAddress?.phone}</p>
+            {/* Shipping */}
+            <section className="bg-white rounded-2xl border border-black/5 shadow-sm p-6">
+              <h2 className="text-lg font-semibold mb-4">
+                Shipping address
+              </h2>
+
+              <div className="text-sm text-gray-700 space-y-1">
+                <p>{order.shippingAddress.fullName}</p>
+                <p>{order.shippingAddress.address}</p>
+                <p>
+                  {order.shippingAddress.city},{" "}
+                  {order.shippingAddress.state} –{" "}
+                  {order.shippingAddress.zip}
+                </p>
+                <p>Phone: {order.shippingAddress.phone}</p>
               </div>
-            </div>
+            </section>
           </div>
 
-          {/* Order Summary */}
-          <div className="lg:col-span-1">
-            <div className="bg-slate-800 rounded-lg p-6 sticky top-24">
-              <h2 className="text-xl font-bold text-white mb-4">Order Summary</h2>
-              
-              <div className="mb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  {getStatusIcon(order.status)}
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
-                    {order.status}
+          {/* RIGHT */}
+          <div>
+            <div className="sticky top-24 bg-white rounded-2xl border border-black/5 shadow-sm p-6">
+              <h3 className="text-lg font-semibold mb-4">
+                Order summary
+              </h3>
+
+              {/* Status */}
+              <div className="flex items-center gap-2 mb-4">
+                {meta.icon}
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-medium ${meta.badge}`}
+                >
+                  {order.status}
+                </span>
+              </div>
+
+              {/* Prices */}
+              <div className="space-y-2 text-sm border-t border-black/10 pt-4">
+                <Row
+                  label="Items"
+                  value={`₹${order.itemsPrice.toLocaleString()}`}
+                />
+                <Row
+                  label="Tax"
+                  value={`₹${order.taxPrice.toLocaleString()}`}
+                />
+                <Row
+                  label="Shipping"
+                  value={`₹${order.shippingPrice.toLocaleString()}`}
+                />
+
+                <div className="pt-3 border-t border-black/10 flex justify-between font-semibold">
+                  <span>Total</span>
+                  <span>
+                    ₹{order.totalPrice.toLocaleString()}
                   </span>
                 </div>
-                <p className="text-slate-400 text-sm">
-                  Placed on {new Date(order.createdAt).toLocaleDateString()}
-                </p>
-                {order.deliveredAt && (
-                  <p className="text-slate-400 text-sm mt-1">
-                    Delivered on {new Date(order.deliveredAt).toLocaleDateString()}
-                  </p>
-                )}
               </div>
 
-              <div className="border-t border-slate-700 pt-4 space-y-2 mb-4">
-                <div className="flex justify-between text-slate-300">
-                  <span>Items Price</span>
-                  <span>₹{order.itemsPrice?.toLocaleString() || 0}</span>
-                </div>
-                <div className="flex justify-between text-slate-300">
-                  <span>Tax</span>
-                  <span>₹{order.taxPrice?.toLocaleString() || 0}</span>
-                </div>
-                <div className="flex justify-between text-slate-300">
-                  <span>Shipping</span>
-                  <span>₹{order.shippingPrice?.toLocaleString() || 0}</span>
-                </div>
-                <div className="border-t border-slate-700 pt-2 flex justify-between text-white text-xl font-bold">
-                  <span>Total</span>
-                  <span>₹{order.totalPrice?.toLocaleString() || 0}</span>
-                </div>
-              </div>
-
-              <div className="border-t border-slate-700 pt-4">
-                <p className="text-slate-300 mb-2">Payment Method</p>
-                <p className="text-white font-semibold">{order.paymentMethod}</p>
-                <p className={`text-sm mt-2 ${order.isPaid ? 'text-green-400' : 'text-yellow-400'}`}>
-                  {order.isPaid ? 'Paid' : 'Payment Pending'}
+              {/* Payment */}
+              <div className="mt-6 border-t border-black/10 pt-4 text-sm">
+                <p className="text-gray-500 mb-1">Payment method</p>
+                <p className="font-medium">{order.paymentMethod}</p>
+                <p
+                  className={`mt-1 ${
+                    order.isPaid
+                      ? "text-green-600"
+                      : "text-yellow-600"
+                  }`}
+                >
+                  {order.isPaid ? "Paid" : "Payment pending"}
                 </p>
               </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ---------- Helpers ---------- */
+function Row({ label, value }) {
+  return (
+    <div className="flex justify-between text-gray-600">
+      <span>{label}</span>
+      <span>{value}</span>
     </div>
   );
 }
@@ -210,4 +253,3 @@ export default function OrderDetail() {
     </ProtectedRoute>
   );
 }
-

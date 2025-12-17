@@ -1,17 +1,27 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   SlidersHorizontal,
+  X,
   ShoppingCart,
-  Package
+  Package,
+  Sparkles,
+  Layers
 } from "lucide-react";
 
 import { api, API_ENDPOINTS } from "../config/api.js";
 import { useCart } from "../context/CartContext.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import Navbar from "../components/Navbar.jsx";
+
+/* ================= MOTION ================= */
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { opacity: 1, y: 0 }
+};
 
 export default function Home() {
   const navigate = useNavigate();
@@ -21,9 +31,8 @@ export default function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [category, setCategory] = useState("all");
-  const [sortBy, setSortBy] = useState("newest");
 
   useEffect(() => {
     fetchProducts();
@@ -45,192 +54,240 @@ export default function Home() {
     }
   };
 
+  const featuredProducts = products.slice(0, 4);
+  const lineupProducts = products.slice(0, 6);
+
   const filteredProducts = useMemo(() => {
-    return products
-      .filter((p) => {
-        const matchSearch =
-          p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          p.description?.toLowerCase().includes(searchTerm.toLowerCase());
-
-        const matchCategory =
-          category === "all" || p.category === category;
-
-        return matchSearch && matchCategory;
-      })
-      .sort((a, b) => {
-        if (sortBy === "price-low") return a.price - b.price;
-        if (sortBy === "price-high") return b.price - a.price;
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      });
-  }, [products, searchTerm, category, sortBy]);
-
-  const categories = [
-    "all",
-    "Mobile",
-    "Tablet",
-    "Laptop",
-    "Accessories",
-    "Parts"
-  ];
+    return products.filter(
+      (p) =>
+        p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [products, searchTerm]);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f9fafb]">
-        <p className="text-gray-500">Loading products…</p>
+      <div className="min-h-screen grid place-items-center">
+        <p className="text-gray-500">Loading…</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#f9fafb]">
+    <div className="bg-[#f9fafb] min-h-screen">
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-6 pt-28 pb-16">
-
-        {/* ================= Header ================= */}
-        <div className="mb-10">
-          <h1 className="text-4xl font-semibold text-gray-900">
-            Products
-          </h1>
-          <p className="text-gray-500 mt-1">
-            Devices, parts, and accessories you can trust
-          </p>
-        </div>
-
-        {/* ================= Filters ================= */}
-        <div className="flex flex-col md:flex-row md:items-center gap-4 mb-10">
-
-          {/* Search */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search products…"
-              className="
-                w-full pl-9 pr-4 py-2.5
-                rounded-xl border border-black/10
-                bg-white text-sm
-                focus:outline-none focus:ring-2 focus:ring-black/10
-              "
-            />
-          </div>
-
-          {/* Category */}
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="
-              px-4 py-2.5 rounded-xl
-              bg-white border border-black/10
-              text-sm text-gray-700
-            "
+      {/* ================= ICON SEARCH ================= */}
+      <div className="fixed top-20 left-0 right-0 z-40">
+        <div className="max-w-7xl mx-auto px-6 flex justify-end gap-4">
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="p-2 rounded-full bg-white border border-black/10"
           >
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-
-          {/* Sort */}
-          <div className="flex items-center gap-2">
-            <SlidersHorizontal className="w-4 h-4 text-gray-400" />
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="
-                px-4 py-2.5 rounded-xl
-                bg-white border border-black/10
-                text-sm text-gray-700
-              "
-            >
-              <option value="newest">Newest</option>
-              <option value="price-low">Price: Low → High</option>
-              <option value="price-high">Price: High → Low</option>
-            </select>
-          </div>
+            <Search size={18} />
+          </button>
+          <button className="p-2 rounded-full bg-white border border-black/10">
+            <SlidersHorizontal size={18} />
+          </button>
         </div>
+      </div>
 
-        {/* ================= Products ================= */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {filteredProducts.map((product, i) => (
-            <motion.div
-              key={product._id}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: i * 0.03 }}
-              whileHover={{ y: -4 }}
-              onClick={() => navigate(`/product/${product._id}`)}
-              className="
-                bg-white rounded-2xl
-                border border-black/5
-                shadow-sm hover:shadow-md
-                transition cursor-pointer
-                overflow-hidden
-              "
-            >
-              {/* Image */}
-              <div className="h-44 bg-gray-100 flex items-center justify-center">
-                {product.images?.length ? (
+      {/* ================= EXPANDING SEARCH ================= */}
+      <AnimatePresence>
+        {searchOpen && (
+          <motion.div
+            initial={{ y: -40, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -40, opacity: 0 }}
+            className="fixed top-20 left-0 right-0 z-50"
+          >
+            <div className="max-w-3xl mx-auto px-6">
+              <div className="bg-white rounded-2xl p-4 shadow-lg flex items-center gap-3">
+                <Search className="text-gray-400" />
+                <input
+                  autoFocus
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search products"
+                  className="flex-1 outline-none"
+                />
+                <button onClick={() => setSearchOpen(false)}>
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ================= SCROLL AREA ================= */}
+      <div className="pt-36">
+
+        {/* ================================================= */}
+        {/* 1️⃣ IMAGE SHOWCASE — GET TO KNOW IPHONE STYLE */}
+        {/* ================================================= */}
+        <section className="mb-40">
+          <div className="max-w-7xl mx-auto px-6 mb-16">
+            <h2 className="text-5xl font-semibold tracking-tight">
+              Get to know our products.
+            </h2>
+          </div>
+
+          <div className="flex gap-10 overflow-x-auto px-6 snap-x snap-mandatory scrollbar-hide">
+            {featuredProducts.map((p) => (
+              <motion.div
+                key={p._id}
+                whileHover={{ scale: 1.02 }}
+                onClick={() => navigate(`/product/${p._id}`)}
+                className="
+                  min-w-[420px] h-[75vh]
+                  bg-black rounded-[32px]
+                  relative overflow-hidden
+                  snap-start cursor-pointer
+                "
+              >
+                {/* Text */}
+                <div className="absolute top-8 left-8 z-10 text-white max-w-xs">
+                  <p className="text-sm opacity-80 mb-2">Innovation</p>
+                  <h3 className="text-2xl font-semibold">
+                    {p.name}
+                  </h3>
+                  <p className="mt-2 text-sm opacity-80">
+                    {p.description}
+                  </p>
+                </div>
+
+                {/* Image */}
+                <img
+                  src={
+                    p.images?.[0]?.startsWith("http")
+                      ? p.images[0]
+                      : `http://localhost:5000${p.images[0]}`
+                  }
+                  className="
+                    absolute bottom-0 left-1/2
+                    -translate-x-1/2
+                    h-[85%] object-contain
+                  "
+                  alt={p.name}
+                />
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* ================================================= */}
+        {/* 2️⃣ EXPLORE THE LINEUP — APPLE SLIDER */}
+        {/* ================================================= */}
+        <section className="mb-40">
+          <div className="max-w-7xl mx-auto px-6 mb-16 flex justify-between">
+            <h2 className="text-4xl font-semibold">Explore the lineup.</h2>
+          </div>
+
+          <div className="flex justify-center">
+            <div className="flex gap-20 overflow-x-auto snap-x snap-mandatory scrollbar-hide px-20">
+              {lineupProducts.map((p) => (
+                <motion.div
+                  key={p._id}
+                  whileHover={{ scale: 1.05 }}
+                  className="
+                    min-w-[280px]
+                    text-center snap-center
+                    cursor-pointer
+                  "
+                  onClick={() => navigate(`/product/${p._id}`)}
+                >
                   <img
                     src={
-                      product.images[0].startsWith("http")
-                        ? product.images[0]
-                        : `http://localhost:5000${product.images[0]}`
+                      p.images?.[0]?.startsWith("http")
+                        ? p.images[0]
+                        : `http://localhost:5000${p.images[0]}`
                     }
-                    alt={product.name}
-                    className="w-full h-full object-cover"
+                    className="h-[380px] mx-auto object-contain"
                   />
-                ) : (
-                  <Package className="w-10 h-10 text-gray-400" />
-                )}
-              </div>
 
-              {/* Content */}
-              <div className="p-4">
-                <h3 className="text-gray-900 font-medium text-sm">
-                  {product.name}
-                </h3>
+                  <h3 className="mt-6 text-xl font-semibold">
+                    {p.name}
+                  </h3>
 
-                <p className="text-gray-500 text-xs mt-1 line-clamp-2">
-                  {product.description}
-                </p>
+                  <p className="text-gray-500 mt-2">
+                    {p.description?.slice(0, 60)}…
+                  </p>
 
-                <div className="flex items-center justify-between mt-4">
-                  <span className="text-gray-900 font-semibold text-sm">
-                    ₹{product.price?.toLocaleString()}
-                  </span>
+                  <p className="mt-4 font-medium">
+                    From ₹{p.price?.toLocaleString()}
+                  </p>
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      addToCart(product, 1);
-                      toast.success("Added to cart");
-                    }}
-                    disabled={!product.isActive}
-                    className="
-                      p-2 rounded-lg
-                      bg-black text-white
-                      hover:bg-gray-900
-                      disabled:opacity-40
-                      transition
-                    "
-                  >
-                    <ShoppingCart size={14} />
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+                  <div className="flex justify-center gap-4 mt-6">
+                    <button className="text-blue-600">Learn more</button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addToCart(p, 1);
+                        toast.success("Added to cart");
+                      }}
+                      className="text-blue-600"
+                    >
+                      Buy
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
 
-        {/* Empty */}
-        {filteredProducts.length === 0 && (
-          <p className="text-center text-gray-500 mt-16">
-            No products found
-          </p>
+        {/* ================================================= */}
+        {/* 3️⃣ OPTIONAL GRID (STILL USEFUL FOR SEARCH) */}
+        {/* ================================================= */}
+        {searchTerm && (
+          <section className="max-w-7xl mx-auto px-6 mb-32">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {filteredProducts.map((p) => (
+                <motion.div
+                  key={p._id}
+                  whileHover={{ y: -6 }}
+                  onClick={() => navigate(`/product/${p._id}`)}
+                  className="bg-white rounded-3xl overflow-hidden border border-black/5 cursor-pointer"
+                >
+                  <div className="h-44 bg-gray-100">
+                    <img
+                      src={
+                        p.images?.[0]?.startsWith("http")
+                          ? p.images[0]
+                          : `http://localhost:5000${p.images[0]}`
+                      }
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+
+                  <div className="p-5">
+                    <h3 className="font-medium">{p.name}</h3>
+                    <p className="text-sm text-gray-500 mt-1">
+                      ₹{p.price}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </section>
         )}
+
+        {/* ================================================= */}
+        {/* 4️⃣ BUNDLE */}
+        {/* ================================================= */}
+        <section className="mb-32">
+          <div className="max-w-4xl mx-auto px-6 bg-white rounded-3xl p-10">
+            <h2 className="text-2xl font-semibold flex items-center gap-2">
+              <Layers size={20} /> Frequently bought together
+            </h2>
+
+            <button className="mt-8 px-6 py-3 bg-black text-white rounded-xl">
+              Add bundle to cart
+            </button>
+          </div>
+        </section>
+
       </div>
     </div>
   );

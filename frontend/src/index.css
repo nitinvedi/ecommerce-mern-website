@@ -3,3 +3,19 @@
 body {
   background-color: #f9fafb;
 }
+
+/* Apple-style scroll snapping */
+.scroll-snap-y {
+  scroll-snap-type: y mandatory;
+}
+.snap-start {
+  scroll-snap-align: start;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

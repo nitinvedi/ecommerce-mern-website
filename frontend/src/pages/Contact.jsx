@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Mail, Phone } from "lucide-react";
 import { useToast } from "../context/ToastContext.jsx";
 import Navbar from "../components/Navbar.jsx";
+import { api, API_ENDPOINTS } from "../config/api.js";
 
 export default function Contact() {
   const toast = useToast();
@@ -10,20 +11,36 @@ export default function Contact() {
   const [form, setForm] = useState({
     name: "",
     email: "",
-    message: ""
+    message: "",
   });
 
-  const update = (k, v) => setForm({ ...form, [k]: v });
+  const update = (key, value) =>
+    setForm((prev) => ({ ...prev, [key]: value }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
 
-    setTimeout(() => {
+    if (!form.name || !form.email || !form.message) {
+      toast.error("All fields are required");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      await api.post(API_ENDPOINTS.USERS.CONTACT, {
+        name: form.name,
+        email: form.email,
+        message: form.message,
+      });
+
       toast.success("Message sent. We’ll reply shortly.");
       setForm({ name: "", email: "", message: "" });
+    } catch (error) {
+      toast.error(error.message || "Failed to send message");
+    } finally {
       setLoading(false);
-    }, 800);
+    }
   };
 
   return (
@@ -33,13 +50,13 @@ export default function Contact() {
       <div className="max-w-7xl mx-auto px-6 pt-32 pb-24">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
 
-          {/* ================= Left: Content ================= */}
+          {/* ================= Left ================= */}
           <motion.div
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, ease: "easeOut" }}
           >
-            <h1 className="text-5xl font-semibold tracking-tight text-gray-900 leading-tight">
+            <h1 className="text-5xl font-semibold tracking-tight text-gray-900">
               Let’s talk.
             </h1>
 
@@ -64,88 +81,51 @@ export default function Contact() {
             </p>
           </motion.div>
 
-          {/* ================= Right: Form ================= */}
+          {/* ================= Form ================= */}
           <motion.div
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, ease: "easeOut", delay: 0.05 }}
-            className="
-              bg-white
-              rounded-2xl
-              border border-black/5
-              p-8
-            "
+            className="bg-white rounded-2xl border border-black/5 p-8"
           >
             <form onSubmit={handleSubmit} className="space-y-6">
 
-              <div className="space-y-1">
-                <label className="text-xs text-gray-500">
-                  Your name
-                </label>
+              <div>
+                <label className="text-xs text-gray-500">Your name</label>
                 <input
                   value={form.name}
                   onChange={(e) => update("name", e.target.value)}
                   required
-                  className="
-                    w-full bg-transparent
-                    border-b border-black/10
-                    py-2 text-sm
-                    focus:outline-none
-                    focus:border-black
-                  "
+                  className="w-full bg-transparent border-b border-black/10 py-2 text-sm focus:outline-none focus:border-black"
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs text-gray-500">
-                  Email address
-                </label>
+              <div>
+                <label className="text-xs text-gray-500">Email address</label>
                 <input
                   type="email"
                   value={form.email}
                   onChange={(e) => update("email", e.target.value)}
                   required
-                  className="
-                    w-full bg-transparent
-                    border-b border-black/10
-                    py-2 text-sm
-                    focus:outline-none
-                    focus:border-black
-                  "
+                  className="w-full bg-transparent border-b border-black/10 py-2 text-sm focus:outline-none focus:border-black"
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs text-gray-500">
-                  Message
-                </label>
+              <div>
+                <label className="text-xs text-gray-500">Message</label>
                 <textarea
                   rows={4}
                   value={form.message}
                   onChange={(e) => update("message", e.target.value)}
                   required
-                  className="
-                    w-full bg-transparent
-                    border-b border-black/10
-                    py-2 text-sm resize-none
-                    focus:outline-none
-                    focus:border-black
-                  "
+                  className="w-full bg-transparent border-b border-black/10 py-2 text-sm resize-none focus:outline-none focus:border-black"
                 />
               </div>
 
               <button
+                type="submit"
                 disabled={loading}
-                className="
-                  inline-flex items-center
-                  rounded-full
-                  bg-black text-white
-                  px-6 py-2.5
-                  text-sm font-medium
-                  hover:bg-gray-900
-                  transition
-                  disabled:opacity-50
-                "
+                className="inline-flex items-center rounded-full bg-black text-white px-6 py-2.5 text-sm font-medium hover:bg-gray-900 transition disabled:opacity-50"
               >
                 {loading ? "Sending…" : "Send message"}
               </button>
@@ -157,4 +137,3 @@ export default function Contact() {
     </div>
   );
 }
-

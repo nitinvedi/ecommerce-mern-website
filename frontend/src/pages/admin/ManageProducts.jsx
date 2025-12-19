@@ -48,7 +48,7 @@ export default function ManageProducts() {
 
   const fetchProducts = async () => {
     try {
-      const res = await api.get(API_ENDPOINTS.PRODUCTS.BASE);
+      const res = await api.get(`${API_ENDPOINTS.PRODUCTS.BASE}?limit=1000`);
 
       // 🔒 SAFE NORMALIZATION (IMPORTANT)
       const items =
@@ -205,11 +205,10 @@ export default function ManageProducts() {
                   <p className="text-xs text-gray-500">{p.brand}</p>
                 </div>
                 <span
-                  className={`text-xs px-2 py-1 rounded-full ${
-                    p.isActive
+                  className={`text-xs px-2 py-1 rounded-full ${p.isActive
                       ? "bg-green-100 text-green-700"
                       : "bg-red-100 text-red-700"
-                  }`}
+                    }`}
                 >
                   {p.isActive ? "Active" : "Inactive"}
                 </span>

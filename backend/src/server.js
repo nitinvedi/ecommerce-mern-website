@@ -35,7 +35,7 @@ const PORT = appConfig.port;
 connectDB()
   .then(() => {
     logger.info("MongoDB connection established");
-    
+
     // Start server
     server.listen(PORT, () => {
       logger.info(`🚀 Server running on port ${PORT}`);
@@ -52,10 +52,10 @@ connectDB()
 // Graceful shutdown
 const gracefulShutdown = (signal) => {
   logger.info(`${signal} received. Starting graceful shutdown...`);
-  
+
   server.close(async () => {
     logger.info("HTTP server closed");
-    
+
     try {
       await closeDB();
       logger.info("Database connection closed");

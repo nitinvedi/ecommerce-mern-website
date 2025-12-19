@@ -249,7 +249,7 @@ function FAQItem({ question, answer, open, onToggle }) {
 
 const FAQ_DATA = [
   {
-    q: "How does Marammat work?",
+    q: "How does Ram Mobile work?",
     a: "You book a repair, our technician picks up your device, repairs it, and delivers it back with full tracking.",
   },
   {

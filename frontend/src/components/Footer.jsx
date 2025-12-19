@@ -77,7 +77,7 @@ export default function Footer() {
           {...fadeUp(0.4)}
           className="text-sm text-gray-500"
         >
-          © {new Date().getFullYear()} Marammat
+          © {new Date().getFullYear()} Ram Mobile
         </motion.span>
       </div>
     </section>

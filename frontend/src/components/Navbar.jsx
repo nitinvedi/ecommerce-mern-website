@@ -9,13 +9,28 @@ import {
   ShoppingCart,
   Package,
   Heart,
-  Search
+  Search,
+  Wrench,
+  ShoppingBag,
+  Bell
 } from "lucide-react";
 import useAuth from "../hooks/useAuth";
-import NotificationBell from "./NotificationBell";
 import { useCart } from "../context/CartContext";
+import NotificationBell from "./NotificationBell"; // Keeping this if logic is complex, or inline it if simple
+
+/* ================= Animations ================= */
+const navVariants = {
+  hidden: { y: -20, opacity: 0 },
+  visible: { y: 0, opacity: 1, transition: { duration: 0.4, ease: "easeOut" } },
+};
+
+const linkHover = {
+  scale: 1.05,
+  transition: { duration: 0.2 },
+};
 
 /* ================= Profile Menu ================= */
+// Enhanced minimal dropdown
 function ProfileMenu() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -30,77 +45,68 @@ function ProfileMenu() {
 
   return (
     <div
-      className="relative isolate z-[100]"
+      className="relative z-50"
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
     >
-      {/* Avatar */}
-      <button className="w-9 h-9 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition">
+      <motion.button
+        className="relative flex items-center justify-center w-10 h-10 rounded-full bg-gray-50 text-gray-700 hover:bg-black hover:text-white transition-colors border border-black/5"
+        whileTap={{ scale: 0.95 }}
+      >
         <User size={18} />
-      </button>
+      </motion.button>
 
-      {/* Dropdown */}
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
-            transition={{ duration: 0.18, ease: "easeOut" }}
-            className="absolute right-0 mt-3 w-56 rounded-xl bg-white border border-black/10 shadow-2xl overflow-hidden z-[999]"
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ duration: 0.2 }}
+            className="absolute right-0 mt-3 w-60 p-2 bg-white/95 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl origin-top-right ring-1 ring-black/5"
           >
             {/* User Info */}
-            <div className="px-4 py-3 border-b border-black/5">
-              <p className="text-sm font-medium text-gray-900">
-                {user.name}
-              </p>
-              <p className="text-xs text-gray-500 truncate">
-                {user.email}
-              </p>
+            <div className="px-3 py-3 mb-2 bg-gray-50 rounded-xl">
+              <p className="text-sm font-semibold text-gray-900">{user.name}</p>
+              <p className="text-xs text-gray-400 truncate">{user.email}</p>
             </div>
 
-            {/* Actions */}
-            <div className="py-1 text-sm">
-              <MenuItem
+            <div className="space-y-1">
+              {user.role === "admin" && (
+                <MenuLink
+                  icon={<LayoutDashboard size={16} />}
+                  label="Admin Panel"
+                  onClick={() => navigate("/admin")}
+                />
+              )}
+              {user.role === "technician" && (
+                <MenuLink
+                  icon={<Wrench size={16} />}
+                  label="Technician Dashboard"
+                  onClick={() => navigate("/technician")}
+                />
+              )}
+              <MenuLink
                 icon={<LayoutDashboard size={16} />}
                 label="Dashboard"
                 onClick={() => navigate("/dashboard")}
               />
-
-              {/* ✅ My Orders */}
-              <MenuItem
+              <MenuLink
                 icon={<Package size={16} />}
                 label="My Orders"
                 onClick={() => navigate("/orders")}
               />
-
-              {user.role === "admin" && (
-                <MenuItem
-                  icon={<LayoutDashboard size={16} />}
-                  label="Admin"
-                  onClick={() => navigate("/admin")}
-                />
-              )}
-
-              {user.role === "technician" && (
-                <MenuItem
-                  icon={<LayoutDashboard size={16} />}
-                  label="Technician"
-                  onClick={() => navigate("/technician")}
-                />
-              )}
-
-              <MenuItem
+              <MenuLink
                 icon={<Settings size={16} />}
-                label="Update profile"
+                label="Settings"
                 onClick={() => navigate("/profile")}
               />
 
-              <div className="my-1 h-px bg-black/5" />
+              <div className="h-px bg-gray-100 my-2" />
 
-              <MenuItem
+              <MenuLink
                 icon={<LogOut size={16} />}
-                label="Logout"
+                label="Log Out"
                 danger
                 onClick={handleLogout}
               />
@@ -112,180 +118,163 @@ function ProfileMenu() {
   );
 }
 
-function MenuItem({ icon, label, onClick, danger }) {
+function MenuLink({ icon, label, onClick, danger = false }) {
   return (
-    <button
+    <motion.button
       onClick={onClick}
-      className={`w-full px-4 py-2 flex items-center gap-2 text-left transition ${
-        danger
-          ? "text-red-600 hover:bg-red-50"
-          : "text-gray-700 hover:bg-gray-50"
-      }`}
+      whileHover={{ x: 4 }}
+      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${danger
+          ? "text-red-500 hover:bg-red-50"
+          : "text-gray-600 hover:text-black hover:bg-gray-100/50"
+        }`}
     >
       {icon}
       {label}
-    </button>
+    </motion.button>
   );
 }
 
-/* ================= Header ================= */
-export default function Header({ openSignUp }) {
-  const [showBanner, setShowBanner] = useState(true);
+/* ================= Navbar ================= */
+export default function Navbar({ openSignUp }) {
   const [scrolled, setScrolled] = useState(false);
-
+  const [showSearch, setShowSearch] = useState(false);
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { cart } = useCart();
 
-  const isLandingPage = pathname === "/";
   const cartCount = cart?.length || 0;
 
-  /* Scroll handling */
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 8) {
-        setScrolled(true);
-        setShowBanner(false);
-      } else {
-        setScrolled(false);
-      }
-    };
-
+    const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const isActive = (path) =>
-    pathname === path
-      ? "text-gray-900 after:scale-x-100"
-      : scrolled
-      ? "text-gray-500 hover:text-gray-900 after:scale-x-0"
-      : "text-gray-700 hover:text-gray-900 after:scale-x-0";
+  const navLinks = [
+    { name: "Store", path: "/home", icon: <ShoppingBag size={18} /> },
+    { name: "Repair", path: "/repair", icon: <Wrench size={18} /> },
+  ];
+
+  const handleSearch = (e) => {
+    if (e.key === "Enter" && e.target.value) {
+      navigate(`/home?search=${e.target.value}`);
+    }
+  };
 
   return (
     <>
-      {/* ================= Offer Banner ================= */}
-      <AnimatePresence>
-        {isLandingPage && showBanner && (
-          <motion.div
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -20, opacity: 0 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
-            className="sticky top-0 z-50 bg-white/80 backdrop-blur border-b border-black/10"
-          >
-            <div className="max-w-7xl mx-auto h-9 px-4 flex items-center justify-center text-sm text-gray-700 relative">
-              🚚 Free doorstep pickup & delivery • Trusted technicians
-              <button
-                onClick={() => setShowBanner(false)}
-                className="absolute right-4 text-lg opacity-60 hover:opacity-100"
-              >
-                ×
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ================= Navbar ================= */}
-      <header
-        className={`sticky top-0 z-40 transition-all duration-300 ${
-          scrolled
-            ? "bg-white/70 backdrop-blur-md border-b border-black/10 shadow-sm"
-            : "bg-transparent"
-        }`}
+      <motion.nav
+        variants={navVariants}
+        initial="hidden"
+        animate="visible"
+        className={`fixed top-0 inset-x-0 z-40 transition-all duration-500 ${scrolled
+            ? "bg-white/75 backdrop-blur-md shadow-sm border-b border-black/5 py-3"
+            : "bg-transparent py-5"
+          }`}
       >
-        <div className="max-w-7xl mx-auto h-16 px-6 md:px-10 flex items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl font-extrabold text-zinc-900">
-              Ram Mobiles
+        <div className="max-w-7xl mx-auto px-6 md:px-10 flex items-center justify-between">
+
+          {/* 1. Brand */}
+          <Link to="/" className="group flex items-center gap-2">
+            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center text-white font-bold text-lg group-hover:scale-110 transition-transform">
+              R
+            </div>
+            <span className={`text-xl font-bold tracking-tight transition-colors ${scrolled ? 'text-black' : 'text-black'}`}>
+              Ram Mobile
             </span>
           </Link>
 
-          {/* Search Bar */}
-          <div className="hidden md:flex flex-1 max-w-xl mx-8">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                type="search"
-                placeholder="Search for products, brands, and more..."
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
-                onChange={(e) => {
-                  if (e.target.value) {
-                    navigate(`/home?search=${e.target.value}`);
-                  }
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Navigation */}
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-            {[{ path: "/home", label: "Store" }, { path: "/repair", label: "Repair" }].map(
-              ({ path, label }) => (
+          {/* 2. Center Menu (Desktop) */}
+          <div className="hidden md:flex items-center gap-1 bg-gray-100/50 backdrop-blur-sm p-1.5 rounded-full border border-black/5 absolute left-1/2 -translate-x-1/2">
+            {navLinks.map((link) => {
+              const isActive = pathname === link.path;
+              return (
                 <Link
-                  key={path}
-                  to={path}
-                  className={`relative after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-full after:bg-gray-900 after:origin-left after:transition-transform after:duration-200 ${isActive(
-                    path
-                  )}`}
+                  key={link.path}
+                  to={link.path}
+                  className="relative px-6 py-2 rounded-full text-sm font-medium transition-colors"
                 >
-                  {label}
+                  {isActive && (
+                    <motion.div
+                      layoutId="bubble"
+                      className="absolute inset-0 bg-white rounded-full shadow-sm"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                  <span className={`relative z-10 flex items-center gap-2 ${isActive ? "text-black" : "text-gray-500 hover:text-black"}`}>
+                    {link.name}
+                  </span>
                 </Link>
               )
-            )}
-          </nav>
+            })}
+          </div>
 
-          {/* Right: Cart, Wishlist, Notifications, Profile */}
-          <div className="flex items-center gap-2">
-            {user ? (
-              <>
-                <Link
-                  to="/wishlist"
-                  className="flex flex-col items-center p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors relative group"
-                  aria-label="Wishlist"
-                >
-                  <Heart size={24} />
-                  <span className="text-xs mt-0.5 hidden lg:block">Wishlist</span>
-                </Link>
-                
-                <NotificationBell />
-                
-                <Link
-                  to="/cart"
-                  className="flex flex-col items-center p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors relative group"
-                  aria-label="Shopping Cart"
-                >
-                  <div className="relative">
-                    <ShoppingCart size={24} />
-                    {cartCount > 0 && (
-                      <motion.span
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="absolute -top-2 -right-2 min-w-[20px] h-5 px-1 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold"
-                      >
-                        {cartCount > 9 ? '9+' : cartCount}
-                      </motion.span>
-                    )}
-                  </div>
-                  <span className="text-xs mt-0.5 hidden lg:block">Cart</span>
-                </Link>
+          {/* 3. Right Mix (Search + Actions) */}
+          <div className="flex items-center gap-3">
+            {/* Search */}
+            <div className="hidden md:flex items-center bg-gray-100/50 focus-within:bg-white focus-within:ring-2 focus-within:ring-black/5 transition-all rounded-full px-3 py-2 w-48 focus-within:w-64">
+              <Search size={16} className="text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search products..."
+                className="bg-transparent border-none outline-none text-sm ml-2 w-full placeholder-gray-400 text-gray-900"
+                onKeyDown={handleSearch}
+              />
+            </div>
 
+            {/* Actions */}
+            <div className="flex items-center gap-1 ml-2">
+              {/* Wishlist */}
+              <Link to="/wishlist">
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+                  <Heart size={20} />
+                </motion.button>
+              </Link>
+
+              {/* Cart */}
+              <Link to="/cart" className="relative">
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+                  <ShoppingCart size={20} />
+                  {cartCount > 0 && (
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute top-0 right-0 w-4 h-4 bg-black text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white"
+                    >
+                      {cartCount}
+                    </motion.span>
+                  )}
+                </motion.button>
+              </Link>
+
+              {/* Auth / Profile */}
+              {user ? (
                 <ProfileMenu />
-              </>
-            ) : (
-              <button
-                onClick={() => openSignUp?.()}
-                className="rounded-lg bg-black px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-900 transition"
-              >
-                Sign in
-              </button>
-            )}
+              ) : (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => openSignUp?.()}
+                  className="ml-2 bg-black text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-gray-900 transition-colors shadow-lg shadow-black/20"
+                >
+                  Sign In
+                </motion.button>
+              )}
+            </div>
           </div>
         </div>
-      </header>
+      </motion.nav>
+      {/* Spacer for fixed nav */}
+      <div className="h-20" />
     </>
   );
 }

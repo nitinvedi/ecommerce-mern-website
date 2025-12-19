@@ -21,7 +21,8 @@ export default function AdminChat() {
   useEffect(() => {
     if (user) {
       const token = localStorage.getItem("token");
-      const newSocket = io("http://localhost:5000", {
+      const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
+      const newSocket = io(socketUrl, {
         auth: { token }
       });
 
@@ -30,24 +31,28 @@ export default function AdminChat() {
       });
 
       newSocket.on("receive_message", (data) => {
-        setMessages(prev => {
-          // Check for duplicate _id to prevent double entries if latency occurs
-          if (prev.some(m => m._id === data._id)) return prev;
-
-          return [...prev, {
-            _id: data._id,
-            sender: data.sender,
-            message: data.message,
-            createdAt: data.timestamp,
-            senderRole: data.senderRole
-          }];
-        });
-        fetchConversations(); // Refresh conversation list
+        // If message is from/to the currently selected user, add it to messages
+        if (selectedUser && (data.sender === selectedUser._id || data.receiver === selectedUser._id)) {
+            setMessages(prev => {
+              if (prev.some(m => m._id === data._id || (m.createdAt === data.timestamp && m.message === data.message))) return prev;
+              return [...prev, {
+                _id: data._id,
+                sender: data.sender,
+                message: data.message,
+                createdAt: data.timestamp,
+                senderRole: data.senderRole
+              }];
+            });
+        }
+        
+        // Always refresh conversations to show new message preview/unread status (implied)
+        fetchConversations(); 
       });
 
       newSocket.on("new_customer_message", (data) => {
         console.log("New customer message received");
         fetchConversations();
+        // If we are looking at this customer request notification/toast could go here
       });
 
       newSocket.on("message_sent", (data) => {
@@ -59,6 +64,51 @@ export default function AdminChat() {
       return () => {
         newSocket.disconnect();
       };
+    }
+  }, [user, selectedUser]); // Re-bind if selectedUser changes to ensure closure has correct value? 
+  // actually, updated logic uses selectedUser ref or just state if dependency is correct. 
+  // To avoid constant reconnection, we should use a ref for selectedUser inside the effect callback or filter in setMessages.
+  // BUT, simpler approach: Update dependency array. Reconnecting socket on user switch is bad.
+  // Better: Use functional state update or a ref.
+  
+  // Ref for selectedUser to use inside socket callback without re-running effect
+  const selectedUserRef = useRef(selectedUser);
+  useEffect(() => {
+      selectedUserRef.current = selectedUser;
+  }, [selectedUser]);
+
+  // Socket effect - only runs on mount/user change (auth)
+  useEffect(() => {
+    if (user) {
+      const token = localStorage.getItem("token");
+      const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
+      const newSocket = io(socketUrl, {
+        auth: { token }
+      });
+
+      newSocket.on("receive_message", (data) => {
+        const currentUser = selectedUserRef.current;
+        // If message is related to current user (either SENT by them or SENT TO them)
+        if (currentUser && (data.sender === currentUser._id || data.receiver === currentUser._id)) {
+           setMessages(prev => {
+              if (prev.some(m => m._id === data._id)) return prev;
+              return [...prev, {
+                _id: data._id,
+                sender: data.sender,
+                message: data.message,
+                createdAt: data.timestamp,
+                senderRole: data.senderRole
+              }];
+            });
+            scrollToBottom();
+        }
+        fetchConversations();
+      });
+
+      newSocket.on("new_customer_message", () => fetchConversations());
+
+      setSocket(newSocket);
+      return () => newSocket.disconnect();
     }
   }, [user]);
 
@@ -133,9 +183,25 @@ export default function AdminChat() {
 
           {/* Conversations List */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div className="p-4 border-b border-gray-200 bg-gray-50">
-              <h2 className="font-semibold text-gray-900">Conversations</h2>
-              <p className="text-sm text-gray-600">{conversations.length} active</p>
+            <div className="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+              <div>
+                <h2 className="font-semibold text-gray-900">Conversations</h2>
+                <p className="text-sm text-gray-600">{conversations.length} active</p>
+              </div>
+              <button 
+                onClick={fetchConversations}
+                className="p-2 hover:bg-gray-200 rounded-full transition-colors text-gray-600"
+                title="Refresh conversations"
+              >
+                <motion.div whileTap={{ rotate: 360 }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                    <path d="M3 3v5h5"/>
+                    <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
+                    <path d="M16 16h5v5"/>
+                  </svg>
+                </motion.div>
+              </button>
             </div>
 
             <div className="overflow-y-auto h-full">

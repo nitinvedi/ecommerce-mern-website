@@ -24,7 +24,9 @@ export default function ChatWidget() {
   useEffect(() => {
     if (user && isOpen) {
       const token = localStorage.getItem("token");
-      const newSocket = io("http://localhost:5000", {
+      // Use configured SOCKET_URL
+      const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
+      const newSocket = io(socketUrl, {
         auth: { token }
       });
 
@@ -70,10 +72,12 @@ export default function ChatWidget() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isOpen]); // Also scroll when opened
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
   };
 
   const fetchSupportAdmin = async () => {

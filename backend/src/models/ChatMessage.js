@@ -50,27 +50,44 @@ export const getMessagesBetweenUsers = async (userId1, userId2, limit = 100) => 
 // Get user conversations (list of users they've chatted with)
 export const getUserConversations = async (userId) => {
   const collection = getCollection();
-  
-  const messages = await collection
-    .find({
-      $or: [
-        { sender: new ObjectId(userId) },
-        { receiver: new ObjectId(userId) }
-      ]
-    })
-    .sort({ createdAt: -1 })
-    .toArray();
-  
-  // Get unique conversation partners
-  const conversationPartners = new Set();
-  messages.forEach(msg => {
-    const partnerId = msg.sender.toString() === userId.toString() 
-      ? msg.receiver.toString() 
-      : msg.sender.toString();
-    conversationPartners.add(partnerId);
-  });
-  
-  return Array.from(conversationPartners);
+  const uid = new ObjectId(userId);
+
+  const pipeline = [
+    {
+      $match: {
+        $or: [
+          { sender: uid },
+          { receiver: uid }
+        ]
+      }
+    },
+    {
+      $sort: { createdAt: -1 }
+    },
+    {
+      $group: {
+        _id: {
+          $cond: {
+            if: { $eq: ["$sender", uid] },
+            then: "$receiver",
+            else: "$sender"
+          }
+        },
+        lastMessage: { $first: "$$ROOT" }
+      }
+    },
+    {
+      $sort: { "lastMessage.createdAt": -1 }
+    },
+    {
+      $project: {
+        _id: 1
+      }
+    }
+  ];
+
+  const results = await collection.aggregate(pipeline).toArray();
+  return results.map(item => item._id);
 };
 
 // Get unread count

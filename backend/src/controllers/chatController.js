@@ -99,10 +99,20 @@ export const getUnreadCount = async (req, res) => {
 // Get support admin (for customer support)
 export const getSupportAdmin = async (req, res) => {
   try {
-    // Find first admin user directly from database
-    const { getDB } = await import("../config/mongo.js");
-    const db = getDB();
-    const admin = await db.collection("users").findOne({ role: "admin" });
+    // Find designated support admin from env or fallback to first admin
+    const supportEmail = process.env.SUPPORT_MAIL;
+    let admin;
+
+    if (supportEmail) {
+        admin = await User.getUserByEmail(supportEmail);
+    }
+
+    if (!admin) {
+        // Fallback or if support email user doesn't exist
+        const { getDB } = await import("../config/mongo.js");
+        const db = getDB();
+        admin = await db.collection("users").findOne({ role: "admin" });
+    }
 
     if (!admin) {
       return res.status(404).json({ message: "No support admin found" });

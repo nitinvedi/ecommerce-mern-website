@@ -59,6 +59,31 @@ export const API_ENDPOINTS = {
     USERS: `${API_BASE_URL}/admin/users`,
     USER_BY_ID: (id) => `${API_BASE_URL}/admin/users/${id}`,
   },
+
+  // Wishlist
+  WISHLIST: {
+    BASE: `${API_BASE_URL}/wishlist`,
+    ADD: (productId) => `${API_BASE_URL}/wishlist/${productId}`,
+    REMOVE: (productId) => `${API_BASE_URL}/wishlist/${productId}`,
+    CHECK: (productId) => `${API_BASE_URL}/wishlist/check/${productId}`,
+  },
+
+  // Addresses
+  ADDRESSES: {
+    BASE: `${API_BASE_URL}/addresses`,
+    BY_ID: (id) => `${API_BASE_URL}/addresses/${id}`,
+    DEFAULT: `${API_BASE_URL}/addresses/default`,
+    SET_DEFAULT: (id) => `${API_BASE_URL}/addresses/${id}/default`,
+  },
+
+  // Notifications
+  NOTIFICATIONS: {
+    BASE: `${API_BASE_URL}/notifications`,
+    UNREAD_COUNT: `${API_BASE_URL}/notifications/unread-count`,
+    MARK_READ: (id) => `${API_BASE_URL}/notifications/${id}/read`,
+    MARK_ALL_READ: `${API_BASE_URL}/notifications/read-all`,
+    DELETE: (id) => `${API_BASE_URL}/notifications/${id}`,
+  },
 };
 
 // Auth token helpers

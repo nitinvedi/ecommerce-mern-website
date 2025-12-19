@@ -4,7 +4,8 @@ import {
   Users,
   ShoppingCart,
   Package,
-  Wrench
+  Wrench,
+  MessageCircle
 } from "lucide-react";
 
 const links = [
@@ -13,6 +14,7 @@ const links = [
   { to: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { to: "/admin/products", label: "Products", icon: Package },
   { to: "/admin/repairs", label: "Repairs", icon: Wrench },
+  { to: "/admin/chat", label: "Support Chat", icon: MessageCircle }
 ];
 
 export default function AdminSidebar() {

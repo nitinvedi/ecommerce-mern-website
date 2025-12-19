@@ -1,230 +1,245 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import {
+  Package,
   Wrench,
-  ShoppingCart,
-  Headphones,
-  Info,
+  Heart,
+  DollarSign,
+  Briefcase,
   ArrowRight,
-  X
+  RefreshCw,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Truck
 } from "lucide-react";
-import { api, API_ENDPOINTS, SOCKET_URL, uploadFile } from "../config/api";
-import useAuth from "../hooks/useAuth";
-import { useToast } from "../context/ToastContext";
-import { io } from "socket.io-client";
+import { api } from "../config/api.js";
+import { DASHBOARD_ENDPOINTS } from "../config/dashboardApi.js";
+import { useToast } from "../context/ToastContext.jsx";
 
-/* ----------------- Helper Components ----------------- */
-
-function ActionCard({ icon: Icon, title, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className="group rounded-2xl bg-white p-5 shadow-sm border hover:shadow-md transition flex items-center justify-between"
-    >
-      <div className="flex items-center gap-3">
-        <div className="p-3 rounded-xl bg-slate-100 group-hover:bg-slate-900 group-hover:text-white transition">
-          <Icon className="w-5 h-5" />
-        </div>
-        <span className="font-medium text-slate-800">{title}</span>
-      </div>
-      <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition" />
-    </button>
-  );
-}
-
-/* ----------------- Main Page ----------------- */
+import DashboardSidebar from "../components/DashboardSidebar.jsx"; 
+import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
-  const { user } = useAuth();
-  const navigate = useNavigate();
   const toast = useToast();
-
+  const navigate = useNavigate();
+  const [summary, setSummary] = useState(null);
   const [orders, setOrders] = useState([]);
-  const [repairs, setRepairs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [socket, setSocket] = useState(null);
+  const [greeting, setGreeting] = useState("");
 
-  const [showRepairForm, setShowRepairForm] = useState(false);
-  const [submittingRepair, setSubmittingRepair] = useState(false);
-
-  const [repairForm, setRepairForm] = useState({
-    deviceType: "",
-    brand: "",
-    model: "",
-    issue: "",
-    problemDescription: "",
-    fullName: "",
-    phoneNumber: "",
-    pickupAddress: "",
-    city: "",
-    pincode: "",
-    pickupDate: "",
-    pickupTimeSlot: "",
-  });
-
-  /* ----------------- Disable scroll when modal open ----------------- */
   useEffect(() => {
-    document.body.style.overflow = showRepairForm ? "hidden" : "auto";
-    return () => (document.body.style.overflow = "auto");
-  }, [showRepairForm]);
+    fetchDashboardData();
+    fetchRecentOrders();
+    setGreetingMessage();
+  }, []);
 
-  /* ----------------- Fetch Data ----------------- */
-  useEffect(() => {
-    if (!user) return;
+  const setGreetingMessage = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting("Good Morning");
+    else if (hour < 18) setGreeting("Good Afternoon");
+    else setGreeting("Good Evening");
+  };
 
-    fetchData();
-    initSocket();
-
-    return () => socket?.disconnect();
-  }, [user]);
-
-  const fetchData = async () => {
+  const fetchDashboardData = async () => {
     try {
-      const [ordersRes, repairsRes] = await Promise.all([
-        api.get(API_ENDPOINTS.ORDERS.MY_ORDERS),
-        api.get(API_ENDPOINTS.REPAIRS.MY_REPAIRS),
-      ]);
+      const res = await api.get(DASHBOARD_ENDPOINTS.SUMMARY);
+      setSummary(res);
+    } catch (error) {
+      // toast.error("Failed to load dashboard stats");
+    } finally {
+      // Don't stop loading here, wait for orders
+    }
+  };
 
-      setOrders(Array.isArray(ordersRes?.data?.data) ? ordersRes.data.data : []);
-      setRepairs(repairsRes.data || []);
-    } catch (err) {
-      console.error(err);
+  const fetchRecentOrders = async () => {
+    try {
+      const res = await api.get(DASHBOARD_ENDPOINTS.ORDERS + "?limit=5");
+      setOrders(res.orders || []);
+    } catch (error) {
+       console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
-  const toggleRepairForm = () => {
-    setShowRepairForm((v) => !v);
-  };
-
-  const submitRepair = async () => {
-    if (submittingRepair) return;
-
-    const required = Object.values(repairForm).every(Boolean);
-    if (!required) {
-      toast.error("Please fill all fields");
-      return;
-    }
-
-    setSubmittingRepair(true);
-    try {
-      const fd = new FormData();
-      Object.entries(repairForm).forEach(([k, v]) => fd.append(k, v));
-      await uploadFile(API_ENDPOINTS.REPAIRS.BASE, fd);
-
-      await fetchData();
-      setShowRepairForm(false);
-      setRepairForm({
-        deviceType: "",
-        brand: "",
-        model: "",
-        issue: "",
-        problemDescription: "",
-        fullName: "",
-        phoneNumber: "",
-        pickupAddress: "",
-        city: "",
-        pincode: "",
-        pickupDate: "",
-        pickupTimeSlot: "",
-      });
-
-      toast.success("Repair request submitted");
-    } catch (err) {
-      toast.error("Failed to submit repair");
-    } finally {
-      setSubmittingRepair(false);
-    }
-  };
-
-  /* ----------------- Socket ----------------- */
-  const initSocket = () => {
-    const token = localStorage.getItem("token");
-    const s = io(SOCKET_URL, {
-      transports: ["websocket"],
-      auth: { token }
-    });
-
-    s.on("order_update", ({ orderId, status }) => {
-      setOrders((prev) =>
-        prev.map((o) => (o._id === orderId ? { ...o, status } : o))
-      );
-    });
-
-    setSocket(s);
-  };
-
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading…</div>;
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+         <div className="animate-spin w-8 h-8 border-2 border-gray-900 border-t-transparent rounded-full" />
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <main className="max-w-6xl mx-auto px-4 pt-24 pb-12 space-y-10">
+    <div className="min-h-screen bg-[#F8FAFC]">
 
-        {/* Actions */}
-        <section className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <ActionCard icon={Wrench} title="Request Repair" onClick={toggleRepairForm} />
-          <ActionCard icon={ShoppingCart} title="My Orders" onClick={() => navigate("/orders")} />
-          <ActionCard icon={Headphones} title="Support" onClick={() => navigate("/contact")} />
-          <ActionCard icon={Info} title="Profile" onClick={() => navigate("/profile")} />
-        </section>
 
-        {/* ================= MODAL OVERLAY ================= */}
-        <AnimatePresence>
-          {showRepairForm && (
-            <motion.div
-              className="fixed inset-0 z-[200] bg-black/50 flex items-center justify-center p-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={toggleRepairForm}
-            >
-              <motion.div
-                onClick={(e) => e.stopPropagation()}
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white w-full max-w-2xl rounded-3xl p-6 shadow-xl space-y-4"
-              >
-                <div className="flex justify-between items-center">
-                  <h3 className="font-semibold">Request a Repair</h3>
-                  <button onClick={toggleRepairForm}>
-                    <X />
-                  </button>
-                </div>
+      <div className="flex max-w-[1600px] mx-auto">
+        <DashboardSidebar />
 
-                <div className="grid md:grid-cols-2 gap-4 text-sm">
-                  {Object.entries(repairForm).map(([key, value]) => (
-                    <input
-                      key={key}
-                      value={value}
-                      placeholder={key}
-                      onChange={(e) =>
-                        setRepairForm({ ...repairForm, [key]: e.target.value })
-                      }
-                      className="rounded-lg border px-3 py-2"
-                    />
-                  ))}
-                </div>
+        <main className="flex-1 p-6 lg:p-12 pt-24">
+           {/* Header */}
+           <div className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                 <h1 className="text-3xl font-bold text-gray-900 mb-1">
+                    {greeting}, {summary?.userName}!
+                 </h1>
+                 <p className="text-gray-500">Here's what's happening with your account today.</p>
+              </div>
+              <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full border border-gray-200 shadow-sm">
+                 <div className={`w-2.5 h-2.5 rounded-full ${summary?.accountStatus === 'Active' ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                 <span className="text-sm font-medium text-gray-700">{summary?.accountStatus || "Active"} Member</span>
+              </div>
+           </div>
 
-                <div className="flex justify-end">
-                  <button
-                    onClick={submitRepair}
-                    disabled={submittingRepair}
-                    className="bg-black text-white px-6 py-2 rounded-lg"
-                  >
-                    {submittingRepair ? "Submitting…" : "Submit"}
-                  </button>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+           {/* Stats Grid */}
+           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-12">
+              <StatCard 
+                 label="Total Orders" 
+                 value={summary?.totalOrders || 0} 
+                 icon={Package} 
+                 color="blue"
+                 trend="+2 this month"
+              />
+              <StatCard 
+                 label="Total Spent" 
+                 value={`₹${(summary?.totalSpent || 0).toLocaleString()}`} 
+                 icon={DollarSign} 
+                 color="green"
+              />
+              <StatCard 
+                 label="Wishlist" 
+                 value={summary?.wishlistCount || 0} 
+                 icon={Heart} 
+                 color="red"
+              />
+              <StatCard 
+                 label="Pending Repairs" 
+                 value={summary?.activeRepairs || 0} 
+                 icon={Wrench} 
+                 color="purple"
+              />
+           </div>
 
-      </main>
+            {/* Recent Orders */}
+           <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="p-8 border-b border-gray-100 flex items-center justify-between">
+                 <h2 className="text-lg font-bold text-gray-900">Recent Orders</h2>
+                 <button 
+                  onClick={() => navigate('/orders')}
+                  className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                 >
+                    View All <ArrowRight size={16} />
+                 </button>
+              </div>
+              
+              <div className="overflow-x-auto">
+                 <table className="w-full text-left">
+                    <thead className="bg-gray-50/50">
+                       <tr>
+                          <th className="px-8 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Order ID</th>
+                          <th className="px-8 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+                          <th className="px-8 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Items</th>
+                          <th className="px-8 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Total</th>
+                          <th className="px-8 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                          <th className="px-8 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
+                       </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                       {orders.length > 0 ? (
+                          orders.map((order) => (
+                             <tr key={order._id} className="hover:bg-gray-50/50 transition-colors">
+                                <td className="px-8 py-4 text-sm font-medium text-gray-900">
+                                   #{order._id.slice(-6).toUpperCase()}
+                                </td>
+                                <td className="px-8 py-4 text-sm text-gray-500">
+                                   {new Date(order.createdAt).toLocaleDateString()}
+                                </td>
+                                <td className="px-8 py-4">
+                                   <div className="flex -space-x-2">
+                                      {order.orderItems.slice(0,3).map((item, i) => (
+                                         <img 
+                                            key={i}
+                                            src={item.image?.startsWith("http") ? item.image : `http://localhost:5000${item.image}`}
+                                            className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 object-cover"
+                                            alt=""
+                                         />
+                                      ))}
+                                      {order.orderItems.length > 3 && (
+                                         <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-[10px] font-medium text-gray-500">
+                                            +{order.orderItems.length - 3}
+                                         </div>
+                                      )}
+                                   </div>
+                                </td>
+                                <td className="px-8 py-4 text-sm font-bold text-gray-900">
+                                   ₹{order.totalPrice.toLocaleString()}
+                                </td>
+                                <td className="px-8 py-4">
+                                   <StatusBadge status={order.status} />
+                                </td>
+                                <td className="px-8 py-4">
+                                   <button 
+                                      onClick={() => navigate(`/orders/${order._id}`)}
+                                      className="text-sm font-medium text-blue-600 hover:text-blue-800"
+                                   >
+                                      Details
+                                   </button>
+                                </td>
+                             </tr>
+                          ))
+                       ) : (
+                          <tr>
+                             <td colSpan="6" className="px-8 py-12 text-center text-gray-500">
+                                No orders found. Time to go shopping!
+                             </td>
+                          </tr>
+                       )}
+                    </tbody>
+                 </table>
+              </div>
+           </div>
+        </main>
+      </div>
     </div>
   );
+}
+
+function StatCard({ label, value, icon: Icon, color, trend }) {
+   const colors = {
+      blue: "bg-blue-50 text-blue-600",
+      green: "bg-green-50 text-green-600",
+      red: "bg-red-50 text-red-600",
+      purple: "bg-purple-50 text-purple-600",
+   };
+
+   return (
+      <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+         <div className="flex items-start justify-between mb-4">
+            <div className={`p-3 rounded-xl ${colors[color]}`}>
+               <Icon size={24} />
+            </div>
+            {trend && <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">{trend}</span>}
+         </div>
+         <p className="text-sm font-medium text-gray-500 mb-1">{label}</p>
+         <h3 className="text-2xl font-bold text-gray-900">{value}</h3>
+      </div>
+   );
+}
+
+function StatusBadge({ status }) {
+   const styles = {
+      pending: "bg-yellow-50 text-yellow-700 border-yellow-100",
+      processing: "bg-blue-50 text-blue-700 border-blue-100",
+      shipped: "bg-purple-50 text-purple-700 border-purple-100",
+      delivered: "bg-green-50 text-green-700 border-green-100",
+      cancelled: "bg-red-50 text-red-700 border-red-100",
+   };
+
+   return (
+      <span className={`px-3 py-1 rounded-full text-xs font-bold border capitalize ${styles[status] || styles.pending}`}>
+         {status}
+      </span>
+   );
 }

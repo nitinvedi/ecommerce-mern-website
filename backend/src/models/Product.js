@@ -97,6 +97,15 @@ export const createProduct = async (productData) => {
       createdAt: review.createdAt || new Date(),
       updatedAt: review.updatedAt || new Date()
     })),
+    // New fields for enhanced features
+    variants: productData.variants || [], // [{name, value, price, stock, images}]
+    viewCount: 0,
+    tags: productData.tags || [],
+    specifications: productData.specifications || {},
+    discountPercent: productData.discountPercent || 0,
+    discountedPrice: productData.discountPercent 
+      ? productData.price - (productData.price * productData.discountPercent / 100)
+      : productData.price,
     isActive: productData.isActive !== undefined ? productData.isActive : true,
     featured: productData.featured || false,
     createdAt: new Date(),
@@ -168,6 +177,28 @@ export const deleteProduct = async (productId) => {
   return await collection.deleteOne({ _id: new ObjectId(productId) });
 };
 
+// Reduce stock atomically
+export const reduceStock = async (id, quantity) => {
+  const collection = getCollection();
+  const result = await collection.findOneAndUpdate(
+    { _id: new ObjectId(id), stock: { $gte: quantity } },
+    { $inc: { stock: -quantity } },
+    { returnDocument: "after" }
+  );
+  return result;
+};
+
+// Increase stock (for cancellations/rollbacks)
+export const increaseStock = async (id, quantity) => {
+  const collection = getCollection();
+  const result = await collection.findOneAndUpdate(
+    { _id: new ObjectId(id) },
+    { $inc: { stock: quantity } },
+    { returnDocument: "after" }
+  );
+  return result;
+};
+
 // Add review to product
 export const addReview = async (productId, reviewData) => {
   const collection = getCollection();
@@ -204,6 +235,88 @@ export const addReview = async (productId, reviewData) => {
   return newReview;
 };
 
+// Increment view count
+export const incrementViewCount = async (productId) => {
+  const collection = getCollection();
+  await collection.updateOne(
+    { _id: new ObjectId(productId) },
+    { $inc: { viewCount: 1 } }
+  );
+};
+
+// Search products with filters
+export const searchProducts = async (searchParams) => {
+  const collection = getCollection();
+  const query = { isActive: true };
+  
+  // Text search
+  if (searchParams.q) {
+    query.$or = [
+      { name: { $regex: searchParams.q, $options: 'i' } },
+      { description: { $regex: searchParams.q, $options: 'i' } },
+      { tags: { $in: [new RegExp(searchParams.q, 'i')] } }
+    ];
+  }
+  
+  // Category filter
+  if (searchParams.category) {
+    query.category = searchParams.category;
+  }
+  
+  // Brand filter
+  if (searchParams.brand) {
+    query.brand = searchParams.brand;
+  }
+  
+  // Price range filter
+  if (searchParams.minPrice || searchParams.maxPrice) {
+    query.price = {};
+    if (searchParams.minPrice) query.price.$gte = parseFloat(searchParams.minPrice);
+    if (searchParams.maxPrice) query.price.$lte = parseFloat(searchParams.maxPrice);
+  }
+  
+  // Rating filter
+  if (searchParams.minRating) {
+    query.rating = { $gte: parseFloat(searchParams.minRating) };
+  }
+  
+  // Availability filter
+  if (searchParams.inStock === 'true') {
+    query.stock = { $gt: 0 };
+  }
+  
+  // Sorting
+  let sort = { createdAt: -1 }; // default: newest
+  if (searchParams.sort === 'price_asc') sort = { price: 1 };
+  else if (searchParams.sort === 'price_desc') sort = { price: -1 };
+  else if (searchParams.sort === 'popular') sort = { viewCount: -1 };
+  else if (searchParams.sort === 'rating') sort = { rating: -1 };
+  
+  // Pagination
+  const page = parseInt(searchParams.page) || 1;
+  const limit = parseInt(searchParams.limit) || 20;
+  const skip = (page - 1) * limit;
+  
+  const products = await collection
+    .find(query)
+    .sort(sort)
+    .skip(skip)
+    .limit(limit)
+    .toArray();
+  
+  const total = await collection.countDocuments(query);
+  
+  return {
+    products,
+    pagination: {
+      page,
+      limit,
+      total,
+      pages: Math.ceil(total / limit)
+    }
+  };
+};
+
 export default {
   createProduct,
   getProductById,
@@ -213,5 +326,7 @@ export default {
   deleteProduct,
   addReview,
   validateProduct,
-  calculateRating
+  calculateRating,
+  incrementViewCount,
+  searchProducts
 };

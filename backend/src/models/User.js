@@ -74,12 +74,27 @@ export const createUser = async (userData) => {
     password: hashedPassword,
     phone: userData.phone ? userData.phone.trim() : null,
     role: userData.role || 'user',
+    // Keep basic address for backward compatibility, but use Address collection for multiple addresses
     address: {
       street: userData.address?.street ? userData.address.street.trim() : null,
       city: userData.address?.city ? userData.address.city.trim() : null,
       state: userData.address?.state ? userData.address.state.trim() : null,
       zip: userData.address?.zip ? userData.address.zip.trim() : null
     },
+    // New fields for enhanced features
+    profilePicture: userData.profilePicture || null,
+    socialLinks: {
+      facebook: userData.socialLinks?.facebook || null,
+      twitter: userData.socialLinks?.twitter || null,
+      instagram: userData.socialLinks?.instagram || null,
+      linkedin: userData.socialLinks?.linkedin || null
+    },
+    preferences: {
+      newsletter: userData.preferences?.newsletter !== false,
+      notifications: userData.preferences?.notifications !== false,
+      language: userData.preferences?.language || 'en'
+    },
+    recentlyViewed: [], // Array of product IDs
     createdAt: new Date(),
     updatedAt: new Date()
   };

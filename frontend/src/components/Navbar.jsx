@@ -7,9 +7,13 @@ import {
   Settings,
   LogOut,
   ShoppingCart,
-  Package
+  Package,
+  Heart,
+  Search
 } from "lucide-react";
 import useAuth from "../hooks/useAuth";
+import NotificationBell from "./NotificationBell";
+import { useCart } from "../context/CartContext";
 
 /* ================= Profile Menu ================= */
 function ProfileMenu() {
@@ -132,8 +136,10 @@ export default function Header({ openSignUp }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { cart } = useCart();
 
   const isLandingPage = pathname === "/";
+  const cartCount = cart?.length || 0;
 
   /* Scroll handling */
   useEffect(() => {
@@ -198,8 +204,25 @@ export default function Header({ openSignUp }) {
             </span>
           </Link>
 
+          {/* Search Bar */}
+          <div className="hidden md:flex flex-1 max-w-xl mx-8">
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+              <input
+                type="search"
+                placeholder="Search for products, brands, and more..."
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
+                onChange={(e) => {
+                  if (e.target.value) {
+                    navigate(`/home?search=${e.target.value}`);
+                  }
+                }}
+              />
+            </div>
+          </div>
+
           {/* Navigation */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
             {[{ path: "/home", label: "Store" }, { path: "/repair", label: "Repair" }].map(
               ({ path, label }) => (
                 <Link
@@ -215,27 +238,52 @@ export default function Header({ openSignUp }) {
             )}
           </nav>
 
-          {/* Auth + Cart */}
-          {user ? (
-            <div className="flex items-center gap-4 relative z-[60]">
-              <button
-                onClick={() => navigate("/cart")}
-                className="relative text-gray-600 hover:text-gray-900 transition"
-                aria-label="Cart"
-              >
-                <ShoppingCart size={20} />
-              </button>
+          {/* Right: Cart, Wishlist, Notifications, Profile */}
+          <div className="flex items-center gap-2">
+            {user ? (
+              <>
+                <Link
+                  to="/wishlist"
+                  className="flex flex-col items-center p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors relative group"
+                  aria-label="Wishlist"
+                >
+                  <Heart size={24} />
+                  <span className="text-xs mt-0.5 hidden lg:block">Wishlist</span>
+                </Link>
+                
+                <NotificationBell />
+                
+                <Link
+                  to="/cart"
+                  className="flex flex-col items-center p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors relative group"
+                  aria-label="Shopping Cart"
+                >
+                  <div className="relative">
+                    <ShoppingCart size={24} />
+                    {cartCount > 0 && (
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute -top-2 -right-2 min-w-[20px] h-5 px-1 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold"
+                      >
+                        {cartCount > 9 ? '9+' : cartCount}
+                      </motion.span>
+                    )}
+                  </div>
+                  <span className="text-xs mt-0.5 hidden lg:block">Cart</span>
+                </Link>
 
-              <ProfileMenu />
-            </div>
-          ) : (
-            <button
-              onClick={() => openSignUp?.()}
-              className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-900 transition"
-            >
-              Sign in
-            </button>
-          )}
+                <ProfileMenu />
+              </>
+            ) : (
+              <button
+                onClick={() => openSignUp?.()}
+                className="rounded-lg bg-black px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-900 transition"
+              >
+                Sign in
+              </button>
+            )}
+          </div>
         </div>
       </header>
     </>

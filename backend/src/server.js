@@ -7,7 +7,7 @@ dotenv.config();
 // Import configs
 import { validateEnv } from "./config/environment.js";
 import { connectDB, closeDB } from "./config/mongo.js";
-import { initializeSocket } from "./config/socket.js";
+import { initializeSocket } from "./socket/socketHandler.js";
 import appConfig from "./config/app.js";
 import logger from "./utils/logger.js";
 

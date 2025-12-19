@@ -4,10 +4,11 @@ import { protectAdmin } from "../middleware/adminMiddleware.js";
 import {
   createOrder,
   getMyOrders,
+  getAllOrders,
   getOrderById,
   updateOrder,
-  deleteOrder,
-  getAllOrders
+  updateOrderStatus,
+  deleteOrder
 } from "../controllers/orderController.js";
 
 const router = express.Router();
@@ -24,11 +25,13 @@ router.get("/", protectAdmin, getAllOrders);
 // Get a single order by ID (protected)
 router.get("/:id", protect, getOrderById);
 
-// Update an order (protected)
-router.put("/:id", protect, updateOrder);
+// Update order (admin)
+router.put("/:id", protect, protectAdmin, updateOrder);
+
+// Update order status (admin) - with notifications
+router.patch("/:id/status", protect, protectAdmin, updateOrderStatus);
 
 // Delete an order (protected)
 router.delete("/:id", protect, deleteOrder);
 
 export default router;
-

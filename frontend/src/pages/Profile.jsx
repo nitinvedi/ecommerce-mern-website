@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { User, Mail, Phone, MapPin, Save, Pencil } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { User, Mail, Phone, MapPin, Save, Pencil, Lock, KeyRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import { api, API_ENDPOINTS } from "../config/api";
 import { useToast } from "../context/ToastContext";
+
+import DashboardSidebar from "../components/DashboardSidebar.jsx";
 
 export default function Profile() {
   const { user, refreshProfile } = useAuth();
@@ -32,7 +34,6 @@ export default function Profile() {
     }
   });
 
-  /* ---------------- Load profile ---------------- */
   useEffect(() => {
     if (!user) {
       navigate("/");
@@ -59,7 +60,6 @@ export default function Profile() {
     })();
   }, [user, navigate, toast]);
 
-  /* ---------------- Handlers ---------------- */
   const update = (k, v) => {
     if (k.startsWith("address.")) {
       const field = k.split(".")[1];
@@ -74,20 +74,17 @@ export default function Profile() {
 
   const saveProfile = async (e) => {
     e.preventDefault();
-    // Basic validation
     if (!form.name || form.name.trim().length < 2) {
-      toast.error("Name must be at least 2 characters");
-      return;
+      return toast.error("Name must be at least 2 characters");
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(form.email)) {
-      toast.error("Enter a valid email");
-      return;
+      return toast.error("Enter a valid email");
     }
     if (form.phone && !/^\d{10}$/.test(form.phone)) {
-      toast.error("Enter a valid 10-digit phone");
-      return;
+      return toast.error("Enter a valid 10-digit phone");
     }
+    
     setLoading(true);
     try {
       await api.put(API_ENDPOINTS.USERS.PROFILE, form);
@@ -104,13 +101,12 @@ export default function Profile() {
   const changePassword = async (e) => {
     e.preventDefault();
     if (!pwdForm.currentPassword || !pwdForm.newPassword) {
-      toast.error("Fill all password fields");
-      return;
+      return toast.error("Fill all password fields");
     }
     if (pwdForm.newPassword !== pwdForm.confirmPassword) {
-      toast.error("New passwords do not match");
-      return;
+      return toast.error("New passwords do not match");
     }
+    
     setChangingPwd(true);
     try {
       await api.post(API_ENDPOINTS.AUTH.CHANGE_PASSWORD, {
@@ -128,196 +124,215 @@ export default function Profile() {
 
   if (!user) return null;
 
-  /* ---------------- UI ---------------- */
   return (
-    <div className="min-h-screen bg-[#f9fafb]">
-      <div className="max-w-4xl mx-auto px-6 pt-28 pb-20">
-        {/* Header */}
-        <div className="mb-10 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-semibold text-gray-900">Profile</h1>
-            <p className="text-sm text-gray-500">
-              Manage your personal information
-            </p>
-          </div>
+    <div className="min-h-screen bg-[#F8FAFC]">
 
-          <button
-            onClick={() => setEditing((v) => !v)}
-            className="flex items-center gap-2 rounded-lg border border-black/10 px-4 py-2 text-sm hover:bg-black/5 transition"
-          >
-            <Pencil size={16} />
-            {editing ? "Cancel" : "Edit"}
-          </button>
-        </div>
 
-        {/* Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl bg-white border border-black/5 shadow-sm p-8"
-        >
-          {/* Avatar */}
-          <div className="flex items-center gap-6 mb-8">
-            <div className="w-16 h-16 rounded-full bg-black text-white flex items-center justify-center text-xl font-semibold">
-              {user.name?.[0]?.toUpperCase() || "U"}
-            </div>
+      <div className="flex max-w-[1600px] mx-auto">
+        <DashboardSidebar />
 
-            <div>
-              <p className="font-medium text-gray-900">{user.name}</p>
-              <p className="text-sm text-gray-500">{user.email}</p>
-            </div>
-          </div>
-
-          {/* Form */}
-          <form onSubmit={saveProfile} className="space-y-8">
-            {/* Basic */}
-            <Section title="Basic information">
-              <Field
-                icon={<User size={16} />}
-                label="Full name"
-                value={form.name}
-                disabled={!editing}
-                onChange={(v) => update("name", v)}
-              />
-              <Field
-                icon={<Mail size={16} />}
-                label="Email"
-                value={form.email}
-                disabled={!editing}
-                onChange={(v) => update("email", v)}
-              />
-              <Field
-                icon={<Phone size={16} />}
-                label="Phone"
-                value={form.phone}
-                disabled={!editing}
-                onChange={(v) => update("phone", v)}
-              />
-            </Section>
-
-            {/* Address */}
-            <Section title="Address">
-              <Field
-                icon={<MapPin size={16} />}
-                label="Street"
-                value={form.address.street}
-                disabled={!editing}
-                onChange={(v) => update("address.street", v)}
-              />
-              <div className="grid md:grid-cols-3 gap-4">
-                <Field
-                  label="City"
-                  value={form.address.city}
-                  disabled={!editing}
-                  onChange={(v) => update("address.city", v)}
-                />
-                <Field
-                  label="State"
-                  value={form.address.state}
-                  disabled={!editing}
-                  onChange={(v) => update("address.state", v)}
-                />
-                <Field
-                  label="ZIP"
-                  value={form.address.zip}
-                  disabled={!editing}
-                  onChange={(v) => update("address.zip", v)}
-                />
+        <main className="flex-1 p-6 lg:p-12 pt-24">
+           
+           <div className="mb-8 flex items-center justify-between">
+              <div>
+                 <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
+                 <p className="text-gray-500">Manage your account settings and preferences.</p>
               </div>
-            </Section>
-
-            {/* Save */}
-            {editing && (
-              <div className="pt-4 border-t">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="inline-flex items-center gap-2 rounded-xl bg-black px-6 py-3 text-sm font-medium text-white hover:bg-gray-900 transition disabled:opacity-60"
-                >
-                  <Save size={16} />
-                  {loading ? "Saving…" : "Save changes"}
-                </button>
-              </div>
-            )}
-          </form>
-
-        {/* Change password */}
-        <div className="mt-8 border-t pt-6">
-          <h3 className="text-sm font-medium text-gray-900 mb-4">
-            Change password
-          </h3>
-          <form onSubmit={changePassword} className="grid md:grid-cols-3 gap-4">
-            <input
-              type="password"
-              placeholder="Current password"
-              value={pwdForm.currentPassword}
-              onChange={(e) => setPwdForm({ ...pwdForm, currentPassword: e.target.value })}
-              className="rounded-xl border border-black/10 px-4 py-2.5 text-sm"
-            />
-            <input
-              type="password"
-              placeholder="New password"
-              value={pwdForm.newPassword}
-              onChange={(e) => setPwdForm({ ...pwdForm, newPassword: e.target.value })}
-              className="rounded-xl border border-black/10 px-4 py-2.5 text-sm"
-            />
-            <input
-              type="password"
-              placeholder="Confirm new password"
-              value={pwdForm.confirmPassword}
-              onChange={(e) => setPwdForm({ ...pwdForm, confirmPassword: e.target.value })}
-              className="rounded-xl border border-black/10 px-4 py-2.5 text-sm"
-            />
-            <div className="md:col-span-3">
               <button
-                type="submit"
-                disabled={changingPwd}
-                className="rounded-xl bg-black px-6 py-3 text-sm font-medium text-white hover:bg-gray-900 disabled:opacity-60"
+                 onClick={() => setEditing(!editing)}
+                 className={`flex items-center gap-2 px-6 py-2 rounded-full font-medium transition-all ${
+                    editing 
+                       ? "bg-red-50 text-red-600 border border-red-100" 
+                       : "bg-black text-white hover:bg-gray-900"
+                 }`}
               >
-                {changingPwd ? "Updating..." : "Update password"}
+                 <Pencil size={16} />
+                 {editing ? "Cancel Editing" : "Edit Profile"}
               </button>
-            </div>
-          </form>
-        </div>
-        </motion.div>
+           </div>
+
+           <div className="grid lg:grid-cols-3 gap-8">
+              
+              {/* LEFT COLUMN: Avatar & Quick Stats */}
+              <div className="lg:col-span-1 space-y-6">
+                 <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm text-center">
+                    <div className="w-24 h-24 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-4xl font-bold mx-auto mb-4 border-4 border-white shadow-lg">
+                       {user.name?.[0]?.toUpperCase()}
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-900">{user.name}</h2>
+                    <p className="text-gray-500 mb-6">{user.role === 'admin' ? 'Administrator' : 'Customer'}</p>
+                    
+                    <div className="flex items-center justify-center gap-2 text-sm text-gray-600 bg-gray-50 py-2 rounded-full">
+                       <Mail size={16} />
+                       {user.email}
+                    </div>
+                 </div>
+
+                 {/* Password Reset */}
+                 <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
+                    <h3 className="font-bold text-gray-900 mb-6 flex items-center gap-2">
+                       <Lock size={20} className="text-gray-400" /> Security
+                    </h3>
+                    <form onSubmit={changePassword} className="space-y-4">
+                       <div>
+                          <input
+                             type="password"
+                             value={pwdForm.currentPassword}
+                             onChange={(e) => setPwdForm({ ...pwdForm, currentPassword: e.target.value })}
+                             placeholder="Current Password"
+                             className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-black/10 outline-none text-sm transition-all"
+                          />
+                       </div>
+                       <div className="grid grid-cols-2 gap-2">
+                          <input
+                             type="password"
+                             value={pwdForm.newPassword}
+                             onChange={(e) => setPwdForm({ ...pwdForm, newPassword: e.target.value })}
+                             placeholder="New"
+                             className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-black/10 outline-none text-sm transition-all"
+                          />
+                          <input
+                             type="password"
+                             value={pwdForm.confirmPassword}
+                             onChange={(e) => setPwdForm({ ...pwdForm, confirmPassword: e.target.value })}
+                             placeholder="Confirm"
+                             className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-black/10 outline-none text-sm transition-all"
+                          />
+                       </div>
+                       <button
+                          disabled={changingPwd}
+                          className="w-full py-3 bg-gray-900 text-white rounded-xl font-bold text-sm hover:bg-black transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+                       >
+                          <KeyRound size={16} />
+                          {changingPwd ? "Updating..." : "Update Password"}
+                       </button>
+                    </form>
+                 </div>
+              </div>
+
+              {/* RIGHT COLUMN: Details Form */}
+              <div className="lg:col-span-2">
+                 <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm h-full">
+                    <form onSubmit={saveProfile} className="space-y-8">
+                       {/* Personal Info */}
+                       <div>
+                          <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-6 flex items-center gap-2">
+                             <User size={16} /> Personal Information
+                          </h3>
+                          <div className="grid md:grid-cols-2 gap-6">
+                             <Field
+                                label="Full Name"
+                                value={form.name}
+                                onChange={(v) => update("name", v)}
+                                disabled={!editing}
+                             />
+                             <Field
+                                label="Email Address"
+                                value={form.email}
+                                onChange={(v) => update("email", v)}
+                                disabled={!editing}
+                             />
+                             <Field
+                                label="Phone Number"
+                                value={form.phone}
+                                onChange={(v) => update("phone", v)}
+                                disabled={!editing}
+                                placeholder="+91"
+                             />
+                          </div>
+                       </div>
+
+                       <div className="h-px bg-gray-100" />
+
+                       {/* Address */}
+                       <div>
+                          <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-6 flex items-center gap-2">
+                             <MapPin size={16} /> Shipping Address
+                          </h3>
+                          <div className="space-y-6">
+                             <Field
+                                label="Street Address"
+                                value={form.address.street}
+                                onChange={(v) => update("address.street", v)}
+                                disabled={!editing}
+                                fullWidth
+                             />
+                             <div className="grid md:grid-cols-3 gap-6">
+                                <Field
+                                   label="City"
+                                   value={form.address.city}
+                                   onChange={(v) => update("address.city", v)}
+                                   disabled={!editing}
+                                />
+                                <Field
+                                   label="State / Province"
+                                   value={form.address.state}
+                                   onChange={(v) => update("address.state", v)}
+                                   disabled={!editing}
+                                />
+                                <Field
+                                   label="ZIP Code"
+                                   value={form.address.zip}
+                                   onChange={(v) => update("address.zip", v)}
+                                   disabled={!editing}
+                                />
+                             </div>
+                          </div>
+                       </div>
+
+                       {/* Action Bar */}
+                       <AnimatePresence>
+                          {editing && (
+                             <motion.div 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 20 }}
+                                className="pt-6 border-t border-gray-100 flex justify-end gap-3 sticky bottom-0 bg-white"
+                             >
+                                <button
+                                   type="button"
+                                   onClick={() => setEditing(false)}
+                                   className="px-6 py-3 border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition"
+                                >
+                                   Cancel
+                                </button>
+                                <button
+                                   type="submit"
+                                   disabled={loading}
+                                   className="px-8 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-500/20 flex items-center gap-2"
+                                >
+                                   <Save size={18} />
+                                   {loading ? "Saving Changes..." : "Save Changes"}
+                                </button>
+                             </motion.div>
+                          )}
+                       </AnimatePresence>
+                    </form>
+                 </div>
+              </div>
+
+           </div>
+        </main>
       </div>
     </div>
   );
 }
 
-/* ---------------- Reusable UI ---------------- */
-
-function Section({ title, children }) {
-  return (
-    <div>
-      <h3 className="text-sm font-medium text-gray-900 mb-4">{title}</h3>
-      <div className="space-y-4">{children}</div>
-    </div>
-  );
-}
-
-function Field({ label, value, onChange, disabled, icon }) {
-  return (
-    <div>
-      <label className="block text-xs font-medium text-gray-500 mb-1">
-        {label}
-      </label>
-      <div className="relative">
-        {icon && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-            {icon}
-          </div>
-        )}
-        <input
-          value={value}
-          disabled={disabled}
-          onChange={(e) => onChange(e.target.value)}
-          className={`w-full rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm outline-none transition
-            ${icon ? "pl-10" : ""}
-            ${disabled ? "bg-gray-50 text-gray-500" : "focus:ring-2 focus:ring-black/20"}
-          `}
-        />
+function Field({ label, value, onChange, disabled, placeholder, fullWidth }) {
+   return (
+      <div className={fullWidth ? "col-span-full" : ""}>
+         <label className="block text-xs font-semibold text-gray-500 mb-2 ml-1">{label}</label>
+         <input
+            value={value}
+            disabled={disabled}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            className={`w-full px-5 py-3.5 rounded-xl border font-medium text-gray-900 transition-all
+               ${disabled 
+                  ? "bg-gray-50 border-gray-100 text-gray-500 cursor-not-allowed" 
+                  : "bg-white border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50"
+               }`}
+         />
       </div>
-    </div>
-  );
+   );
 }

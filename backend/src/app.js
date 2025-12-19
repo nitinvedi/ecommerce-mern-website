@@ -20,6 +20,12 @@ import productRoutes from "./routes/productRoutes.js";
 import repairRoutes from "./routes/repairRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+// New routes
+import wishlistRoutes from "./routes/wishlistRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
+import addressRoutes from "./routes/addressRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
+import chatRoutes from "./routes/chatRoutes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -69,6 +75,12 @@ app.use(`${apiPrefix}/products`, productRoutes);
 app.use(`${apiPrefix}/repairs`, repairRoutes);
 app.use(`${apiPrefix}/users`, userRoutes);
 app.use(`${apiPrefix}/admin`, adminRoutes);
+// New routes
+app.use(`${apiPrefix}/wishlist`, wishlistRoutes);
+app.use(`${apiPrefix}/notifications`, notificationRoutes);
+app.use(`${apiPrefix}/addresses`, addressRoutes);
+app.use(`${apiPrefix}/dashboard`, dashboardRoutes);
+app.use(`${apiPrefix}/chat`, chatRoutes);
 
 // Serve frontend in production
 if (appConfig.nodeEnv === "production") {

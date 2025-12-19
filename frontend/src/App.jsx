@@ -5,6 +5,9 @@ import "./App.css";
 // COMPONENTS
 import Navbar from "./components/Navbar";
 import AuthModal from "./components/AuthModal";
+import ChatWidget from "./components/ChatWidget";
+import Breadcrumbs from "./components/Breadcrumbs";
+import MobileBottomNav from "./components/MobileBottomNav";
 
 // PAGES
 import Landing from "./pages/Landing";
@@ -19,6 +22,9 @@ import LiveUpdates from "./pages/LiveUpdates";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import MyOrders from "./pages/MyOrders";
+import Wishlist from "./pages/Wishlist";
+import Addresses from "./pages/Addresses";
+import Notifications from "./pages/Notifications";
 
 // ADMIN
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -26,6 +32,7 @@ import ManageProducts from "./pages/admin/ManageProducts";
 import ManageOrders from "./pages/admin/ManageOrders";
 import ManageUsers from "./pages/admin/ManageUsers";
 import ManageRepairs from "./pages/admin/ManageRepairs";
+import AdminChat from "./pages/admin/AdminChat";
 
 // TECHNICIAN
 import TechnicianDashboard from "./pages/technician/TechnicianDashboard";
@@ -83,6 +90,30 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/wishlist"
+          element={
+            <ProtectedRoute>
+              <Wishlist />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/addresses"
+          element={
+            <ProtectedRoute>
+              <Addresses />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/notifications"
+          element={
+            <ProtectedRoute>
+              <Notifications />
+            </ProtectedRoute>
+          }
+        />
 
         {/* ADMIN */}
         <Route
@@ -125,6 +156,14 @@ export default function App() {
             </AdminRoute>
           }
         />
+        <Route
+          path="/admin/chat"
+          element={
+            <AdminRoute>
+              <AdminChat />
+            </AdminRoute>
+          }
+        />
 
         {/* TECHNICIAN */}
         <Route
@@ -163,6 +202,12 @@ export default function App() {
         {/* FALLBACK */}
         <Route path="*" element={<NotFound />} />
       </Routes>
+
+      {/* Chat Widget */}
+      <ChatWidget />
+      
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav />
     </>
   );
 }

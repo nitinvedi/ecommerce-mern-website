@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import logo from "../assets/logo.png";
 import {
   User,
   LayoutDashboard,
@@ -12,7 +13,7 @@ import {
   Search,
   Wrench,
   ShoppingBag,
-  Bell
+  Bell,
 } from "lucide-react";
 import useAuth from "../hooks/useAuth";
 import { useCart } from "../context/CartContext";
@@ -123,10 +124,11 @@ function MenuLink({ icon, label, onClick, danger = false }) {
     <motion.button
       onClick={onClick}
       whileHover={{ x: 4 }}
-      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${danger
+      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+        danger
           ? "text-red-500 hover:bg-red-50"
           : "text-gray-600 hover:text-black hover:bg-gray-100/50"
-        }`}
+      }`}
     >
       {icon}
       {label}
@@ -152,6 +154,7 @@ export default function Navbar({ openSignUp }) {
   }, []);
 
   const navLinks = [
+    { name: "Home", path: "/", icon: <ShoppingBag size={18} /> },
     { name: "Store", path: "/home", icon: <ShoppingBag size={18} /> },
     { name: "Repair", path: "/repair", icon: <Wrench size={18} /> },
   ];
@@ -168,19 +171,29 @@ export default function Navbar({ openSignUp }) {
         variants={navVariants}
         initial="hidden"
         animate="visible"
-        className={`fixed top-0 inset-x-0 z-40 transition-all duration-500 ${scrolled
+        className={`fixed top-0 inset-x-0 z-40 transition-all duration-500 ${
+          scrolled
             ? "bg-white/75 backdrop-blur-md shadow-sm border-b border-black/5 py-3"
             : "bg-transparent py-5"
-          }`}
+        }`}
       >
         <div className="max-w-7xl mx-auto px-6 md:px-10 flex items-center justify-between">
-
           {/* 1. Brand */}
           <Link to="/" className="group flex items-center gap-2">
-            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center text-white font-bold text-lg group-hover:scale-110 transition-transform">
+            {/* <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center text-white font-bold text-lg group-hover:scale-110 transition-transform">
               R
-            </div>
-            <span className={`text-xl font-bold tracking-tight transition-colors ${scrolled ? 'text-black' : 'text-black'}`}>
+            </div> */}
+            <img
+              src={logo}
+              alt="Ram Mobile Logo"
+              className="w-8 h-8 rounded-lg object-contain group-hover:scale-110 transition-transform"
+            />
+
+            <span
+              className={`text-xl font-bold tracking-tight transition-colors ${
+                scrolled ? "text-black" : "text-black"
+              }`}
+            >
               Ram Mobile
             </span>
           </Link>
@@ -199,14 +212,22 @@ export default function Navbar({ openSignUp }) {
                     <motion.div
                       layoutId="bubble"
                       className="absolute inset-0 bg-white rounded-full shadow-sm"
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                      transition={{
+                        type: "spring",
+                        bounce: 0.2,
+                        duration: 0.6,
+                      }}
                     />
                   )}
-                  <span className={`relative z-10 flex items-center gap-2 ${isActive ? "text-black" : "text-gray-500 hover:text-black"}`}>
+                  <span
+                    className={`relative z-10 flex items-center gap-2 ${
+                      isActive ? "text-black" : "text-gray-500 hover:text-black"
+                    }`}
+                  >
                     {link.name}
                   </span>
                 </Link>
-              )
+              );
             })}
           </div>
 

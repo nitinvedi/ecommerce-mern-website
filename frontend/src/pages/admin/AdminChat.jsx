@@ -30,12 +30,18 @@ export default function AdminChat() {
       });
 
       newSocket.on("receive_message", (data) => {
-        setMessages(prev => [...prev, {
-          sender: data.sender,
-          message: data.message,
-          createdAt: data.timestamp,
-          senderRole: "user"
-        }]);
+        setMessages(prev => {
+          // Check for duplicate _id to prevent double entries if latency occurs
+          if (prev.some(m => m._id === data._id)) return prev;
+
+          return [...prev, {
+            _id: data._id,
+            sender: data.sender,
+            message: data.message,
+            createdAt: data.timestamp,
+            senderRole: data.senderRole
+          }];
+        });
         fetchConversations(); // Refresh conversation list
       });
 
@@ -96,32 +102,15 @@ export default function AdminChat() {
     e.preventDefault();
     if (!newMessage.trim() || !selectedUser || !socket) return;
 
-    const messageData = {
-      receiver: selectedUser._id,
-      message: newMessage
-    };
-
-    // Add message optimistically
-    const tempMessage = {
-      sender: user._id,
-      message: newMessage,
-      createdAt: new Date(),
-      senderRole: "admin"
-    };
-    setMessages(prev => [...prev, tempMessage]);
-
-    // Send via Socket.IO
-    socket.emit("send_message", messageData);
-
-    // Also save to database
+    // Call API to save message (Backend will emit socket event)
     try {
       await api.post("/api/v1/chat/send", {
         receiver: selectedUser._id,
         message: newMessage
       });
-      
+
       setNewMessage("");
-      fetchConversations();
+      // No need to manually update state here; socket listener will receive "receive_message" even for self
     } catch (error) {
       toast.error("Failed to send message");
     }
@@ -141,14 +130,14 @@ export default function AdminChat() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
-          
+
           {/* Conversations List */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div className="p-4 border-b border-gray-200 bg-gray-50">
               <h2 className="font-semibold text-gray-900">Conversations</h2>
               <p className="text-sm text-gray-600">{conversations.length} active</p>
             </div>
-            
+
             <div className="overflow-y-auto h-full">
               {conversations.length === 0 ? (
                 <div className="p-8 text-center text-gray-500">
@@ -160,9 +149,8 @@ export default function AdminChat() {
                   <button
                     key={conv.partner._id}
                     onClick={() => setSelectedUser(conv.partner)}
-                    className={`w-full p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors text-left ${
-                      selectedUser?._id === conv.partner._id ? 'bg-blue-50 border-l-4 border-l-blue-600' : ''
-                    }`}
+                    className={`w-full p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors text-left ${selectedUser?._id === conv.partner._id ? 'bg-blue-50 border-l-4 border-l-blue-600' : ''
+                      }`}
                   >
                     <div className="flex items-start gap-3">
                       <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
@@ -215,23 +203,21 @@ export default function AdminChat() {
                   ) : (
                     messages.map((msg, index) => {
                       const isAdmin = msg.senderRole === 'admin';
-                      
+
                       return (
                         <div
                           key={index}
                           className={`flex ${isAdmin ? 'justify-end' : 'justify-start'}`}
                         >
                           <div
-                            className={`max-w-[70%] px-4 py-3 rounded-2xl ${
-                              isAdmin
-                                ? 'bg-blue-600 text-white rounded-br-none'
-                                : 'bg-white text-gray-900 rounded-bl-none border border-gray-200'
-                            }`}
+                            className={`max-w-[70%] px-4 py-3 rounded-2xl ${isAdmin
+                              ? 'bg-blue-600 text-white rounded-br-none'
+                              : 'bg-white text-gray-900 rounded-bl-none border border-gray-200'
+                              }`}
                           >
                             <p className="text-sm">{msg.message}</p>
-                            <div className={`flex items-center gap-1 mt-1 text-xs ${
-                              isAdmin ? 'text-blue-100' : 'text-gray-500'
-                            }`}>
+                            <div className={`flex items-center gap-1 mt-1 text-xs ${isAdmin ? 'text-blue-100' : 'text-gray-500'
+                              }`}>
                               <Clock size={12} />
                               <span>
                                 {new Date(msg.createdAt).toLocaleString('en-IN', {

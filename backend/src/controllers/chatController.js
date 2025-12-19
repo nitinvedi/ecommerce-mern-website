@@ -1,11 +1,12 @@
 import * as ChatMessage from "../models/ChatMessage.js";
 import * as User from "../models/User.js";
+import { emitChatMessage } from "../socket/socketHandler.js";
 
 // Send message
 export const sendMessage = async (req, res) => {
   try {
     const { receiver, message } = req.body;
-    
+
     if (!receiver || !message) {
       return res.status(400).json({ message: "Receiver and message are required" });
     }
@@ -17,8 +18,12 @@ export const sendMessage = async (req, res) => {
       message
     };
 
+    // 1. Save to DB
     const newMessage = await ChatMessage.createMessage(messageData);
-    
+
+    // 2. Broadcast via Socket
+    emitChatMessage(newMessage);
+
     res.status(201).json({ message: newMessage });
   } catch (error) {
     console.error("Send message error:", error);
@@ -30,7 +35,7 @@ export const sendMessage = async (req, res) => {
 export const getMessages = async (req, res) => {
   try {
     const { userId } = req.params;
-    
+
     const messages = await ChatMessage.getMessagesBetweenUsers(
       req.user._id,
       userId
@@ -50,7 +55,7 @@ export const getMessages = async (req, res) => {
 export const getConversations = async (req, res) => {
   try {
     const partnerIds = await ChatMessage.getUserConversations(req.user._id);
-    
+
     // Get user details for each partner
     const conversations = await Promise.all(
       partnerIds.map(async (partnerId) => {
@@ -60,7 +65,7 @@ export const getConversations = async (req, res) => {
           partnerId,
           1
         );
-        
+
         return {
           partner: {
             _id: partner._id,
@@ -98,7 +103,7 @@ export const getSupportAdmin = async (req, res) => {
     const { getDB } = await import("../config/mongo.js");
     const db = getDB();
     const admin = await db.collection("users").findOne({ role: "admin" });
-    
+
     if (!admin) {
       return res.status(404).json({ message: "No support admin found" });
     }

@@ -9,7 +9,7 @@ import { useToast } from "../context/ToastContext.jsx";
 export default function ChatWidget() {
   const { user } = useAuth();
   const toast = useToast();
-  
+
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -17,7 +17,7 @@ export default function ChatWidget() {
   const [supportAdmin, setSupportAdmin] = useState(null);
   const [loading, setLoading] = useState(false);
   const [socket, setSocket] = useState(null);
-  
+
   const messagesEndRef = useRef(null);
 
   // Initialize Socket.IO
@@ -33,12 +33,16 @@ export default function ChatWidget() {
       });
 
       newSocket.on("receive_message", (data) => {
-        setMessages(prev => [...prev, {
-          sender: data.sender,
-          message: data.message,
-          createdAt: data.timestamp,
-          senderRole: "admin"
-        }]);
+        setMessages(prev => {
+          if (prev.some(m => m._id === data._id)) return prev;
+          return [...prev, {
+            _id: data._id,
+            sender: data.sender,
+            message: data.message,
+            createdAt: data.timestamp,
+            senderRole: data.senderRole
+          }];
+        });
       });
 
       newSocket.on("message_sent", (data) => {
@@ -88,7 +92,7 @@ export default function ChatWidget() {
         const adminRes = await api.get("/api/v1/chat/support-admin");
         const admin = adminRes.admin;
         setSupportAdmin(admin);
-        
+
         const res = await api.get(`/api/v1/chat/messages/${admin._id}`);
         setMessages(res.messages || []);
       } catch (error) {
@@ -106,38 +110,19 @@ export default function ChatWidget() {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    
+
     if (!newMessage.trim() || !supportAdmin || !socket) return;
 
-    const messageData = {
-      receiver: supportAdmin._id,
-      message: newMessage,
-      receiverRole: "admin"
-    };
-
-    // Add message optimistically
-    const tempMessage = {
-      sender: user._id,
-      message: newMessage,
-      createdAt: new Date(),
-      senderRole: "user"
-    };
-    setMessages(prev => [...prev, tempMessage]);
-
-    // Send via Socket.IO
-    socket.emit("send_message", messageData);
-
-    // Also save to database
     try {
       await api.post("/api/v1/chat/send", {
         receiver: supportAdmin._id,
         message: newMessage
       });
+      setNewMessage("");
     } catch (error) {
       console.error("Failed to save message");
+      toast.error("Failed to send message");
     }
-
-    setNewMessage("");
   };
 
   if (!user) return null;
@@ -164,9 +149,9 @@ export default function ChatWidget() {
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, y: 100, scale: 0.8 }}
-            animate={{ 
-              opacity: 1, 
-              y: 0, 
+            animate={{
+              opacity: 1,
+              y: 0,
               scale: 1,
               height: isMinimized ? "60px" : "500px"
             }}
@@ -184,7 +169,7 @@ export default function ChatWidget() {
                   <p className="text-xs text-blue-100">Online • Instant replies</p>
                 </div>
               </div>
-              
+
               <div className="flex gap-2">
                 <button
                   onClick={() => setIsMinimized(!isMinimized)}
@@ -213,18 +198,17 @@ export default function ChatWidget() {
                   ) : (
                     messages.map((msg, index) => {
                       const isMyMessage = msg.sender.toString() === user._id.toString();
-                      
+
                       return (
                         <div
                           key={index}
                           className={`flex ${isMyMessage ? 'justify-end' : 'justify-start'}`}
                         >
                           <div
-                            className={`max-w-[75%] px-4 py-2 rounded-2xl ${
-                              isMyMessage
-                                ? 'bg-blue-600 text-white rounded-br-none'
-                                : 'bg-white text-gray-900 rounded-bl-none border border-gray-200'
-                            }`}
+                            className={`max-w-[75%] px-4 py-2 rounded-2xl ${isMyMessage
+                              ? 'bg-blue-600 text-white rounded-br-none'
+                              : 'bg-white text-gray-900 rounded-bl-none border border-gray-200'
+                              }`}
                           >
                             <p className="text-sm">{msg.message}</p>
                             <p className={`text-xs mt-1 ${isMyMessage ? 'text-blue-100' : 'text-gray-500'}`}>

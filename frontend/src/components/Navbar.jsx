@@ -152,6 +152,7 @@ export default function Navbar({ openSignUp }) {
   }, []);
 
   const navLinks = [
+    { name: "Home", path: "/", icon: <ShoppingBag size={18} /> },
     { name: "Store", path: "/home", icon: <ShoppingBag size={18} /> },
     { name: "Repair", path: "/repair", icon: <Wrench size={18} /> },
   ];

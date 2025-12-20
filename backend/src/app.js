@@ -88,7 +88,7 @@ if (appConfig.nodeEnv === "production") {
   app.use(express.static(frontendPath));
   
   // Serve frontend for all non-API routes
-  app.get("*", (req, res) => {
+  app.get("/*", (req, res) => {
     // Don't serve frontend for API routes
     if (req.path.startsWith("/api")) {
       return notFound(req, res, () => {});

@@ -18,6 +18,7 @@ import { api, API_ENDPOINTS } from "../config/api.js";
 import { useCart } from "../context/CartContext.jsx";
 import useAuth from "../hooks/useAuth.js";
 import { useToast } from "../context/ToastContext.jsx";
+import AuthModal from "../components/AuthModal";
  // Assuming Navbar is globally available
 import { addToRecentlyViewed, getRelatedProducts } from "../utils/recommendations.js";
 import { ProductCardSkeleton } from "../components/Skeleton.jsx"; // Reusing skeleton
@@ -37,6 +38,7 @@ export default function Product() {
   const [submittingReview, setSubmittingReview] = useState(false);
   const [allProducts, setAllProducts] = useState([]);
   const [relatedProducts, setRelatedProducts] = useState([]);
+  const [authModal, setAuthModal] = useState(false);
 
   useEffect(() => {
     fetchProduct();
@@ -91,7 +93,11 @@ export default function Product() {
 
   const handleSubmitReview = async (e) => {
     e.preventDefault();
-    if (!user) return toast.error("Please sign in");
+    if (!user) {
+        toast.error("Please sign in to write a review");
+        setAuthModal(true);
+        return;
+    }
 
     setSubmittingReview(true);
     try {
@@ -437,6 +443,16 @@ export default function Product() {
         )}
 
       </main>
+
+      {authModal && (
+        <AuthModal 
+          onClose={() => setAuthModal(false)}
+          onAuthSuccess={() => {
+            setAuthModal(false);
+            toast.success("Signed in! You can now post your review.");
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -25,6 +25,7 @@ import AuthModal from "../components/AuthModal";
 import useAuth from "../hooks/useAuth";
 import { useToast } from "../context/ToastContext";
 import { API_ENDPOINTS, uploadFile } from "../config/api";
+import { validate, validateForm } from "../utils/validation";
 
 const GrainOverlay = () => (
   <div className="absolute inset-0 opacity-[0.03] pointer-events-none z-0" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}></div>
@@ -63,6 +64,7 @@ export default function Repair() {
   const [bookingForm, setBookingForm] = useState(false);
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   // Parallax
   const heroY = useTransform(scrollY, [0, 500], [0, 150]);
@@ -99,6 +101,28 @@ export default function Repair() {
   };
 
   const submit = async () => {
+    // 1. Validate Form
+    const schema = {
+        fullName: validate.name,
+        phoneNumber: validate.phone,
+        pickupAddress: (v) => validate.required(v, "Address"),
+        city: (v) => validate.required(v, "City"),
+        pincode: validate.pincode,
+        deviceType: (v) => validate.required(v, "Device Type"),
+        brand: (v) => validate.required(v, "Brand"),
+        model: (v) => validate.required(v, "Model"),
+        issue: (v) => validate.required(v, "Issue"),
+        problemDescription: (v) => validate.required(v, "Description"),
+    };
+
+    const { isValid, errors: newErrors } = validateForm(formData, schema);
+    setErrors(newErrors);
+
+    if (!isValid) {
+        toast.error("Please fix the errors in the form");
+        return;
+    }
+
     if (!user) {
       toast.error("Please sign in to confirm booking");
       setAuthModal(true);
@@ -410,7 +434,15 @@ export default function Repair() {
          </div>
       </section>
 
-      {authModal && <AuthModal onClose={() => setAuthModal(false)} />}
+      {authModal && (
+        <AuthModal 
+          onClose={() => setAuthModal(false)} 
+          onAuthSuccess={() => {
+             setAuthModal(false);
+             toast.success("Signed in successfully! Please confirm your booking now.");
+          }}
+        />
+      )}
     </div>
   );
 }

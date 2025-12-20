@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Routes, Route } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
 import "./App.css";
 
 // COMPONENTS
@@ -41,6 +41,7 @@ import TechnicianDashboard from "./pages/technician/TechnicianDashboard";
 import TechnicianJobs from "./pages/technician/TechnicianJobs";
 import TechnicianProfile from "./pages/technician/TechnicianProfile";
 import TechnicianProducts from "./pages/technician/TechnicianProducts";
+import TechnicianJobDetail from "./pages/technician/TechnicianJobDetail";
 
 // ROUTE GUARDS
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -52,6 +53,13 @@ import NotFound from "./pages/NotFound";
 
 export default function App() {
   const [authOpen, setAuthOpen] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.openAuth) {
+      setAuthOpen(true);
+    }
+  }, [location.state]);
 
   return (
     <>
@@ -182,6 +190,14 @@ export default function App() {
           element={
             <TechnicianRoute>
               <TechnicianJobs />
+            </TechnicianRoute>
+          }
+        />
+        <Route
+          path="/technician/job/:id"
+          element={
+            <TechnicianRoute>
+              <TechnicianJobDetail />
             </TechnicianRoute>
           }
         />

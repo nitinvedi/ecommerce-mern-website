@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, ShoppingCart, Trash2, ArrowRight } from "lucide-react";
+import { Heart, ShoppingCart, Trash2, ArrowRight, ArrowLeft } from "lucide-react";
 import { api, API_ENDPOINTS } from "../config/api.js";
 import { useCart } from "../context/CartContext.jsx";
 import useAuth from "../hooks/useAuth.js";
@@ -65,6 +65,16 @@ export default function Wishlist() {
         {/* Header Hero */}
         <div className="relative bg-[#F5F5F7] py-20 overflow-hidden">
             <GrainOverlay />
+            
+            {/* Back Button */}
+            <div className="absolute top-8 left-8 z-20">
+               <button 
+                  onClick={() => navigate('/dashboard')} 
+                  className="p-3 bg-white rounded-full shadow-sm hover:scale-110 transition-transform"
+               >
+                  <ArrowLeft size={20} />
+               </button>
+            </div>
             <div className="max-w-7xl mx-auto px-6 relative z-10 flex flex-col items-center text-center">
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-2 mb-4 px-3 py-1 bg-white/50 backdrop-blur rounded-full border border-black/5">
                     <Heart size={14} className="fill-red-500 stroke-red-500" />

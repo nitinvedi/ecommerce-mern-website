@@ -26,8 +26,8 @@ export default function TechnicianDashboard() {
       const items =
         res?.data?.items ||
         res?.data?.repairs ||
-        res?.data?.data?.items ||
         res?.data?.data ||
+        res?.data ||
         [];
       setRepairs(Array.isArray(items) ? items : []);
     } catch (err) {

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { MapPin, Plus, Edit2, Trash2, Check, X } from "lucide-react";
+import { MapPin, Plus, Edit2, Trash2, Check, X, ArrowLeft } from "lucide-react";
 import { api, API_ENDPOINTS } from "../config/api.js";
+import { validate, validateForm } from "../utils/validation.js";
 import useAuth from "../hooks/useAuth.js";
 import { useToast } from "../context/ToastContext.jsx";
 import Navbar from "../components/Navbar.jsx";
@@ -29,6 +30,7 @@ function AddressesPage() {
     zip: "",
     label: "home"
   });
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     fetchAddresses();
@@ -47,6 +49,24 @@ function AddressesPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validation
+    const schema = {
+        fullName: validate.name,
+        phone: validate.phone,
+        address: (v) => validate.required(v, "Address"),
+        city: (v) => validate.required(v, "City"),
+        state: (v) => validate.required(v, "State"),
+        zip: validate.pincode
+    };
+
+    const { isValid, errors: newErrors } = validateForm(formData, schema);
+    setErrors(newErrors);
+
+    if (!isValid) {
+        toast.error("Please check the form for errors");
+        return;
+    }
     
     try {
       if (editingAddress) {
@@ -134,6 +154,13 @@ function AddressesPage() {
       <Navbar />
       
       <div className="max-w-5xl mx-auto px-6 pt-28 pb-24">
+        <button 
+           onClick={() => window.history.back()} 
+           className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900 mb-8 transition-colors"
+        >
+           <ArrowLeft size={16} /> Back
+        </button>
+
         {/* Header */}
         <div className="flex items-center justify-between mb-12">
           <div>
@@ -278,8 +305,9 @@ function AddressesPage() {
                     required
                     value={formData.fullName}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-transparent ${errors.fullName ? 'border-red-500' : 'border-gray-300'}`}
                   />
+                  {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>}
                 </div>
 
                 <div>
@@ -291,8 +319,9 @@ function AddressesPage() {
                     required
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-transparent ${errors.phone ? 'border-red-500' : 'border-gray-300'}`}
                   />
+                  {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
                 </div>
               </div>
 
@@ -305,8 +334,9 @@ function AddressesPage() {
                   rows={3}
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-transparent ${errors.address ? 'border-red-500' : 'border-gray-300'}`}
                 />
+                {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -319,8 +349,9 @@ function AddressesPage() {
                     required
                     value={formData.city}
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-transparent ${errors.city ? 'border-red-500' : 'border-gray-300'}`}
                   />
+                  {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
                 </div>
 
                 <div>
@@ -332,8 +363,9 @@ function AddressesPage() {
                     required
                     value={formData.state}
                     onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-transparent ${errors.state ? 'border-red-500' : 'border-gray-300'}`}
                   />
+                  {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
                 </div>
               </div>
 
@@ -347,8 +379,9 @@ function AddressesPage() {
                     required
                     value={formData.zip}
                     onChange={(e) => setFormData({ ...formData, zip: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-transparent ${errors.zip ? 'border-red-500' : 'border-gray-300'}`}
                   />
+                  {errors.zip && <p className="text-red-500 text-xs mt-1">{errors.zip}</p>}
                 </div>
 
                 <div>

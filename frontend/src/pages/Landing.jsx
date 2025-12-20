@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import "../styles/landing.css";
 import SignIn from "../components/AuthModal.jsx";
@@ -7,6 +7,10 @@ import SignUp from "../components/SignUp";
 import FeatureCards from "../components/FeatureCards";
 import Footer from "../components/Footer";
 import useAuth from "../hooks/useAuth.js";
+
+const GrainOverlay = () => (
+  <div className="absolute inset-0 opacity-[0.03] pointer-events-none z-0" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}></div>
+);
 
 export default function Landing() {
   const [authModal, setAuthModal] = useState(null);
@@ -27,19 +31,38 @@ export default function Landing() {
   const switchToSignUp = () => setAuthModal("signup");
   const switchToSignIn = () => setAuthModal("signin");
 
-  /* PARALLAX */
-  const [mouse, setMouse] = useState({ x: 0, y: 0 });
+  /* PARALLAX CONFIG */
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
 
-  useEffect(() => {
-    const handleMove = (e) => {
-      setMouse({
-        x: (e.clientX / window.innerWidth - 0.5) * 2,
-        y: (e.clientY / window.innerHeight - 0.5) * 2,
-      });
-    };
-    window.addEventListener("mousemove", handleMove);
-    return () => window.removeEventListener("mousemove", handleMove);
-  }, []);
+  // Smooth spring physics for lag-free but organic feel
+  const springConfig = { damping: 25, stiffness: 150 };
+  const smoothX = useSpring(mouseX, springConfig);
+  const smoothY = useSpring(mouseY, springConfig);
+
+  // Transform values for different layers
+  const badgeX = useTransform(smoothX, [-1, 1], [-20, 20]);
+  const badgeY = useTransform(smoothY, [-1, 1], [-20, 20]);
+
+  const headingX = useTransform(smoothX, [-1, 1], [-40, 40]);
+  const headingY = useTransform(smoothY, [-1, 1], [-40, 40]);
+
+  const textX = useTransform(smoothX, [-1, 1], [-15, 15]);
+  const textY = useTransform(smoothY, [-1, 1], [-15, 15]);
+
+  const btnX = useTransform(smoothX, [-1, 1], [-10, 10]);
+  const btnY = useTransform(smoothY, [-1, 1], [-10, 10]);
+
+  const sliderX = useTransform(smoothX, [-1, 1], [-30, 30]);
+  const sliderY = useTransform(smoothY, [-1, 1], [-30, 30]);
+
+  const handleMouseMove = (e) => {
+    // Normalize mouse position from -1 to 1
+    const x = (e.clientX / window.innerWidth) * 2 - 1;
+    const y = (e.clientY / window.innerHeight) * 2 - 1;
+    mouseX.set(x);
+    mouseY.set(y);
+  };
 
   /* SLIDER */
   const images = ["image1.png", "image2.png", "image3.png"];
@@ -56,16 +79,21 @@ export default function Landing() {
 
   return (
     <>
-      <div className="landing min-h-screen flex flex-col items-center pt-28">
+      <div 
+        onMouseMove={handleMouseMove}
+        className="landing min-h-screen flex flex-col items-center pt-28 overflow-hidden relative"
+      >
+        <GrainOverlay />
+        
         {/* HERO */}
-        <section className="relative flex flex-col items-center justify-center mt-4 md:mt-10 px-6 text-center max-w-5xl">
+        <section className="relative flex flex-col items-center justify-center mt-4 md:mt-10 px-6 text-center max-w-5xl z-10">
           {/* BADGE */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true, amount: 0.4 }}
-            style={{ transform: `translate(${mouse.x * 4}px, ${mouse.y * 3}px)` }}
+            style={{ x: badgeX, y: badgeY }}
             className="bg-white/70 backdrop-blur-sm border border-black/10 px-6 py-2 rounded-full text-gray-800 text-sm font-medium shadow-md"
           >
             Start using Marammat ❤️
@@ -77,8 +105,8 @@ export default function Landing() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1 }}
             viewport={{ once: true, amount: 0.4 }}
-            style={{ transform: `translate(${mouse.x * 8}px, ${mouse.y * 6}px)` }}
-            className="heading-font text-gray-900 font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.15] mt-6"
+            style={{ x: headingX, y: headingY }}
+            className="heading-font text-gray-900 font-bold text-3xl sm:text-4xl md:text-5xl lg:text-7xl leading-[1.1] tracking-tight mt-6"
           >
             Effortless Phone Repairs,
             <br className="hidden sm:block" />
@@ -91,8 +119,8 @@ export default function Landing() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.15 }}
             viewport={{ once: true, amount: 0.4 }}
-            style={{ transform: `translate(${mouse.x * 5}px, ${mouse.y * 4}px)` }}
-            className="text-gray-600 text-base sm:text-[10px] md:text-[15px] mt-4 max-w-2xl mx-auto leading-relaxed font-inter"
+            style={{ x: textX, y: textY }}
+            className="text-gray-600 text-lg sm:text-lg md:text-xl mt-6 max-w-2xl mx-auto leading-relaxed font-inter"
           >
             Transfer your broken device to experts—fast, safe, and tracked in real
             time.
@@ -104,18 +132,18 @@ export default function Landing() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.25 }}
             viewport={{ once: true, amount: 0.4 }}
-            style={{ transform: `translate(${mouse.x * 12}px, ${mouse.y * 10}px)` }}
-            className="flex items-center gap-4 mt-8"
+            style={{ x: btnX, y: btnY }}
+            className="flex items-center gap-4 mt-10"
           >
             <button
               onClick={openSignUp}
-              className="text-[15px] bg-black text-white font-semibold px-5 py-2 rounded-md hover:bg-gray-800 transition cursor-pointer"
+              className="text-[16px] bg-black text-white font-medium px-8 py-3 rounded-full hover:bg-gray-900 hover:scale-105 active:scale-95 transition-all duration-300 shadow-xl hover:shadow-2xl cursor-pointer"
             >
               Try Now →
             </button>
 
-            <button className="shine-btn relative overflow-hidden flex items-center text-[15px] bg-white/70 backdrop-blur-md text-gray-900 border border-black/15 px-5 py-2 cursor-pointer rounded-md hover:bg-white transition">
-              <span className="mx-1">Become Pro</span>
+            <button className="shine-btn relative overflow-hidden flex items-center text-[16px] bg-white/80 backdrop-blur-md text-gray-900 border border-black/10 px-8 py-3 cursor-pointer rounded-full hover:bg-white hover:border-black/20 hover:shadow-lg transition-all duration-300">
+              <span className="mx-1 font-medium">Become Pro</span>
             </button>
           </motion.div>
         </section>
@@ -125,24 +153,27 @@ export default function Landing() {
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9 }}
-          className="w-full flex justify-center mt-10"
+          className="w-full flex justify-center mt-16 z-10"
         >
           <div
-            className="relative w-[600px] h-[360px] sm:w-[750px] sm:h-[450px] md:w-[900px] md:h-[560px] overflow-hidden rounded-3xl shadow-[0_0_40px_-10px_rgba(0,0,0,0.25)] border border-black/10 bg-linear-to-br from-white/70 via-gray-100/60 to-white/80 backdrop-blur-xl"
-            style={{ transform: `translate(${mouse.x * 4}px, ${mouse.y * 3}px)` }}
+            className="relative w-[90%] md:w-[1000px] aspect-video overflow-hidden rounded-[40px] shadow-2xl border border-white/50 bg-white/50 backdrop-blur-xl"
+            style={{ x: sliderX, y: sliderY }} // Not applying x/y here directly to inner div if previously applied to wrapper
           >
-            <AnimatePresence mode="wait">
-              <motion.img
-                key={index}
-                src={images[index]}
-                alt="slider"
-                className="absolute w-full h-full object-cover"
-                initial={{ opacity: 0, scale: 1.05 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.7, ease: "easeInOut" }}
-              />
-            </AnimatePresence>
+            {/* Inner content (image) */}
+            <motion.div style={{ x: sliderX, y: sliderY }} className="absolute inset-0"> 
+               <AnimatePresence mode="wait">
+                  <motion.img
+                    key={index}
+                    src={images[index]}
+                    alt="slider"
+                    className="absolute w-full h-full object-cover"
+                    initial={{ opacity: 0, scale: 1.05 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.7, ease: "easeInOut" }}
+                  />
+               </AnimatePresence>
+            </motion.div>
           </div>
         </motion.div>
 
@@ -201,13 +232,11 @@ function FAQItem({ question, answer, open, onToggle }) {
     <motion.div
       layout
       transition={{ layout: { duration: 0.45, ease: "easeInOut" } }}
-      className="bg-white/70 backdrop-blur-md border border-black/10 rounded-xl shadow-sm overflow-hidden"
+      className="bg-white/80 backdrop-blur-md border border-black/5 rounded-2xl shadow-sm hover:shadow-md hover:border-black/10 transition-all duration-300 overflow-hidden"
     >
       <motion.button
         onClick={onToggle}
-        whileHover={{ backgroundColor: "rgba(0,0,0,0.03)" }}
-        whileTap={{ scale: 0.98 }}
-        className="w-full flex justify-between items-center px-6 py-4 text-left"
+        className="w-full flex justify-between items-center px-8 py-5 text-left"
       >
         <span className="font-medium text-gray-900 text-base sm:text-lg">
           {question}
@@ -249,23 +278,23 @@ function FAQItem({ question, answer, open, onToggle }) {
 
 const FAQ_DATA = [
   {
-    q: "How does Marammat work?",
-    a: "You book a repair, our technician picks up your device, repairs it, and delivers it back with full tracking.",
+    q: "Do you sell new or used devices?",
+    a: "We offer a curated selection of premium refurbished and brand-new smartphones with warranty.",
   },
   {
-    q: "Is my device safe?",
-    a: "Yes. All repairs are handled by verified technicians and are fully trackable and insured.",
+    q: "How does the repair process work?",
+    a: "Book online, we pick up your device, expert technicians fix it, and we deliver it back to you within 24-48h.",
   },
   {
-    q: "How long does a repair take?",
-    a: "Most repairs are completed within 24–48 hours depending on the device and issue.",
+    q: "Is there a warranty on products & repairs?",
+    a: "Yes! 6-month warranty on repairs and up to 1-year warranty on refurbished devices.",
   },
   {
-    q: "Do you provide warranty?",
-    a: "Yes, every repair includes a service warranty based on the repair type.",
+    q: "Can I track my order or repair?",
+    a: "Absolutely. Use our real-time dashboard to track your package or repair status every step of the way.",
   },
   {
-    q: "Can I track my repair?",
-    a: "You can track your device in real time directly from your dashboard.",
+    q: "Do you offer accessories?",
+    a: "Yes, we stock high-quality cases, chargers, and audio gear for all major brands.",
   },
 ];

@@ -11,7 +11,8 @@ import {
   Info,
   AlertCircle,
   Clock,
-  ExternalLink
+  ExternalLink,
+  ArrowLeft
 } from "lucide-react";
 import { useNotification } from "../context/NotificationContext.jsx";
 
@@ -98,6 +99,12 @@ export default function Notifications() {
   return (
     <div className="min-h-screen bg-white font-sans text-gray-900 pt-24 pb-12">
       <div className="max-w-3xl mx-auto px-6">
+        <button 
+          onClick={() => navigate('/dashboard')} 
+          className="mb-6 flex items-center gap-2 text-sm text-gray-500 hover:text-black transition-colors"
+        >
+          <ArrowLeft size={16} /> Back to Dashboard
+        </button>
         
         {/* Header */}
         <div className="flex items-end justify-between mb-8 border-b border-gray-100 pb-6">

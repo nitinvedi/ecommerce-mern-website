@@ -20,7 +20,7 @@ import {
 import useAuth from "../hooks/useAuth";
 import { useCart } from "../context/CartContext";
 import { useNotification } from "../context/NotificationContext";
-
+import logo from '../assets/logo.png'
 /* ================= Animations ================= */
 const navVariants = {
   hidden: { y: -100, opacity: 0 },
@@ -201,9 +201,11 @@ export default function Navbar({ openSignUp }) {
 
           {/* 1. Brand */}
           <Link to="/intro" className="relative z-50 flex items-center gap-2 group">
-            <div className="w-10 h-10 bg-black text-white rounded-xl flex items-center justify-center shadow-lg shadow-black/20 group-hover:scale-110 transition-transform duration-300">
-             <span className="font-bold text-xl">R</span>
-            </div>
+            <img
+              src={logo}
+              alt="Ram Mobile Logo"
+              className="w-8 h-8 rounded-lg object-contain group-hover:scale-110 transition-transform"
+            />
             <span className={`text-xl font-bold tracking-tight transition-colors duration-300 ${scrolled || mobileMenuOpen ? 'text-gray-900' : 'text-gray-900'}`}>
               Ram Mobile
             </span>

@@ -87,8 +87,8 @@ if (appConfig.nodeEnv === "production") {
   const frontendPath = path.join(__dirname, "../../frontend/dist");
   app.use(express.static(frontendPath));
   
-  // Serve frontend for all non-API routes
-  app.get("/*", (req, res) => {
+  // Serve frontend for all non-API routes (SPA Fallback)
+  app.use((req, res) => {
     // Don't serve frontend for API routes
     if (req.path.startsWith("/api")) {
       return notFound(req, res, () => {});

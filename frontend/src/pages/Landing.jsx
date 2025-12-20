@@ -278,13 +278,8 @@ function FAQItem({ question, answer, open, onToggle }) {
 
 const FAQ_DATA = [
   {
-<<<<<<< HEAD
-    q: "How does Ram Mobile work?",
-    a: "You book a repair, our technician picks up your device, repairs it, and delivers it back with full tracking.",
-=======
     q: "Do you sell new or used devices?",
     a: "We offer a curated selection of premium refurbished and brand-new smartphones with warranty.",
->>>>>>> chat-system
   },
   {
     q: "How does the repair process work?",

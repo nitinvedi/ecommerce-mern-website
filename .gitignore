@@ -39,3 +39,4 @@ backend/logs/
 .env
 backend/.env
 frontend/.env
+node_modules

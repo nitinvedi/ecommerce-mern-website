@@ -1,0 +1,26 @@
+{
+  "name": "ecommerce-mern-root",
+  "version": "1.0.0",
+  "description": "Root script for MERN deployment",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install-all": "npm install",
+    "build": "npm run build -w frontend",
+    "start": "npm start -w backend",
+    "dev": "concurrently \"npm run dev -w backend\" \"npm run dev -w frontend\""
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

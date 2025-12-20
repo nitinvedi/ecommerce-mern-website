@@ -21,7 +21,7 @@ import {
 import useAuth from "../hooks/useAuth";
 import { useCart } from "../context/CartContext";
 import { useNotification } from "../context/NotificationContext";
-import logo from '../assets/logo.png'
+
 /* ================= Animations ================= */
 const navVariants = {
   hidden: { y: -100, opacity: 0 },

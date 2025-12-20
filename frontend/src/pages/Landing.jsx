@@ -68,7 +68,7 @@ export default function Landing() {
             style={{ transform: `translate(${mouse.x * 4}px, ${mouse.y * 3}px)` }}
             className="bg-white/70 backdrop-blur-sm border border-black/10 px-6 py-2 rounded-full text-gray-800 text-sm font-medium shadow-md"
           >
-            Start using Marammat ❤️
+            Start using our Store ❤️
           </motion.div>
 
           {/* HEADING */}
@@ -249,7 +249,7 @@ function FAQItem({ question, answer, open, onToggle }) {
 
 const FAQ_DATA = [
   {
-    q: "How does Marammat work?",
+    q: "How does Ram Mobile work?",
     a: "You book a repair, our technician picks up your device, repairs it, and delivers it back with full tracking.",
   },
   {

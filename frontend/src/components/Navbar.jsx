@@ -157,6 +157,7 @@ export default function Navbar({ openSignUp, openChat }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -181,6 +182,7 @@ export default function Navbar({ openSignUp, openChat }) {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/?search=${encodeURIComponent(searchQuery)}`);
+      setSearchFocused(false);
     } else {
       navigate('/');
     }
@@ -211,32 +213,32 @@ export default function Navbar({ openSignUp, openChat }) {
             </span>
           </Link>
 
-          {/* 2. Desktop Navigation (Clean Minimalist) */}
-          <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
+          {/* 2. Desktop Navigation (Minimalist Luxury) */}
+          <div className={`hidden md:flex items-center gap-12 absolute left-1/2 -translate-x-1/2 transition-opacity duration-300 ${searchFocused ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
             {navLinks.map((link) => {
               const isActive = pathname === link.path;
               return (
                 <Link
                   key={link.path}
                   to={link.path}
-                  className="relative group flex flex-col items-center"
+                  className="relative group flex flex-col items-center py-2"
                 >
-                  <span className={`text-sm tracking-wide transition-colors duration-300 ${isActive ? "text-black font-semibold" : "text-gray-500 font-medium hover:text-black"}`}>
+                  <span className={`text-[11px] font-bold uppercase tracking-[0.2em] transition-colors duration-300 ${isActive ? "text-black" : "text-gray-400 hover:text-black"}`}>
                     {link.name}
                   </span>
 
-                  {/* Active Dot/Line */}
+                  {/* Active Indicator (Dot) */}
                   {isActive && (
                     <motion.div
-                      layoutId="nav-indicator"
-                      className="absolute -bottom-1.5 w-1 h-1 bg-black rounded-full"
+                      layoutId="nav-dot"
+                      className="absolute -bottom-1 w-1 h-1 bg-black rounded-full"
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     />
                   )}
-
-                  {/* Hover effect for non-active */}
+                  
+                  {/* Hover Indicator (Subtle) */}
                   {!isActive && (
-                    <div className="absolute -bottom-1.5 w-1 h-1 bg-gray-300 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                     <div className="absolute -bottom-1 w-1 h-1 bg-gray-300 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   )}
                 </Link>
               );
@@ -254,6 +256,8 @@ export default function Navbar({ openSignUp, openChat }) {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setSearchFocused(true)}
+                  onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
                   placeholder="Search..."
                   className="pl-10 pr-4 py-2.5 bg-gray-100/50 hover:bg-gray-100 focus:bg-white border border-transparent focus:border-blue-500/30 rounded-full w-40 focus:w-64 transition-all duration-300 outline-none text-sm text-gray-900 placeholder:text-gray-500"
                 />

@@ -8,6 +8,7 @@ import {
   Star,
   X,
   ArrowUp,
+  ArrowDown,
   Filter,
   Check,
   Tag
@@ -52,7 +53,7 @@ export default function Store() {
   });
 
   const productsRef = useRef(null);
-  const heroOpacity = useTransform(scrollY, [0, 400], [1, 0]);
+  const heroOpacity = useTransform(scrollY, [0, 600], [1, 0]); // Slower fade
   const showBackToTop = useTransform(scrollY, [500, 600], [0, 1]); // Framer motion value
   const [isBackToTopVisible, setIsBackToTopVisible] = useState(false);
 
@@ -62,6 +63,16 @@ export default function Store() {
       setIsBackToTopVisible(latest > 500);
     });
   }, [scrollY]);
+
+  // Scroll Snap Logic
+  useEffect(() => {
+    document.documentElement.style.scrollSnapType = "y mandatory";
+    document.documentElement.style.scrollBehavior = "smooth";
+    return () => {
+        document.documentElement.style.scrollSnapType = "";
+        document.documentElement.style.scrollBehavior = "";
+    };
+  }, []);
 
   // 3. Logic: Deep URL Sync Effect (Write to URL)
   useEffect(() => {
@@ -270,44 +281,109 @@ export default function Store() {
       {/* Floating Search FAB REMOVED */}
       
       {/* Hero Section */}
-      <div className="relative h-[80vh] bg-[#F5F5F7] overflow-hidden flex items-center">
+      {/* Hero Section */}
+      <div className="relative min-h-[85vh] bg-[#F5F5F7] overflow-hidden flex items-center border-b border-black/5 snap-start snap-always">
+         
+         {/* Background Elements */}
          <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}></div>
-         <motion.div style={{ opacity: heroOpacity }} className="max-w-[1600px] mx-auto px-6 grid md:grid-cols-2 gap-12 w-full h-full items-center relative z-10">
-            <div className="space-y-10 order-2 md:order-1 pt-20 md:pt-0">
-               <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: "easeOut" }}>
-                 <div className="inline-flex items-center gap-2 px-4 py-1.5 border border-black/10 rounded-full bg-white/50 backdrop-blur-sm mb-6">
-                    <span className="w-2 h-2 bg-black rounded-full animate-pulse"></span>
-                    <span className="text-xs font-bold uppercase tracking-widest">New Drop</span>
+         <div className="absolute -top-[20%] -right-[10%] w-[600px] h-[600px] bg-gradient-to-br from-purple-200/40 to-blue-200/40 rounded-full blur-[100px] pointer-events-none" />
+         <div className="absolute top-[40%] -left-[10%] w-[400px] h-[400px] bg-gradient-to-tr from-[#DFFF00]/20 to-transparent rounded-full blur-[80px] pointer-events-none" />
+
+         <motion.div style={{ opacity: heroOpacity }} className="max-w-[1700px] mx-auto px-6 lg:px-12 grid lg:grid-cols-2 gap-16 w-full h-full items-center relative z-10 pt-20 lg:pt-0">
+            
+            {/* Left Content */}
+            <div className="space-y-10 order-2 lg:order-1 flex flex-col justify-center">
+               <motion.div 
+                 initial={{ opacity: 0, y: 30 }} 
+                 animate={{ opacity: 1, y: 0 }} 
+                 transition={{ duration: 0.8, ease: "easeOut" }}
+               >
+                 {/* Badge */}
+                 <div className="inline-flex items-center gap-2.5 px-5 py-2.5 border border-black/5 rounded-full bg-white/50 backdrop-blur-md mb-8 shadow-sm">
+                    <span className="relative flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+                    </span>
+                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-900">New Drop</span>
                  </div>
-                 <h1 className="text-6xl md:text-8xl font-bold leading-[0.9] tracking-tighter mb-6">
-                    {featured ? featured.name.split(' ').slice(0, 3).join(' ') : "Future Tech"}
+
+                 {/* Headline */}
+                 <h1 className="text-7xl lg:text-9xl font-black leading-[0.9] tracking-tighter text-black mb-8">
+                    {featured ? (
+                         <>
+                         <span className="block font-serif italic font-medium tracking-normal text-6xl lg:text-8xl mb-2 text-gray-800">The All-New</span>
+                         {featured.name.split(' ').slice(0, 3).join(' ')} <span className="text-[#DFFF00] inline-block mix-blend-multiply">.</span>
+                         </>
+                    ) : (
+                        <>Future <br/> <span className="font-serif italic font-medium text-gray-500">Tech.</span></>
+                    )}
                  </h1>
-                 <p className="text-lg md:text-xl text-gray-500 max-w-md leading-relaxed">
-                    {featured ? featured.description.slice(0, 100) + "..." : "Experience the next generation."}
+
+                 {/* Description */}
+                 <p className="text-lg lg:text-xl text-gray-500 max-w-lg leading-relaxed font-medium">
+                    {featured ? featured.description.slice(0, 150) + "..." : "Experience the next generation. Curated for the bold, designed for the future."}
                  </p>
                </motion.div>
-               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="flex gap-4">
-                  <button onClick={() => navigate(featured ? `/product/${featured._id}` : '/')} className="px-10 py-4 bg-black text-white rounded-full font-medium hover:scale-105 transition-transform">
-                     Shop Now
+
+               {/* CTA */}
+               <motion.div 
+                 initial={{ opacity: 0 }} 
+                 animate={{ opacity: 1 }} 
+                 transition={{ delay: 0.4 }} 
+                 className="flex flex-wrap gap-4"
+               >
+                  <button onClick={() => navigate(featured ? `/product/${featured._id}` : '/')} className="group relative px-10 py-5 bg-black text-white rounded-full font-bold overflow-hidden">
+                     <span className="relative z-10 group-hover:text-black transition-colors duration-300">Shop Collection</span>
+                     <div className="absolute inset-0 bg-[#DFFF00] transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300 ease-out" />
+                  </button>
+                  <button onClick={() => {}} className="px-10 py-5 bg-white text-black border border-gray-200 rounded-full font-bold hover:bg-gray-50 transition-colors">
+                     View Details
                   </button>
                </motion.div>
             </div>
-            <div className="order-1 md:order-2 h-full flex items-center justify-center relative">
+
+            {/* Right Content (Image) */}
+            <div className="order-1 lg:order-2 h-[45vh] lg:h-full flex items-center justify-center relative pointer-events-none">
                {featured && (
-                 <motion.img 
-                   initial={{ opacity: 0, scale: 0.8 }}
-                   animate={{ opacity: 1, scale: 1 }}
-                   transition={{ duration: 1 }}
-                   src={featured.images?.[0]}
-                   className="w-full max-w-lg md:max-w-xl object-contain drop-shadow-2xl"
-                   alt="Hero Product"
-                 />
+                 <motion.div
+                   initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
+                   animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                   transition={{ duration: 1, ease: "easeOut" }}
+                   className="relative w-full max-w-xs md:max-w-md lg:max-w-lg aspect-square flex items-center justify-center pointer-events-auto"
+                 >
+                    {/* Floating Circle Backdrop - Reduced Size */}
+                    <motion.div 
+                        animate={{ scale: [1, 1.05, 1], rotate: [0, 5, 0] }}
+                        transition={{ repeat: Infinity, duration: 10, ease: "easeInOut" }}
+                        className="absolute inset-0 bg-white rounded-full mix-blend-overlay opacity-40 blur-2xl transform scale-75" 
+                    />
+                    
+                    {/* Product Image - Constrained Height */}
+                    <motion.img 
+                       animate={{ y: [0, -15, 0] }}
+                       transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+                       src={featured.images?.[0]}
+                       className="w-full h-full object-contain drop-shadow-2xl relative z-10 max-h-[300px] md:max-h-[400px] lg:max-h-[500px]"
+                       alt="Hero Product"
+                    />
+
+                    {/* Floating Price Tag - Repositioned */}
+                    <motion.div 
+                       initial={{ opacity: 0, scale: 0.8 }}
+                       animate={{ opacity: 1, scale: 1 }}
+                       transition={{ delay: 0.8 }}
+                       className="absolute -bottom-4 -right-4 lg:bottom-10 lg:-right-8 z-20 bg-white/90 backdrop-blur border border-white/50 px-6 py-4 rounded-3xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] hidden sm:block"
+                    >
+                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Price</p>
+                         <p className="text-2xl font-black tracking-tight">₹{featured.price?.toLocaleString()}</p>
+                    </motion.div>
+                 </motion.div>
                )}
             </div>
          </motion.div>
       </div>
 
-      <div className="max-w-[1800px] mx-auto px-6 py-20" ref={productsRef}>
+      <div className="max-w-[1800px] mx-auto px-6 py-20 snap-start snap-always scroll-mt-24" ref={productsRef}>
         <div className="flex flex-col lg:flex-row gap-16">
           <aside className="hidden lg:block w-64 flex-shrink-0">
              <div className="sticky top-28">
@@ -443,10 +519,20 @@ export default function Store() {
              </div>
 
              {visibleCount < filteredProducts.length && (
-               <div className="mt-20 flex justify-center">
-                  <button onClick={() => setVisibleCount(p => p + 12)} className="px-12 py-4 border border-gray-200 hover:border-black rounded-full bg-white text-gray-900 font-medium transition-all hover:bg-gray-50">
-                    Load More
-                  </button>
+               <div className="mt-24 pb-12 flex flex-col items-center">
+                   <p className="text-xs text-gray-400 font-medium uppercase tracking-widest mb-4">
+                     Showing {visibleCount} of {filteredProducts.length} products
+                   </p>
+                   <button 
+                     onClick={() => setVisibleCount(p => p + 12)} 
+                     className="group relative px-10 py-4 rounded-full bg-white border border-gray-200 hover:border-black text-sm font-bold uppercase tracking-widest transition-all hover:shadow-xl flex items-center gap-4 overflow-hidden"
+                   >
+                     <span className="relative z-10 text-gray-900 group-hover:text-white transition-colors duration-300">Load More</span>
+                     <span className="relative z-10 w-6 h-6 rounded-full bg-gray-100 group-hover:bg-white/20 flex items-center justify-center transition-colors duration-300">
+                        <ArrowDown size={12} className="text-gray-900 group-hover:text-white transition-transform duration-300 group-hover:translate-y-0.5" />
+                     </span>
+                     <div className="absolute inset-0 bg-black translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+                   </button>
                </div>
              )}
           </div>

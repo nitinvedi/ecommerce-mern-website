@@ -228,7 +228,15 @@ export const googleLogin = async (req, res) => {
         });
 
     } catch (err) {
-        console.error("Google Login Error:", err);
-        res.status(500).json({ success: false, message: "Google login failed" });
+        console.error("Google Login Detailed Error:", {
+            message: err.message,
+            stack: err.stack,
+            configuredClientId: process.env.GOOGLE_CLIENT_ID ? "Present" : "Missing"
+        });
+        res.status(500).json({ 
+            success: false, 
+            message: "Google login failed",
+            debug: err.message // Temporary: sending error to frontend for debugging
+        });
     }
 };

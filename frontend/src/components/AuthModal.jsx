@@ -114,15 +114,18 @@ export default function AuthModal({ open, onClose, onAuthSuccess }) {
     window.google.accounts.id.initialize({
       client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
       callback: async (response) => {
+        console.log("Google Auth Callback Received", response);
         try {
           const data = await api.post(API_ENDPOINTS.AUTH.GOOGLE_LOGIN, {
             credential: response.credential
           });
+          console.log("Google Login API Success", data);
           setAuthToken(data.token || data.data?.token);
           await refreshProfile();
           handleAuthSuccess();
-        } catch {
-          setError("Google login failed");
+        } catch (error) {
+          console.error("Google Login API Failed", error);
+          setError(error.response?.data?.debug || "Google login failed");
         }
       }
     });

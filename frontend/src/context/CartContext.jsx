@@ -12,24 +12,45 @@ export function CartProvider({ children }) {
     localStorage.setItem('cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
-  const clampToStock = (product, desiredQty) => {
-    if (product.stock === undefined || product.stock === null) return desiredQty;
-    return Math.min(desiredQty, Number(product.stock));
+  // Helper to check if adding quantity triggers OOS
+  const checkStock = (product, newQty) => {
+    if (product.stock === undefined || product.stock === null) return true; // Assume in stock if unknown
+    return newQty <= Number(product.stock);
   };
 
   const addToCart = (product, quantity = 1) => {
+    let success = false;
     setCartItems((prev) => {
       const existing = prev.find((item) => item._id === product._id);
+      const currentQty = existing ? existing.quantity : 0;
+      const proposedQty = currentQty + quantity;
+
+      if (!checkStock(product, proposedQty)) {
+        // Option: Cap at max stock? Or just fail? 
+        // Let's cap at max stock for better UX, but return "limited" signal if needed.
+        // For now, let's just allow capping.
+        const maxQty = Number(product.stock || 1000);
+        if (currentQty >= maxQty) return prev; // Already at max
+        
+        // Add whatever is left
+        success = true; 
+        if (existing) {
+             return prev.map(item => item._id === product._id ? { ...item, quantity: maxQty } : item);
+        }
+        return [...prev, { ...product, quantity: maxQty }];
+      }
+
+      success = true;
       if (existing) {
-        const nextQty = clampToStock(product, existing.quantity + quantity);
-        return prev.map((item) =>
+         return prev.map((item) =>
           item._id === product._id
-            ? { ...item, quantity: nextQty }
+            ? { ...item, quantity: proposedQty }
             : item
         );
       }
-      return [...prev, { ...product, quantity: clampToStock(product, quantity) }];
+      return [...prev, { ...product, quantity: proposedQty }];
     });
+    return success;
   };
 
   const removeFromCart = (productId) => {
@@ -41,6 +62,7 @@ export function CartProvider({ children }) {
       removeFromCart(productId);
       return;
     }
+    // Strict Cap
     const capped = stock !== undefined ? Math.min(quantity, Number(stock)) : quantity;
     setCartItems((prev) =>
       prev.map((item) =>

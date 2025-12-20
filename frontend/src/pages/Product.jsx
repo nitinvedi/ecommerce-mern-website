@@ -75,12 +75,18 @@ export default function Product() {
   };
 
   const handleAddToCart = () => {
-    if (!product.isActive) {
+    if (!product.stock || product.stock <= 0) {
       toast.error("Product is out of stock");
       return;
     }
-    addToCart(product, quantity);
-    toast.success("Added to cart");
+    
+    // Check if adding this quantity exceeds stock (considering current cart)
+    const success = addToCart(product, quantity);
+    if (success) {
+        toast.success("Added to cart");
+    } else {
+        toast.error(`Cannot add more. Max stock is ${product.stock}`);
+    }
   };
 
   const handleSubmitReview = async (e) => {
@@ -247,29 +253,30 @@ export default function Product() {
                    {/* Actions */}
                    <div className="space-y-4 pt-4 border-t border-gray-100">
                       <div className="flex items-center gap-4">
-                         <div className="flex items-center bg-gray-50 rounded-full border border-gray-200">
-                            <button 
-                               onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                               className="w-12 h-12 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors"
-                            >
-                               <Minus size={18} />
-                            </button>
-                            <span className="w-12 text-center font-bold text-lg">{quantity}</span>
-                            <button 
-                               onClick={() => setQuantity(quantity + 1)}
-                               className="w-12 h-12 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors"
-                            >
-                               <Plus size={18} />
-                            </button>
-                         </div>
-                         <button
-                            onClick={handleAddToCart}
-                            disabled={product.stock === 0}
-                            className="flex-1 h-14 bg-gray-900 text-white rounded-full font-bold text-lg hover:bg-black transition-all shadow-xl shadow-gray-200 flex items-center justify-center gap-3 disabled:bg-gray-300 disabled:cursor-not-allowed"
-                         >
-                            <ShoppingCart />
-                            Add to Cart
-                         </button>
+                          <div className="flex items-center bg-gray-50 rounded-full border border-gray-200">
+                             <button 
+                                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                className="w-12 h-12 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors"
+                             >
+                                <Minus size={18} />
+                             </button>
+                             <span className="w-12 text-center font-bold text-lg">{quantity}</span>
+                             <button 
+                                onClick={() => setQuantity(Math.min(quantity + 1, product.stock || 1))}
+                                disabled={quantity >= product.stock}
+                                className="w-12 h-12 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                             >
+                                <Plus size={18} />
+                             </button>
+                          </div>
+                          <button
+                             onClick={handleAddToCart}
+                             disabled={product.stock <= 0}
+                             className="flex-1 h-14 bg-gray-900 text-white rounded-full font-bold text-lg hover:bg-black transition-all shadow-xl shadow-gray-200 flex items-center justify-center gap-3 disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none disabled:cursor-not-allowed"
+                          >
+                             <ShoppingCart />
+                             {product.stock > 0 ? "Add to Cart" : "Out of Stock"}
+                          </button>
                       </div>
                    </div>
                 </div>

@@ -74,11 +74,16 @@ export const emitChatMessage = (messageData) => {
   if (!io) return;
 
   const { sender, receiver, message, senderRole, _id, createdAt } = messageData;
+  const receiverId = receiver.toString();
+  const senderId = sender.toString();
+  const messageId = _id.toString();
+
+  console.log(`[Socket] Emitting message ${messageId} from ${senderId} to ${receiverId}`);
 
   // 1. Send to receiver
-  io.to(`user:${receiver}`).emit("receive_message", {
-    _id,
-    sender,
+  io.to(`user:${receiverId}`).emit("receive_message", {
+    _id: messageId,
+    sender: senderId,
     message,
     senderRole,
     timestamp: createdAt
@@ -86,30 +91,17 @@ export const emitChatMessage = (messageData) => {
 
     // 2. Broadcast to admins
   if (senderRole === 'user') {
-    // Only notify the specific receiver (Master Admin), which is handled by step 1 above.
-    // We removed the general broadcast to "admins" room to restrict access.
-    // If you want to ensure the Master Admin gets a specific "notification" event beyond "receive_message":
-    io.to(`user:${receiver}`).emit("new_customer_message", {
-      _id,
-      sender,
+    io.to(`user:${receiverId}`).emit("new_customer_message", {
+      _id: messageId,
+      sender: senderId,
       message,
       timestamp: createdAt
     });
   } else if (senderRole === 'admin') {
-    // If sender is admin, notify OTHER admins (so they see the reply)
-    // We send to "admins" room. The sender is also in this room, so frontend needs to handle duplicates (which it already does)
     io.to("admins").emit("receive_message", {
-      _id,
-      sender, // This is the admin ID, but for the conversation view on other admins, we might need context.
-              // Actually, other admins viewing this user's chat need to see this message.
-              // The "receiver" is the User. 
-      // For AdminChat.jsx, it listens to "receive_message". 
-      // It uses the sender ID to place it. If sender is Admin A, Admin B needs to know who it was sent TO?
-      // Wait, AdminChat usually shows messages *from* the selected user.
-      // If Admin A sends to User U, Admin B viewing User U should see it.
-      // But the message object usually has sender/receiver.
-      // Let's send the full object or enough info.
-      receiver, // Important: This is the User ID
+      _id: messageId,
+      sender: senderId, // This is the admin ID
+      receiver: receiverId, // Important: This is the User ID
       message,
       senderRole,
       timestamp: createdAt

@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { MessageCircle, Send, User, Clock } from "lucide-react";
-import { io } from "socket.io-client";
+import { MessageCircle, Send, User, Clock, Check } from "lucide-react";
 import { api } from "../../config/api.js";
 import { useToast } from "../../context/ToastContext.jsx";
 import useAuth from "../../hooks/useAuth.js";
+import { useChatSocket } from "../../hooks/useChatSocket.js";
+import { formatTime, groupMessagesByDate, playNotificationSound } from "../../utils/chatUtils.js";
 
 export default function AdminChat() {
   const toast = useToast();
@@ -14,118 +15,12 @@ export default function AdminChat() {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [socket, setSocket] = useState(null);
   const messagesEndRef = useRef(null);
-
-  // Initialize Socket.IO
-  useEffect(() => {
-    if (user) {
-      const token = localStorage.getItem("token");
-      const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
-      const newSocket = io(socketUrl, {
-        auth: { token }
-      });
-
-      newSocket.on("connect", () => {
-        console.log("Admin socket connected");
-      });
-
-      newSocket.on("receive_message", (data) => {
-        // If message is from/to the currently selected user, add it to messages
-        if (selectedUser && (data.sender === selectedUser._id || data.receiver === selectedUser._id)) {
-            setMessages(prev => {
-              if (prev.some(m => m._id === data._id || (m.createdAt === data.timestamp && m.message === data.message))) return prev;
-              return [...prev, {
-                _id: data._id,
-                sender: data.sender,
-                message: data.message,
-                createdAt: data.timestamp,
-                senderRole: data.senderRole
-              }];
-            });
-        }
-        
-        // Always refresh conversations to show new message preview/unread status (implied)
-        fetchConversations(); 
-      });
-
-      newSocket.on("new_customer_message", (data) => {
-        console.log("New customer message received");
-        fetchConversations();
-        // If we are looking at this customer request notification/toast could go here
-      });
-
-      newSocket.on("message_sent", (data) => {
-        console.log("Message sent successfully");
-      });
-
-      setSocket(newSocket);
-
-      return () => {
-        newSocket.disconnect();
-      };
-    }
-  }, [user, selectedUser]); // Re-bind if selectedUser changes to ensure closure has correct value? 
-  // actually, updated logic uses selectedUser ref or just state if dependency is correct. 
-  // To avoid constant reconnection, we should use a ref for selectedUser inside the effect callback or filter in setMessages.
-  // BUT, simpler approach: Update dependency array. Reconnecting socket on user switch is bad.
-  // Better: Use functional state update or a ref.
   
   // Ref for selectedUser to use inside socket callback without re-running effect
   const selectedUserRef = useRef(selectedUser);
-  useEffect(() => {
-      selectedUserRef.current = selectedUser;
-  }, [selectedUser]);
 
-  // Socket effect - only runs on mount/user change (auth)
-  useEffect(() => {
-    if (user) {
-      const token = localStorage.getItem("token");
-      const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
-      const newSocket = io(socketUrl, {
-        auth: { token }
-      });
-
-      newSocket.on("receive_message", (data) => {
-        const currentUser = selectedUserRef.current;
-        // If message is related to current user (either SENT by them or SENT TO them)
-        if (currentUser && (data.sender === currentUser._id || data.receiver === currentUser._id)) {
-           setMessages(prev => {
-              if (prev.some(m => m._id === data._id)) return prev;
-              return [...prev, {
-                _id: data._id,
-                sender: data.sender,
-                message: data.message,
-                createdAt: data.timestamp,
-                senderRole: data.senderRole
-              }];
-            });
-            scrollToBottom();
-        }
-        fetchConversations();
-      });
-
-      newSocket.on("new_customer_message", () => fetchConversations());
-
-      setSocket(newSocket);
-      return () => newSocket.disconnect();
-    }
-  }, [user]);
-
-  useEffect(() => {
-    fetchConversations();
-  }, []);
-
-  useEffect(() => {
-    if (selectedUser) {
-      fetchMessages(selectedUser._id);
-    }
-  }, [selectedUser]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
+  // Moved functions to top
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -139,32 +34,95 @@ export default function AdminChat() {
     }
   };
 
-  const fetchMessages = async (userId) => {
+  const fetchMessages = React.useCallback(async (userId) => {
     try {
       const res = await api.get(`/api/v1/chat/messages/${userId}`);
       setMessages(res.messages || []);
     } catch (error) {
       console.error("Failed to fetch messages");
     }
-  };
+  }, []);
+
+  useEffect(() => {
+      selectedUserRef.current = selectedUser;
+      if (selectedUser) {
+        fetchMessages(selectedUser._id);
+      }
+  }, [selectedUser, fetchMessages]);
+
+  const { isConnected, isTyping, sendTyping, sendStopTyping } = useChatSocket({
+    user,
+    enabled: true,
+    onMessageReceived: (data) => {
+        const currentUser = selectedUserRef.current;
+        // If message is related to current user (either SENT by them or SENT TO them)
+        if (currentUser && (data.sender.toString() === currentUser._id.toString() || data.receiver?.toString() === currentUser._id.toString())) {
+           // 1. Optimistic append
+           setMessages(prev => {
+              if (prev.some(m => m._id.toString() === data._id.toString())) return prev;
+              return [...prev, {
+                _id: data._id,
+                sender: data.sender,
+                message: data.message,
+                createdAt: data.timestamp,
+                senderRole: data.senderRole
+              }];
+            });
+            scrollToBottom();
+            // 2. Strong sync
+            fetchMessages(currentUser._id);
+        } else {
+            // New message from someone else
+            playNotificationSound();
+        }
+        fetchConversations();
+    }
+  });
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || !selectedUser || !socket) return;
+    if (!newMessage.trim() || !selectedUser) return;
 
-    // Call API to save message (Backend will emit socket event)
     try {
-      await api.post("/api/v1/chat/send", {
+      const res = await api.post("/api/v1/chat/send", {
         receiver: selectedUser._id,
         message: newMessage
       });
 
+      // Optimistically update UI
+      const sentMessage = res.message;
+      setMessages(prev => {
+          if (prev.some(m => m._id === sentMessage._id)) return prev;
+          return [...prev, sentMessage];
+      });
+
       setNewMessage("");
-      // No need to manually update state here; socket listener will receive "receive_message" even for self
+      sendStopTyping(selectedUser._id);
     } catch (error) {
       toast.error("Failed to send message");
     }
   };
+
+  const handleTyping = (e) => {
+    setNewMessage(e.target.value);
+    if (!selectedUser) return;
+    
+    if (e.target.value.length > 0) {
+        sendTyping(selectedUser._id);
+    } else {
+        sendStopTyping(selectedUser._id);
+    }
+  };
+
+   // Keyboard shortcut
+  const handleKeyDown = (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          handleSendMessage(e);
+      }
+  };
+
+  const groupedMessages = groupMessagesByDate(messages);
 
   return (
     <div className="min-h-screen bg-gray-50 pt-24 pb-12">
@@ -172,7 +130,10 @@ export default function AdminChat() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Customer Support Chat</h1>
-            <p className="text-sm text-gray-600 mt-1">Real-time messaging • Instant delivery</p>
+            <p className="text-sm text-gray-600 mt-1 flex items-center gap-2">
+                Real-time messaging • Instant delivery
+                <span className={`inline-block w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} title={isConnected ? 'Socket Connected' : 'Socket Disconnected'}></span>
+            </p>
           </div>
           <div className="px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-medium">
             ● Online
@@ -182,7 +143,7 @@ export default function AdminChat() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
 
           {/* Conversations List */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden h-full">
             <div className="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
               <div>
                 <h2 className="font-semibold text-gray-900">Conversations</h2>
@@ -230,9 +191,14 @@ export default function AdminChat() {
                           {conv.partner.email}
                         </p>
                         {conv.lastMessage && (
-                          <p className="text-xs text-gray-500 mt-1 truncate">
-                            {conv.lastMessage.message}
-                          </p>
+                          <div className="flex justify-between items-center mt-1">
+                              <p className="text-xs text-gray-500 truncate max-w-[70%]">
+                                {conv.lastMessage.message}
+                              </p>
+                              <span className="text-[10px] text-gray-400">
+                                {formatTime(conv.lastMessage.createdAt)}
+                              </span>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -243,7 +209,7 @@ export default function AdminChat() {
           </div>
 
           {/* Chat Area */}
-          <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col">
+          <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col h-full overflow-hidden">
             {selectedUser ? (
               <>
                 {/* Chat Header */}
@@ -254,7 +220,10 @@ export default function AdminChat() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900">{selectedUser.name}</h3>
-                      <p className="text-sm text-gray-600">{selectedUser.email}</p>
+                      <p className="text-sm text-gray-600 flex items-center gap-1">
+                          {selectedUser.email}
+                          {isTyping && <span className="text-blue-500 font-medium text-xs ml-2">Typing...</span>}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -267,37 +236,59 @@ export default function AdminChat() {
                       <p>No messages yet</p>
                     </div>
                   ) : (
-                    messages.map((msg, index) => {
-                      const isAdmin = msg.senderRole === 'admin';
-
-                      return (
-                        <div
-                          key={index}
-                          className={`flex ${isAdmin ? 'justify-end' : 'justify-start'}`}
-                        >
-                          <div
-                            className={`max-w-[70%] px-4 py-3 rounded-2xl ${isAdmin
-                              ? 'bg-blue-600 text-white rounded-br-none'
-                              : 'bg-white text-gray-900 rounded-bl-none border border-gray-200'
-                              }`}
-                          >
-                            <p className="text-sm">{msg.message}</p>
-                            <div className={`flex items-center gap-1 mt-1 text-xs ${isAdmin ? 'text-blue-100' : 'text-gray-500'
-                              }`}>
-                              <Clock size={12} />
-                              <span>
-                                {new Date(msg.createdAt).toLocaleString('en-IN', {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
-                              </span>
+                    Object.entries(groupedMessages).map(([date, msgs]) => (
+                        <div key={date}>
+                             <div className="flex justify-center my-4">
+                                <span className="text-xs text-gray-500 bg-gray-200 px-3 py-1 rounded-full border border-gray-300 shadow-sm">{date}</span>
                             </div>
-                          </div>
+                            {msgs.map((msg, index) => {
+                                const isAdmin = msg.senderRole === 'admin';
+                                return (
+                                    <div
+                                    key={msg._id || index}
+                                    className={`flex ${isAdmin ? 'justify-end' : 'justify-start'} mb-2`}
+                                    >
+                                    <div
+                                        className={`max-w-[70%] px-4 py-3 rounded-2xl ${isAdmin
+                                        ? 'bg-blue-600 text-white rounded-br-none'
+                                        : 'bg-white text-gray-900 rounded-bl-none border border-gray-200'
+                                        }`}
+                                    >
+                                        <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
+                                        <div className={`flex items-center gap-1 mt-1 text-xs justify-end ${isAdmin ? 'text-blue-100' : 'text-gray-500'
+                                        }`}>
+                                        <Clock size={12} />
+                                        <span>{formatTime(msg.createdAt)}</span>
+                                        {isAdmin && <Check size={12} />}
+                                        </div>
+                                    </div>
+                                    </div>
+                                );
+                            })}
                         </div>
-                      );
-                    })
+                    ))
+                  )}
+                  {isTyping && (
+                      <div className="flex justify-start mb-2">
+                        <div className="bg-white border border-gray-200 px-4 py-3 rounded-2xl rounded-bl-none shadow-sm flex items-center gap-1">
+                              <span className="text-xs text-gray-500 mr-2">Typing</span>
+                              <motion.div 
+                                animate={{ y: [0, -3, 0] }} 
+                                transition={{ repeat: Infinity, duration: 0.6, delay: 0 }}
+                                className="w-1 h-1 bg-gray-400 rounded-full" 
+                              />
+                               <motion.div 
+                                animate={{ y: [0, -3, 0] }} 
+                                transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }}
+                                className="w-1 h-1 bg-gray-400 rounded-full" 
+                              />
+                               <motion.div 
+                                animate={{ y: [0, -3, 0] }} 
+                                transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }}
+                                className="w-1 h-1 bg-gray-400 rounded-full" 
+                              />
+                          </div>
+                      </div>
                   )}
                   <div ref={messagesEndRef} />
                 </div>
@@ -305,17 +296,19 @@ export default function AdminChat() {
                 {/* Input */}
                 <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-200 bg-white">
                   <div className="flex gap-3">
-                    <input
-                      type="text"
+                    <textarea
                       value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
+                      onChange={handleTyping}
+                      onKeyDown={handleKeyDown}
                       placeholder="Type your reply..."
-                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
+                      rows="1"
+                       style={{ minHeight: '48px', maxHeight: '120px' }}
                     />
                     <button
                       type="submit"
                       disabled={!newMessage.trim() || loading}
-                      className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2 font-medium"
+                      className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2 font-medium h-[48px]"
                     >
                       <Send size={18} />
                       Send

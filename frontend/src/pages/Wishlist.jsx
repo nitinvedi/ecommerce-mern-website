@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Heart, ShoppingCart, Trash2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Heart, ShoppingCart, Trash2, ArrowRight } from "lucide-react";
 import { api, API_ENDPOINTS } from "../config/api.js";
 import { useCart } from "../context/CartContext.jsx";
 import useAuth from "../hooks/useAuth.js";
 import { useToast } from "../context/ToastContext.jsx";
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 }
-};
+const GrainOverlay = () => (
+    <div className="absolute inset-0 opacity-[0.03] pointer-events-none z-0" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}></div>
+);
 
 export default function Wishlist() {
   const navigate = useNavigate();
@@ -28,22 +27,15 @@ export default function Wishlist() {
   const fetchWishlist = async () => {
     try {
       const res = await api.get(API_ENDPOINTS.WISHLIST.BASE);
-      console.log("Wishlist API response:", res);
-      
-      // Handle the response - it should have a products array
       if (res && res.products) {
         setWishlist(res.products);
-        console.log("Wishlist loaded successfully:", res.products.length, "items");
       } else {
-        console.warn("Unexpected response format:", res);
         setWishlist([]);
       }
     } catch (error) {
-      console.error("Wishlist fetch error:", error);
-      // Only show error if it's not a 401 (user not logged in)
-      if (error.message && !error.message.includes("401")) {
-        toast.error(error.message || "Failed to load wishlist");
-      }
+    //   if (error.message && !error.message.includes("401")) {
+    //     toast.error(error.message || "Failed to load wishlist");
+    //   }
       setWishlist([]);
     } finally {
       setLoading(false);
@@ -65,161 +57,90 @@ export default function Wishlist() {
     toast.success("Added to cart");
   };
 
-  const handleClearWishlist = async () => {
-    if (!window.confirm("Clear entire wishlist?")) return;
-    
-    try {
-      await api.delete(API_ENDPOINTS.WISHLIST.BASE);
-      setWishlist([]);
-      toast.success("Wishlist cleared");
-    } catch (error) {
-      toast.error("Failed to clear wishlist");
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-white pt-24">
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          <p className="text-gray-500 text-center">Loading wishlist...</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return null;
 
   return (
-    <div className="min-h-screen bg-white pt-24">
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-12">
-          <div>
-            <h1 className="text-4xl font-bold text-gray-900 flex items-center gap-3 mb-2">
-              <Heart className="text-red-500 fill-red-500" size={36} />
-              My Wishlist
-            </h1>
-            <p className="text-gray-600">
-              {wishlist.length} {wishlist.length === 1 ? 'item' : 'items'}
-            </p>
-          </div>
-          
-          {wishlist.length > 0 && (
-            <button
-              onClick={handleClearWishlist}
-              className="px-6 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors flex items-center gap-2"
-            >
-              <Trash2 size={18} />
-              Clear All
-            </button>
-          )}
+    <div className="min-h-screen bg-white font-sans text-gray-900">
+        
+        {/* Header Hero */}
+        <div className="relative bg-[#F5F5F7] py-20 overflow-hidden">
+            <GrainOverlay />
+            <div className="max-w-7xl mx-auto px-6 relative z-10 flex flex-col items-center text-center">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-2 mb-4 px-3 py-1 bg-white/50 backdrop-blur rounded-full border border-black/5">
+                    <Heart size={14} className="fill-red-500 stroke-red-500" />
+                    <span className="text-xs font-bold uppercase tracking-widest text-gray-600">My Collection</span>
+                </motion.div>
+                <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-5xl md:text-7xl font-bold tracking-tighter mb-4">
+                    Your Wishlist.
+                </motion.h1>
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="text-lg text-gray-500 max-w-xl">
+                    Wait for the perfect moment or bag them now. <br/>You currently have {wishlist.length} item{wishlist.length !== 1 && "s"} saved.
+                </motion.p>
+            </div>
         </div>
 
-        {/* Empty State */}
-        {wishlist.length === 0 ? (
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={fadeUp}
-            className="text-center py-20"
-          >
-            <Heart size={80} className="mx-auto text-gray-300 mb-6" />
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-              Your wishlist is empty
-            </h2>
-            <p className="text-gray-600 mb-8">
-              Start adding products you love!
-            </p>
-            <button
-              onClick={() => navigate("/home")}
-              className="px-8 py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
-            >
-              Browse Products
-            </button>
-          </motion.div>
-        ) : (
-          /* Wishlist Grid */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {wishlist.map((product, index) => (
-              <motion.div
-                key={product._id}
-                initial="hidden"
-                animate="visible"
-                variants={fadeUp}
-                transition={{ delay: index * 0.05 }}
-                className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl transition-all group"
-              >
-                {/* Product Image */}
-                <div 
-                  className="relative h-56 bg-gray-50 overflow-hidden cursor-pointer"
-                  onClick={() => navigate(`/product/${product._id}`)}
-                >
-                  <img
-                    src={
-                      product.images?.[0]?.startsWith("http")
-                        ? product.images[0]
-                        : `http://localhost:5000${product.images?.[0]}`
-                    }
-                    alt={product.name}
-                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 p-4"
-                  />
-                  
-                  {/* Remove Button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRemove(product._id);
-                    }}
-                    className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-lg hover:bg-red-50 transition-colors"
-                  >
-                    <Trash2 size={18} className="text-red-500" />
-                  </button>
+        {/* Content */}
+        <div className="max-w-7xl mx-auto px-6 py-16">
+            {wishlist.length === 0 ? (
+                 <div className="text-center py-24">
+                    <h2 className="text-2xl font-bold mb-4">Your collection is empty.</h2>
+                    <p className="text-gray-500 mb-8">Start exploring our latest drops to find something you love.</p>
+                    <button onClick={() => navigate('/')} className="px-8 py-3 bg-black text-white rounded-full font-medium hover:scale-105 transition-transform">
+                        Start Shopping
+                    </button>
+                 </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
+                    {wishlist.map((product, index) => (
+                        <motion.div 
+                            key={product._id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            className="group"
+                        >
+                            {/* Card Image */}
+                            <div className="relative aspect-[3/4] bg-[#F5F5F7] rounded-[20px] overflow-hidden mb-5 cursor-pointer" onClick={() => navigate(`/product/${product._id}`)}>
+                                {/* Remove Icon */}
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); handleRemove(product._id); }}
+                                    className="absolute top-4 right-4 z-20 p-2 bg-white rounded-full shadow-sm hover:bg-black hover:text-white transition-colors opacity-0 group-hover:opacity-100"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                                
+                                <div className="w-full h-full p-8 flex items-center justify-center">
+                                    <img 
+                                        src={product.images?.[0]?.startsWith("http") ? product.images[0] : `http://localhost:5000${product.images?.[0]}`}
+                                        alt={product.name} 
+                                        className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-700 ease-out" 
+                                    />
+                                </div>
 
-                  {/* Discount Badge */}
-                  {product.discountPercent > 0 && (
-                    <div className="absolute top-3 left-3 px-3 py-1 bg-green-500 text-white rounded-full text-xs font-bold">
-                      {product.discountPercent}% OFF
-                    </div>
-                  )}
+                                {/* Quick Add */}
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
+                                    className="absolute bottom-4 left-4 right-4 py-3 bg-black text-white text-xs font-bold uppercase tracking-widest rounded-xl shadow-xl translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-2"
+                                >
+                                    <ShoppingCart size={14} /> Add To Bag
+                                </button>
+                            </div>
+
+                            {/* Info */}
+                            <div className="space-y-1">
+                                <h3 className="font-medium text-lg leading-snug cursor-pointer hover:underline decoration-1 underline-offset-4" onClick={() => navigate(`/product/${product._id}`)}>
+                                    {product.name}
+                                </h3>
+                                <p className="text-sm text-gray-500">{product.brand}</p>
+                                <div className="pt-2 font-bold text-gray-900">
+                                    ₹{product.price?.toLocaleString()}
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))}
                 </div>
-
-                {/* Product Info */}
-                <div className="p-5">
-                  <h3
-                    className="text-lg font-semibold text-gray-900 mb-2 cursor-pointer hover:text-blue-600 transition-colors line-clamp-2 min-h-[3.5rem]"
-                    onClick={() => navigate(`/product/${product._id}`)}
-                  >
-                    {product.name}
-                  </h3>
-                  
-                  <div className="mb-4">
-                    <p className="text-2xl font-bold text-gray-900">
-                      ₹{product.price?.toLocaleString()}
-                    </p>
-                    {product.stock > 0 ? (
-                      <span className="text-sm text-green-600 font-medium">
-                        In Stock
-                      </span>
-                    ) : (
-                      <span className="text-sm text-red-600 font-medium">
-                        Out of Stock
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Add to Cart Button */}
-                  <button
-                    onClick={() => handleAddToCart(product)}
-                    disabled={product.stock === 0}
-                    className="w-full px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium"
-                  >
-                    <ShoppingCart size={18} />
-                    Add to Cart
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
-      </div>
+            )}
+        </div>
     </div>
   );
 }

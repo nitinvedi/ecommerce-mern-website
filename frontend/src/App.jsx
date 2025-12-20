@@ -8,10 +8,12 @@ import AuthModal from "./components/AuthModal";
 import ChatWidget from "./components/ChatWidget";
 import Breadcrumbs from "./components/Breadcrumbs";
 import MobileBottomNav from "./components/MobileBottomNav";
+import { NotificationProvider } from "./context/NotificationContext";
 
 // PAGES
+
 import Landing from "./pages/Landing";
-import Home from "./pages/Home";
+import Store from "./pages/Store";
 import Product from "./pages/Product";
 import Repair from "./pages/Repair";
 import Contact from "./pages/Contact";
@@ -53,6 +55,7 @@ export default function App() {
 
   return (
     <>
+    <NotificationProvider>
       {/* ✅ GLOBAL NAVBAR */}
       <Navbar openSignUp={() => setAuthOpen(true)} />
 
@@ -62,8 +65,8 @@ export default function App() {
       {/* ROUTES */}
       <Routes>
         {/* PUBLIC */}
-        <Route path="/" element={<Landing />} />
-        <Route path="/home" element={<Home />} />
+        <Route path="/" element={<Store />} />
+        <Route path="/intro" element={<Landing />} />
         <Route path="/product/:id" element={<Product />} />
         <Route path="/repair" element={<Repair />} />
         <Route path="/contact" element={<Contact />} />
@@ -208,6 +211,7 @@ export default function App() {
       
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav />
+    </NotificationProvider>
     </>
   );
 }

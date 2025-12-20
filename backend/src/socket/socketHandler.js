@@ -74,27 +74,41 @@ export const emitChatMessage = (messageData) => {
   if (!io) return;
 
   const { sender, receiver, message, senderRole, _id, createdAt } = messageData;
+  const receiverId = receiver.toString();
+  const senderId = sender.toString();
+  const messageId = _id.toString();
+
+  console.log(`[Socket] Emitting message ${messageId} from ${senderId} to ${receiverId}`);
 
   // 1. Send to receiver
-  io.to(`user:${receiver}`).emit("receive_message", {
-    _id,
-    sender,
+  io.to(`user:${receiverId}`).emit("receive_message", {
+    _id: messageId,
+    sender: senderId,
     message,
     senderRole,
     timestamp: createdAt
   });
 
-  // 2. If receiver is admin, also broadcast to "admins" room (for multi-admin support)
-  if (senderRole === 'user') { // Assuming if sender is user, receiver is admin/support
-    io.to("admins").emit("new_customer_message", {
-      _id,
-      sender,
+    // 2. Broadcast to admins
+  if (senderRole === 'user') {
+    io.to(`user:${receiverId}`).emit("new_customer_message", {
+      _id: messageId,
+      sender: senderId,
       message,
+      timestamp: createdAt
+    });
+  } else if (senderRole === 'admin') {
+    io.to("admins").emit("receive_message", {
+      _id: messageId,
+      sender: senderId, // This is the admin ID
+      receiver: receiverId, // Important: This is the User ID
+      message,
+      senderRole,
       timestamp: createdAt
     });
   }
 
-  // 3. Send back to sender (for multi-device sync)
+  // 3. Send back to sender (for multi-device sync or confirmation)
   io.to(`user:${sender}`).emit("receive_message", {
     _id,
     sender,

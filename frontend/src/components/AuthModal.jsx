@@ -1,9 +1,10 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { X, Mail, Lock, User, ArrowRight, Chrome } from "lucide-react";
 import useAuth from "../hooks/useAuth";
 import { api, API_ENDPOINTS, setAuthToken } from "../config/api";
+import { validate, validateForm } from "../utils/validation";
 
 const variants = {
   initial: { opacity: 0, x: 20 },
@@ -11,9 +12,10 @@ const variants = {
   exit: { opacity: 0, x: -20 }
 };
 
-export default function AuthModal({ open, onClose }) {
+export default function AuthModal({ open, onClose, onAuthSuccess }) {
   const [mode, setMode] = useState("signin");
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, register, refreshProfile } = useAuth();
 
   const [form, setForm] = useState({
@@ -32,6 +34,20 @@ export default function AuthModal({ open, onClose }) {
   /* ---------- SIGN IN ---------- */
   const handleLogin = async (e) => {
     e.preventDefault();
+    const { isValid, errors: newErrors } = validateForm(
+        { email: form.email, password: form.password },
+        { email: validate.email, password: validate.required }
+    );
+    
+    if (!isValid) {
+        // Just show generic error or toast?
+        // User asked for "proper validation", but login usually keeps it generic for security.
+        // But for inputs like "alphabets in phone", we should valid syntax.
+        // For login, email syntax check is fine.
+        if (newErrors.email) return setError(newErrors.email);
+        if (newErrors.password) return setError(newErrors.password);
+    }
+
     setError("");
     setLoading(true);
     try {
@@ -40,8 +56,7 @@ export default function AuthModal({ open, onClose }) {
         password: form.password
       });
       if (res?.success !== false) {
-        onClose();
-        navigate("/dashboard");
+          handleAuthSuccess();
       } else {
         setError("Invalid email or password");
       }
@@ -56,6 +71,20 @@ export default function AuthModal({ open, onClose }) {
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
+    
+    const schema = {
+        name: validate.name,
+        email: validate.email,
+        password: validate.password
+    };
+
+    const { isValid, errors: newErrors } = validateForm(form, schema);
+
+    if (!isValid) {
+        if (newErrors.name) return setError(newErrors.name);
+        if (newErrors.email) return setError(newErrors.email);
+        if (newErrors.password) return setError(newErrors.password);
+    }
 
     if (form.password !== form.confirmPassword) {
       setError("Passwords do not match");
@@ -66,8 +95,7 @@ export default function AuthModal({ open, onClose }) {
     try {
       const res = await register(form);
       if (res?.success !== false) {
-        onClose();
-        navigate("/dashboard");
+        handleAuthSuccess();
       } else {
         setError("Registration failed");
       }
@@ -92,14 +120,33 @@ export default function AuthModal({ open, onClose }) {
           });
           setAuthToken(data.token || data.data?.token);
           await refreshProfile();
-          onClose();
-          navigate("/dashboard");
+          handleAuthSuccess();
         } catch {
           setError("Google login failed");
         }
       }
     });
     window.google.accounts.id.prompt();
+  };
+
+  /* ---------- SUCCESS HANDLER ---------- */
+  const handleAuthSuccess = () => {
+    onClose();
+    if (onAuthSuccess) {
+      onAuthSuccess();
+      return;
+    }
+
+    // Check for Return URL from ProtectedRoute
+    // Supports both string (new) and object (legacy) formats for robustness
+    let from = "/dashboard";
+    if (location.state?.from) {
+        from = typeof location.state.from === 'string' 
+            ? location.state.from 
+            : location.state.from.pathname;
+    }
+    
+    navigate(from, { replace: true });
   };
 
   return (

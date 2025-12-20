@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Mail, Phone } from "lucide-react";
 import { useToast } from "../context/ToastContext.jsx";
 import { api, API_ENDPOINTS } from "../config/api.js";
+import { validate, validateForm } from "../utils/validation.js";
 
 export default function Contact() {
   const toast = useToast();
@@ -12,6 +13,7 @@ export default function Contact() {
     email: "",
     message: "",
   });
+  const [errors, setErrors] = useState({});
 
   const update = (key, value) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -19,8 +21,15 @@ export default function Contact() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.name || !form.email || !form.message) {
-      toast.error("All fields are required");
+    const { isValid, errors: newErrors } = validateForm(form, {
+        name: validate.name,
+        email: validate.email,
+        message: (v) => validate.required(v, "Message")
+    });
+    setErrors(newErrors);
+
+    if (!isValid) {
+      toast.error("Please fix errors");
       return;
     }
 
@@ -92,8 +101,9 @@ export default function Contact() {
                   value={form.name}
                   onChange={(e) => update("name", e.target.value)}
                   required
-                  className="w-full bg-transparent border-b border-black/10 py-2 text-sm focus:outline-none focus:border-black"
+                  className={`w-full bg-transparent border-b py-2 text-sm focus:outline-none ${errors.name ? 'border-red-500' : 'border-black/10 focus:border-black'}`}
                 />
+                {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
               </div>
 
               <div>
@@ -103,8 +113,9 @@ export default function Contact() {
                   value={form.email}
                   onChange={(e) => update("email", e.target.value)}
                   required
-                  className="w-full bg-transparent border-b border-black/10 py-2 text-sm focus:outline-none focus:border-black"
+                  className={`w-full bg-transparent border-b py-2 text-sm focus:outline-none ${errors.email ? 'border-red-500' : 'border-black/10 focus:border-black'}`}
                 />
+                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
               </div>
 
               <div>

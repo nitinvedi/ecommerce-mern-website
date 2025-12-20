@@ -53,8 +53,8 @@ export default function TechnicianProducts() {
       const items =
         res?.data?.items ||
         res?.data?.products ||
-        res?.data?.data?.items ||
         res?.data?.data ||
+        res?.data ||
         [];
       setProducts(Array.isArray(items) ? items : []);
     } catch (err) {

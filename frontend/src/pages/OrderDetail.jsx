@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { api, API_ENDPOINTS } from "../config/api.js";
 import { useToast } from "../context/ToastContext.jsx";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
@@ -7,55 +8,22 @@ import ProtectedRoute from "../components/ProtectedRoute.jsx";
 function OrderDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const toast = useToast();
-
-  const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchOrder();
-  }, [id]);
-
-  const fetchOrder = async () => {
-    try {
-      const res = await api.get(API_ENDPOINTS.ORDERS.BY_ID(id));
-
-      // ✅ CORRECT — res.data IS the order
-      setOrder(res.data);
-    } catch (err) {
-      console.error(err);
-      toast.error(err.message || "Failed to load order");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading…
-      </div>
-    );
-  }
-
-  if (!order) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Order not found
-      </div>
-    );
-  }
+  // ...
 
   return (
-    <div className="min-h-screen bg-neutral-50 p-10">
+    <div className="min-h-screen bg-neutral-50 p-10 max-w-4xl mx-auto"> 
+      {/* Centered with max-w */}
       <button
         onClick={() => navigate("/orders")}
-        className="text-sm text-gray-600 hover:text-black"
+        className="group flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900 mb-8 transition-colors"
       >
-        ← Back to orders
+        <div className="p-2 rounded-full bg-white border border-gray-200 group-hover:bg-gray-100 transition-colors">
+          <ArrowLeft size={16} />
+        </div>
+        Back to orders
       </button>
 
-      <h1 className="text-2xl font-semibold mt-6">
+      <h1 className="text-2xl font-semibold mt-0">
         Order #{order._id.slice(-6)}
       </h1>
 

@@ -8,9 +8,11 @@ import {
   Banknote, 
   Smartphone,
   CheckCircle2,
-  Lock
+  Lock,
+  ArrowLeft
 } from "lucide-react";
 import { api, API_ENDPOINTS } from "../config/api.js";
+import { validate, validateForm } from "../utils/validation.js";
 import { useCart } from "../context/CartContext.jsx";
 import useAuth from "../hooks/useAuth.js";
 import { useToast } from "../context/ToastContext.jsx";
@@ -26,6 +28,7 @@ function CheckoutPage() {
 
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("Cash on Delivery");
+  const [errors, setErrors] = useState({});
 
   const [shippingAddress, setShippingAddress] = useState({
     fullName: user?.name || "",
@@ -50,6 +53,25 @@ function CheckoutPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validation
+    const schema = {
+        fullName: validate.name,
+        address: (v) => validate.required(v, "Address"),
+        city: (v) => validate.required(v, "City"),
+        state: (v) => validate.required(v, "State"),
+        zip: validate.pincode,
+        phone: validate.phone
+    };
+
+    const { isValid, errors: newErrors } = validateForm(shippingAddress, schema);
+    setErrors(newErrors);
+
+    if (!isValid) {
+        toast.error("Please fix errors in address");
+        return;
+    }
+
     setLoading(true);
 
     try {
@@ -100,6 +122,16 @@ function CheckoutPage() {
 
 
       <div className="max-w-7xl mx-auto px-6 pt-24 pb-20">
+        <button 
+           onClick={() => navigate('/cart')} 
+           className="group flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900 mb-8 transition-colors"
+        >
+           <div className="p-2 rounded-full bg-white border border-gray-200 group-hover:bg-gray-100 transition-colors">
+              <ArrowLeft size={16} />
+           </div>
+           Back to Cart
+        </button>
+
         <div className="mb-12">
             <CheckoutProgress currentStep={2} />
         </div>
@@ -130,8 +162,9 @@ function CheckoutPage() {
                      onChange={handleChange}
                      required
                      placeholder="John Doe"
-                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                     className={`w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 ${errors.fullName ? 'ring-2 ring-red-500' : 'focus:ring-blue-500'} outline-none transition-all`}
                    />
+                   {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>}
                 </div>
                 <div>
                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
@@ -141,8 +174,9 @@ function CheckoutPage() {
                      onChange={handleChange}
                      required
                      placeholder="+91 98765 43210"
-                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                     className={`w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 ${errors.phone ? 'ring-2 ring-red-500' : 'focus:ring-blue-500'} outline-none transition-all`}
                    />
+                   {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
                 </div>
                 <div className="md:col-span-2">
                    <label className="block text-sm font-medium text-gray-700 mb-2">Street Address</label>
@@ -152,8 +186,9 @@ function CheckoutPage() {
                      onChange={handleChange}
                      required
                      placeholder="Flat No, Building, Street"
-                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                     className={`w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 ${errors.address ? 'ring-2 ring-red-500' : 'focus:ring-blue-500'} outline-none transition-all`}
                    />
+                   {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
                 </div>
                 <div>
                    <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
@@ -163,8 +198,9 @@ function CheckoutPage() {
                      onChange={handleChange}
                      required
                      placeholder="New York"
-                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                     className={`w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 ${errors.city ? 'ring-2 ring-red-500' : 'focus:ring-blue-500'} outline-none transition-all`}
                    />
+                   {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -175,8 +211,9 @@ function CheckoutPage() {
                             onChange={handleChange}
                             required
                             placeholder="NY"
-                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                            className={`w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 ${errors.state ? 'ring-2 ring-red-500' : 'focus:ring-blue-500'} outline-none transition-all`}
                         />
+                        {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">ZIP / Postal</label>
@@ -186,8 +223,9 @@ function CheckoutPage() {
                             onChange={handleChange}
                             required
                             placeholder="10001"
-                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                            className={`w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 ${errors.zip ? 'ring-2 ring-red-500' : 'focus:ring-blue-500'} outline-none transition-all`}
                         />
+                        {errors.zip && <p className="text-red-500 text-xs mt-1">{errors.zip}</p>}
                     </div>
                 </div>
               </div>

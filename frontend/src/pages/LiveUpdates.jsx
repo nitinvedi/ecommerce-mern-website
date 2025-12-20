@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { ArrowLeft } from "lucide-react";
 import io from "socket.io-client";
 import { SOCKET_URL, api, API_ENDPOINTS } from "../config/api.js";
 
@@ -102,7 +103,13 @@ export default function LiveUpdates() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white relative">
+      <div className="absolute top-6 left-6 z-10">
+         <button onClick={() => navigate(-1)} className="p-3 bg-white/10 rounded-full hover:bg-white/20 transition-colors text-white">
+            <ArrowLeft size={20} />
+         </button>
+      </div>
+
       <div className="max-w-2xl mx-auto px-5 py-10">
         
         {/* Header */}

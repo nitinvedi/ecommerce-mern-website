@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Socket Test</title>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Socket Test</h1>
+    <div id="status">Starting...</div>
+    <div id="logs" style="white-space: pre-wrap;"></div>
+
+    <script>
+        const API_URL = "http://localhost:5000/api/v1";
+        const SOCKET_URL = "http://localhost:5000";
+        const d = new Date().getTime();
+        const userEmail = `test_browser_${d}@example.com`;
+        
+        function log(msg) {
+            console.log(msg);
+            document.getElementById("logs").innerText += msg + "\n";
+        }
+
+        async function run() {
+            try {
+                log(`Registering ${userEmail}...`);
+                let res = await fetch(`${API_URL}/auth/register`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name: "Test User", email: userEmail, password: "password123" })
+                });
+                let data = await res.json();
+                
+                if (!data.token) {
+                     log("Logging in...");
+                     res = await fetch(`${API_URL}/auth/login`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email: userEmail, password: "password123" })
+                    });
+                    data = await res.json();
+                }
+                
+                if (!data.token) throw new Error("Auth failed: " + JSON.stringify(data));
+                
+                const token = data.token;
+                const userId = data.user._id;
+                log(`Auth success. User ID: ${userId}`);
+
+                const socket = io(SOCKET_URL, {
+                    auth: { token }
+                });
+
+                socket.on("connect", () => {
+                    log("Socket Connected");
+                    // Send message
+                    sendMessage(token, userId);
+                });
+                
+                socket.on("connect_error", (err) => {
+                    log("Socket Error: " + err.message);
+                });
+
+                const testMsg = `Msg_${d}`;
+                socket.on("receive_message", (msgData) => {
+                    log("Received Socket Event: " + JSON.stringify(msgData));
+                    if (msgData.message === testMsg) {
+                        document.getElementById("status").innerText = "SUCCESS";
+                        log("✅ TEST PASSED");
+                    }
+                });
+                
+                async function sendMessage(t, uid) {
+                    log("Sending API message...");
+                    await fetch(`${API_URL}/chat/send`, {
+                        method: "POST",
+                        headers: { 
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${t}`
+                        },
+                        body: JSON.stringify({
+                            receiver: uid,
+                            message: testMsg
+                        })
+                    });
+                    log("Message sent via API.");
+                }
+
+            } catch (e) {
+                log("Error: " + e.message);
+                document.getElementById("status").innerText = "FAILURE";
+            }
+        }
+        run();
+    </script>
+</body>
+</html>

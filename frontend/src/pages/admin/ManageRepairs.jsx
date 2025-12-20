@@ -23,6 +23,7 @@ export default function ManageRepairs() {
   const toast = useToast();
 
   const [repairs, setRepairs] = useState([]); // always array
+  const [technicians, setTechnicians] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [search, setSearch] = useState("");
@@ -34,8 +35,20 @@ export default function ManageRepairs() {
 
   /* ---------------- Fetch ---------------- */
 useEffect(() => {
-  if (user?.role === "admin" || user?.role === "technician") fetchRepairs();
+  if (user?.role === "admin" || user?.role === "technician") {
+      fetchRepairs();
+      if (user?.role === "admin") fetchTechnicians();
+  }
 }, [user]);
+
+  const fetchTechnicians = async () => {
+      try {
+          const res = await api.get(`${API_ENDPOINTS.USERS.BASE}?role=technician`);
+          setTechnicians(res.data || []);
+      } catch (e) {
+          console.error("Failed to fetch technicians", e);
+      }
+  };
 
   const fetchRepairs = async () => {
     try {
@@ -45,8 +58,8 @@ useEffect(() => {
       const items =
         res?.data?.items ||
         res?.data?.repairs ||
-        res?.data?.data?.items ||
-        res?.data?.data ||
+        res?.data?.data || // Handle double nesting
+        res?.data ||       // Handle direct array in data property
         [];
 
       setRepairs(Array.isArray(items) ? items : []);
@@ -75,7 +88,11 @@ useEffect(() => {
   /* ---------------- Actions ---------------- */
   const openModal = (repair) => {
     setActiveRepair(repair);
-    setUpdate({ status: repair.status, note: "" });
+    setUpdate({ 
+        status: repair.status, 
+        note: "", 
+        technician: repair.technician?._id || repair.technician || "" 
+    });
     setModalOpen(true);
   };
 
@@ -83,11 +100,29 @@ useEffect(() => {
     if (!activeRepair || !update.status) return;
 
     try {
-      await api.post(
-        API_ENDPOINTS.REPAIRS.STATUS(activeRepair._id),
-        update
-      );
-      toast.success("Repair status updated");
+      // Parallel update: Status history AND General Update (for technician assignment)
+      const promises = [];
+      
+      // 1. Update Status History
+      if (update.status !== activeRepair.status || update.note) {
+          promises.push(api.post(API_ENDPOINTS.REPAIRS.STATUS(activeRepair._id), {
+              status: update.status,
+              note: update.note
+          }));
+      }
+
+      // 2. Update Technician (and other fields if needed)
+      if (update.technician !== (activeRepair.technician?._id || activeRepair.technician)) {
+          promises.push(api.put(API_ENDPOINTS.REPAIRS.BY_ID(activeRepair._id), {
+              technician: update.technician || null
+          }));
+      }
+      
+      if (promises.length > 0) {
+          await Promise.all(promises);
+          toast.success("Repair updated successfully");
+      }
+
       setModalOpen(false);
       setActiveRepair(null);
       fetchRepairs();
@@ -260,6 +295,24 @@ useEffect(() => {
                     <option>Cancelled</option>
                   </select>
                 </div>
+
+                {user?.role === 'admin' && (
+                    <div>
+                        <label className={label}>Assign Technician</label>
+                        <select
+                            value={update.technician}
+                            onChange={(e) => setUpdate({ ...update, technician: e.target.value })}
+                            className={input}
+                        >
+                            <option value="">Unassigned</option>
+                            {technicians.map((tech) => (
+                                <option key={tech._id} value={tech._id}>
+                                    {tech.name} ({tech.email})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
 
                 <div>
                   <label className={label}>Note (optional)</label>

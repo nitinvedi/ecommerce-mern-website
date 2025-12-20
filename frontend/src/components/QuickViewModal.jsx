@@ -112,6 +112,7 @@ export default function QuickViewModal({ product, isOpen, onClose, onAddToCart }
                 </p>
 
                 {/* Features */}
+                {/* Features */}
                 <div className="grid grid-cols-2 gap-4 mb-8">
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <Shield size={16} className="text-green-500" />
@@ -122,8 +123,17 @@ export default function QuickViewModal({ product, isOpen, onClose, onAddToCart }
                     <span>Fast Delivery</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Check size={16} className="text-green-500" />
-                    <span>In Stock</span>
+                    {product.stock > 0 ? (
+                        <>
+                           <Check size={16} className="text-green-500" />
+                           <span>{product.stock < 10 ? `Only ${product.stock} left` : "In Stock"}</span>
+                        </>
+                    ) : (
+                        <>
+                           <X size={16} className="text-red-500" />
+                           <span className="text-red-500 font-medium">Out of Stock</span>
+                        </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -132,14 +142,16 @@ export default function QuickViewModal({ product, isOpen, onClose, onAddToCart }
               <div className="pt-6 border-t border-gray-100 flex gap-4">
                 <button
                   onClick={(e) => {
-                    onAddToCart(product, e);
-                    onClose();
+                    if (product.stock > 0) {
+                        onAddToCart(product, e);
+                        onClose();
+                    }
                   }}
-                  disabled={!product.inStock}
-                  className="flex-1 bg-black text-white py-4 rounded-xl font-semibold hover:bg-gray-900 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={product.stock <= 0}
+                  className="flex-1 bg-black text-white py-4 rounded-xl font-semibold hover:bg-gray-900 transition flex items-center justify-center gap-2 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                 >
                   <ShoppingCart size={20} />
-                  {product.inStock ? "Add to Cart" : "Out of Stock"}
+                  {product.stock > 0 ? "Add to Cart" : "Sold Out"}
                 </button>
               </div>
             </div>

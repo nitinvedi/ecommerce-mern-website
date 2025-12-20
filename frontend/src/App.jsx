@@ -53,6 +53,7 @@ import NotFound from "./pages/NotFound";
 
 export default function App() {
   const [authOpen, setAuthOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -65,7 +66,7 @@ export default function App() {
     <>
     <NotificationProvider>
       {/* ✅ GLOBAL NAVBAR */}
-      <Navbar openSignUp={() => setAuthOpen(true)} />
+      <Navbar openSignUp={() => setAuthOpen(true)} openChat={() => setChatOpen(true)} />
 
       {/* ✅ GLOBAL AUTH MODAL */}
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
@@ -223,7 +224,7 @@ export default function App() {
       </Routes>
 
       {/* Chat Widget */}
-      <ChatWidget />
+      <ChatWidget isOpen={chatOpen} onClose={() => setChatOpen(false)} />
       
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav />

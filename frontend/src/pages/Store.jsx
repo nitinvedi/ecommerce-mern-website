@@ -215,7 +215,38 @@ export default function Store() {
                 className="w-full text-5xl md:text-7xl font-bold bg-transparent border-b-2 border-gray-200 focus:border-black py-8 outline-none text-center placeholder:text-gray-200 transition-colors"
                 style={{ fontFamily: 'Inter, sans-serif' }}
               />
-              <p className="mt-6 text-gray-400">Press Enter to see results</p>
+              
+              {/* Live Suggestions Results */}
+              {searchTerm && (
+                <div className="mt-12 w-full max-w-2xl mx-auto text-left space-y-2">
+                   <p className="text-sm font-medium text-gray-400 mb-4 px-4 uppercase tracking-wider">Top Results</p>
+                   {products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).slice(0, 5).map(product => (
+                      <div 
+                        key={product._id}
+                        onClick={() => { navigate(`/product/${product._id}`); setShowSearch(false); }}
+                        className="flex items-center gap-4 p-4 hover:bg-gray-50 rounded-2xl cursor-pointer group transition-all"
+                      >
+                         <img 
+                            src={product.images?.[0]?.startsWith('http') ? product.images[0] : `${SOCKET_URL}${product.images?.[0]}`} 
+                            alt={product.name}
+                            className="w-16 h-16 object-contain mix-blend-multiply p-2 bg-white rounded-xl border border-gray-100"
+                         />
+                         <div className="flex-1">
+                            <h4 className="font-bold text-lg text-gray-900 group-hover:text-black">{product.name}</h4>
+                            <p className="text-sm text-gray-500">{product.category} • ₹{product.price.toLocaleString()}</p>
+                         </div>
+                         <div className="p-2 bg-white rounded-full border border-gray-100 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <ArrowUp className="rotate-45" size={16} />
+                         </div>
+                      </div>
+                   ))}
+                   {products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
+                      <p className="text-center text-gray-400 py-8">No matching products found.</p>
+                   )}
+                </div>
+              )}
+
+              {!searchTerm && <p className="mt-6 text-gray-400">Press Enter to see all results</p>}
             </div>
           </motion.div>
         )}
@@ -236,18 +267,8 @@ export default function Store() {
         )}
       </AnimatePresence>
 
-      {/* Floating Search FAB (Hidden if BackToTop is active to prevent overlap, or stacked) */}
-      {!showSearch && (
-        <motion.button 
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={() => setShowSearch(true)}
-          className={`fixed bottom-8 ${isBackToTopVisible ? 'right-24' : 'right-8'} z-40 w-12 h-12 bg-black text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-gray-900 transition-all duration-300`}
-        >
-          <Search size={20} />
-        </motion.button>
-      )}
-
+      {/* Floating Search FAB REMOVED */}
+      
       {/* Hero Section */}
       <div className="relative h-[80vh] bg-[#F5F5F7] overflow-hidden flex items-center">
          <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}></div>
@@ -321,10 +342,27 @@ export default function Store() {
                       </div>
                     </div>
                     
-                    <div className="flex items-center justify-between md:justify-end gap-4">
-                        <button onClick={() => setShowMobileFilters(true)} className="lg:hidden flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full text-sm font-medium">
+                    <div className="flex items-center justify-between md:justify-end gap-3 flex-1 md:flex-none">
+                        <button 
+                            onClick={() => setShowSearch(true)} 
+                            className="hidden md:flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 hover:border-black rounded-full text-sm font-medium transition-all hover:shadow-lg group"
+                        >
+                           <Search size={18} className="text-gray-500 group-hover:text-black transition-colors" />
+                           <span className="text-gray-600 group-hover:text-black">Search</span>
+                        </button>
+
+                        <button onClick={() => setShowMobileFilters(true)} className="lg:hidden flex items-center gap-2 px-4 py-2.5 bg-black text-white rounded-full text-sm font-medium shadow-lg">
                            <Filter size={16} /> Filters
                         </button>
+                        
+                        {/* Mobile Search Icon (only visible on small screens) */}
+                         <button 
+                            onClick={() => setShowSearch(true)} 
+                            className="md:hidden flex items-center justify-center w-10 h-10 bg-white border border-gray-200 rounded-full text-gray-900 shadow-sm"
+                        >
+                           <Search size={20} />
+                        </button>
+
                         <ProductSort onSortChange={setSortBy} currentSort={sortBy} />
                     </div>
                 </div>

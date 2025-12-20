@@ -7,11 +7,10 @@ import { useToast } from "../context/ToastContext.jsx";
 import { useChatSocket } from "../hooks/useChatSocket.js";
 import { formatTime, groupMessagesByDate, playNotificationSound } from "../utils/chatUtils.js";
 
-export default function ChatWidget() {
+export default function ChatWidget({ isOpen, onClose }) {
   const { user } = useAuth();
   const toast = useToast();
 
-  const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
@@ -140,70 +139,52 @@ export default function ChatWidget() {
 
   return (
     <>
-      <AnimatePresence>
-        {!isOpen && (
-          <motion.button
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            exit={{ scale: 0 }}
-            onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-6 z-50"
-          >
-            <div className="p-4 bg-blue-600 text-white rounded-full shadow-2xl hover:bg-blue-700 transition-colors">
-                <MessageCircle size={24} />
-            </div>
-            {unreadCount > 0 && (
-                <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full border-2 border-white">
-                    {unreadCount}
-                </div>
-            )}
-          </motion.button>
-        )}
-      </AnimatePresence>
-
+      {/* Floating Button Removed - triggering via Navbar */}
+      
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 100, scale: 0.8 }}
+            initial={{ opacity: 0, y: 50, scale: 0.9, x: -20 }}
             animate={{
               opacity: 1,
               y: 0,
               scale: 1,
-              height: isMinimized ? "60px" : "500px"
+              x: 0,
+              height: isMinimized ? "70px" : "600px" // Taller chat
             }}
-            exit={{ opacity: 0, y: 100, scale: 0.8 }}
-            className="fixed bottom-6 right-6 z-50 w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden"
+            exit={{ opacity: 0, y: 50, scale: 0.9, x: -20 }}
+            className="fixed bottom-8 left-8 z-[100] w-[350px] sm:w-[400px] bg-white rounded-[2rem] shadow-2xl border border-gray-100 flex flex-col overflow-hidden font-sans"
           >
             {/* Header */}
-            <div className="p-4 bg-blue-600 text-white flex items-center justify-between cursor-pointer" onClick={() => isMinimized && setIsMinimized(false)}>
-              <div className="flex items-center gap-3">
+            <div className="p-5 bg-black text-white flex items-center justify-between cursor-pointer" onClick={() => isMinimized && setIsMinimized(false)}>
+              <div className="flex items-center gap-4">
                 <div className="relative">
-                    <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                    <MessageCircle size={20} />
+                    <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center border border-white/10">
+                       <MessageCircle size={22} className="fill-white/50" />
                     </div>
                     {/* Connection Status Dot */}
-                    <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-blue-600 ${isConnected ? 'bg-green-400' : 'bg-red-400'}`} 
+                    <div className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-black ${isConnected ? 'bg-[#DFFF00]' : 'bg-red-500'}`} 
                          title={isConnected ? "Online" : "Connecting..."}
                     />
                 </div>
                 <div>
-                  <h3 className="font-semibold">Customer Support</h3>
-                  <p className="text-xs text-blue-100 flex items-center gap-1">
-                    {isConnected ? "Online" : "Offline"} {isTyping && "• Agent is typing..."}
+                  <h3 className="font-bold text-lg leading-tight">Support Team</h3>
+                  <p className="text-xs text-gray-400 font-medium tracking-wide uppercase">
+                    {isConnected ? "Online" : "Offline"} {isTyping && "• Typing..."}
                   </p>
                 </div>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-1">
                 <button
                   onClick={(e) => { e.stopPropagation(); setIsMinimized(!isMinimized); }}
-                  className="p-1 hover:bg-white/20 rounded transition-colors"
+                  className="p-2 hover:bg-white/10 rounded-full transition-colors opacity-70 hover:opacity-100"
                 >
                   <Minimize2 size={18} />
                 </button>
                 <button
-                  onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}
-                  className="p-1 hover:bg-white/20 rounded transition-colors"
+                  onClick={(e) => { e.stopPropagation(); onClose(); }}
+                  className="p-2 hover:bg-white/10 rounded-full transition-colors opacity-70 hover:opacity-100"
                 >
                   <X size={18} />
                 </button>
@@ -233,18 +214,18 @@ export default function ChatWidget() {
                                 return (
                                     <div
                                     key={msg._id || index}
-                                    className={`flex ${isMyMessage ? 'justify-end' : 'justify-start'} mb-2`}
+                                    className={`flex ${isMyMessage ? 'justify-end' : 'justify-start'} mb-4`}
                                     >
                                     <div
-                                        className={`max-w-[75%] px-4 py-2 rounded-2xl text-left ${isMyMessage
-                                        ? 'bg-blue-600 text-white rounded-br-none'
-                                        : 'bg-white text-gray-900 rounded-bl-none border border-gray-200'
+                                        className={`max-w-[80%] px-5 py-3 rounded-2xl text-left shadow-sm ${isMyMessage
+                                        ? 'bg-black text-white rounded-br-sm'
+                                        : 'bg-gray-100 text-gray-900 rounded-bl-sm'
                                         }`}
                                     >
-                                        <p className="text-sm break-words whitespace-pre-wrap">{msg.message}</p>
-                                        <div className={`flex items-center justify-end gap-1 mt-1 ${isMyMessage ? 'text-blue-100' : 'text-gray-400'}`}>
-                                            <span className="text-[10px]">{formatTime(msg.createdAt)}</span>
-                                            {isMyMessage && <Check size={10} />}
+                                        <p className="text-[15px] leading-relaxed break-words whitespace-pre-wrap">{msg.message}</p>
+                                        <div className={`flex items-center justify-end gap-1 mt-1.5 ${isMyMessage ? 'text-gray-400' : 'text-gray-400'}`}>
+                                            <span className="text-[10px] font-medium opacity-70">{formatTime(msg.createdAt)}</span>
+                                            {isMyMessage && <Check size={12} className="opacity-70" />}
                                         </div>
                                     </div>
                                     </div>
@@ -292,9 +273,9 @@ export default function ChatWidget() {
                     <button
                       type="submit"
                       disabled={!newMessage.trim() || loading}
-                      className="p-3 h-[44px] w-[44px] flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                      className="p-3 h-[44px] w-[44px] flex items-center justify-center bg-black text-white rounded-full hover:bg-gray-800 transition-all hover:scale-105 active:scale-95 disabled:bg-gray-200 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-md"
                     >
-                      <Send size={20} />
+                      <Send size={18} className={newMessage.trim() ? "ml-1" : ""} />
                     </button>
                   </div>
                 </form>

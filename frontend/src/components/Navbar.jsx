@@ -16,6 +16,7 @@ import {
   Menu,
   X,
   ChevronRight,
+  MessageCircle,
   Bell
 } from "lucide-react";
 import useAuth from "../hooks/useAuth";
@@ -152,7 +153,7 @@ function MenuLink({ icon, label, onClick, danger = false, highlight = false }) {
 }
 
 /* ================= Navbar ================= */
-export default function Navbar({ openSignUp }) {
+export default function Navbar({ openSignUp, openChat }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -296,8 +297,18 @@ export default function Navbar({ openSignUp }) {
                 </motion.button>
               </Link>
 
-              {/* Cart with Pulse Badge */}
-              <Link to="/cart" className="relative mr-2">
+              {/* Support Chat */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={openChat}
+              className="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:text-black hover:bg-gray-100 transition-colors"
+            >
+              <MessageCircle size={20} className="stroke-[1.5]" />
+            </motion.button>
+
+            {/* Cart with Pulse Badge */}
+            <Link to="/cart" className="relative mr-2">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -401,6 +412,13 @@ export default function Navbar({ openSignUp }) {
                       {unreadCount > 0 && <span className="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{unreadCount}</span>}
                     </Link>
                   )}
+                  <button
+                    onClick={() => { openChat(); setMobileMenuOpen(false); }}
+                    className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-700 font-medium text-left"
+                  >
+                    <MessageCircle size={18} />
+                    Live Chat
+                  </button>
                 </div>
 
                 <div className="h-px bg-gray-100" />

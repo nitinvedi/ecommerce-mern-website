@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, User, Calendar, Save, DollarSign, PenTool, CheckCircle } from "lucide-react";
-import { api, API_ENDPOINTS } from "../../config/api";
+import { api, API_ENDPOINTS, SOCKET_URL } from "../../config/api";
 import { useToast } from "../../context/ToastContext";
 import useAuth from "../../hooks/useAuth";
 
@@ -169,7 +169,7 @@ export default function TechnicianJobDetail() {
                                 {job.images.map((img, i) => (
                                     <img 
                                         key={i} 
-                                        src={img.startsWith('http') ? img : `http://localhost:5000${img}`} 
+                                        src={img.startsWith('http') ? img : `${SOCKET_URL}${img}`} 
                                         alt="Device" 
                                         className="h-24 w-24 object-cover rounded-lg border border-gray-200"
                                     />

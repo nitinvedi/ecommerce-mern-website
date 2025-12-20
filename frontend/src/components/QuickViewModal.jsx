@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { X, Star, ShoppingCart, Check, Shield, Truck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { SOCKET_URL } from "../config/api.js";
 
 export default function QuickViewModal({ product, isOpen, onClose, onAddToCart }) {
   const [selectedImage, setSelectedImage] = useState(0);
@@ -8,7 +9,7 @@ export default function QuickViewModal({ product, isOpen, onClose, onAddToCart }
   if (!isOpen || !product) return null;
 
   const images = product.images?.length 
-    ? product.images.map(img => img.startsWith("http") ? img : `http://localhost:5000${img}`)
+    ? product.images.map(img => img.startsWith("http") ? img : `${SOCKET_URL}${img}`)
     : ["/placeholder.png"];
 
   return (

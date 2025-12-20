@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bell, Check, X } from "lucide-react";
 import { io } from "socket.io-client";
-import { api } from "../config/api.js";
+import { api, SOCKET_URL } from "../config/api.js";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth.js";
 
@@ -19,7 +19,7 @@ export default function NotificationBell() {
   useEffect(() => {
     if (user) {
       const token = localStorage.getItem("token");
-      const newSocket = io("http://localhost:5000", {
+      const newSocket = io(SOCKET_URL, {
         auth: { token }
       });
 

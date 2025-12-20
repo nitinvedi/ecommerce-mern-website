@@ -13,7 +13,7 @@ import {
   Tag
 } from "lucide-react";
 
-import { api, API_ENDPOINTS } from "../config/api.js";
+import { api, API_ENDPOINTS, SOCKET_URL } from "../config/api.js";
 import { useCart } from "../context/CartContext.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import useAuth from "../hooks/useAuth.js";
@@ -451,9 +451,9 @@ function ProductCard({ product, index, wishlistItems, toggleWishlist, handleAddT
   const isOutOfStock = product.stock <= 0;
   
   // 10. Feature: Hover Image Swap Logic
-  const image1 = product.images?.[0]?.startsWith("http") ? product.images[0] : `http://localhost:5000${product.images?.[0]}`;
+  const image1 = product.images?.[0]?.startsWith("http") ? product.images[0] : `${SOCKET_URL}${product.images?.[0]}`;
   const image2 = product.images?.[1] 
-      ? (product.images[1].startsWith("http") ? product.images[1] : `http://localhost:5000${product.images[1]}`) 
+      ? (product.images[1].startsWith("http") ? product.images[1] : `${SOCKET_URL}${product.images[1]}`) 
       : image1;
 
   // 11. Feature: Savings Calculation badge

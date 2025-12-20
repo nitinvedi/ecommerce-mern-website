@@ -11,7 +11,7 @@ import {
   Lock,
   ArrowLeft
 } from "lucide-react";
-import { api, API_ENDPOINTS } from "../config/api.js";
+import { api, API_ENDPOINTS, SOCKET_URL } from "../config/api.js";
 import { validate, validateForm } from "../utils/validation.js";
 import { useCart } from "../context/CartContext.jsx";
 import useAuth from "../hooks/useAuth.js";
@@ -283,7 +283,7 @@ function CheckoutPage() {
                    {cartItems.map(item => (
                       <div key={item._id} className="flex gap-3">
                          <img 
-                            src={item.images?.[0]?.startsWith("http") ? item.images[0] : `http://localhost:5000${item.images[0]}`}
+                            src={item.images?.[0]?.startsWith("http") ? item.images[0] : `${SOCKET_URL}${item.images[0]}`}
                             className="w-12 h-12 bg-gray-50 rounded-lg object-contain p-1 border border-gray-100"
                             alt=""
                          />

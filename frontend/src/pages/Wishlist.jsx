@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, ShoppingCart, Trash2, ArrowRight, ArrowLeft } from "lucide-react";
-import { api, API_ENDPOINTS } from "../config/api.js";
+import { api, API_ENDPOINTS, SOCKET_URL } from "../config/api.js";
 import { useCart } from "../context/CartContext.jsx";
 import useAuth from "../hooks/useAuth.js";
 import { useToast } from "../context/ToastContext.jsx";
@@ -121,7 +121,7 @@ export default function Wishlist() {
                                 
                                 <div className="w-full h-full p-8 flex items-center justify-center">
                                     <img 
-                                        src={product.images?.[0]?.startsWith("http") ? product.images[0] : `http://localhost:5000${product.images?.[0]}`}
+                                        src={product.images?.[0]?.startsWith("http") ? product.images[0] : `${SOCKET_URL}${product.images?.[0]}`}
                                         alt={product.name} 
                                         className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-700 ease-out" 
                                     />

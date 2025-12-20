@@ -14,7 +14,7 @@ import {
   Heart
 } from "lucide-react";
 
-import { api, API_ENDPOINTS } from "../config/api.js";
+import { api, API_ENDPOINTS, SOCKET_URL } from "../config/api.js";
 import { useCart } from "../context/CartContext.jsx";
 import useAuth from "../hooks/useAuth.js";
 import { useToast } from "../context/ToastContext.jsx";
@@ -161,7 +161,7 @@ export default function Product() {
                className="relative aspect-[4/5] bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm"
             >
                <img
-                  src={product.images?.[selectedImage]?.startsWith("http") ? product.images[selectedImage] : `http://localhost:5000${product.images[selectedImage]}`}
+                  src={product.images?.[selectedImage]?.startsWith("http") ? product.images[selectedImage] : `${SOCKET_URL}${product.images[selectedImage]}`}
                   className="w-full h-full object-contain p-8"
                   alt={product.name}
                />
@@ -192,7 +192,7 @@ export default function Product() {
                     }`}
                   >
                     <img 
-                       src={img.startsWith("http") ? img : `http://localhost:5000${img}`}
+                       src={img.startsWith("http") ? img : `${SOCKET_URL}${img}`}
                        className="w-full h-full object-contain p-2"
                        alt="" 
                     />
@@ -421,7 +421,7 @@ export default function Product() {
                    >
                       <div className="aspect-[4/5] bg-gray-50 p-6 relative">
                          <img 
-                            src={p.images?.[0]?.startsWith("http") ? p.images[0] : `http://localhost:5000${p.images?.[0]}`}
+                            src={p.images?.[0]?.startsWith("http") ? p.images[0] : `${SOCKET_URL}${p.images?.[0]}`}
                             className="w-full h-full object-contain group-hover:scale-105 transition-transform"
                             alt={p.name}
                          />

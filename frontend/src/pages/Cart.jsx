@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useCart } from "../context/CartContext.jsx";
 import CheckoutProgress from "../components/CheckoutProgress";
+import { SOCKET_URL } from "../config/api.js";
 
 export default function Cart() {
   const navigate = useNavigate();
@@ -113,7 +114,7 @@ export default function Cart() {
                      {/* Image */}
                      <div className="w-32 h-32 bg-[#F5F5F7] rounded-xl flex-shrink-0 p-4 cursor-pointer" onClick={() => navigate(`/product/${item._id}`)}>
                         <img
-                           src={item.images?.[0]?.startsWith("http") ? item.images[0] : `http://localhost:5000${item.images?.[0]}`}
+                           src={item.images?.[0]?.startsWith("http") ? item.images[0] : `${SOCKET_URL}${item.images?.[0]}`}
                            alt={item.name}
                            className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform"
                         />

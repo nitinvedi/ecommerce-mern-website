@@ -13,7 +13,7 @@ import {
   XCircle,
   Truck
 } from "lucide-react";
-import { api } from "../config/api.js";
+import { api, SOCKET_URL } from "../config/api.js";
 import { DASHBOARD_ENDPOINTS } from "../config/dashboardApi.js";
 import { useToast } from "../context/ToastContext.jsx";
 
@@ -161,7 +161,7 @@ export default function Dashboard() {
                                       {order.orderItems.slice(0,3).map((item, i) => (
                                          <img 
                                             key={i}
-                                            src={item.image?.startsWith("http") ? item.image : `http://localhost:5000${item.image}`}
+                                            src={item.image?.startsWith("http") ? item.image : `${SOCKET_URL}${item.image}`}
                                             className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 object-cover"
                                             alt=""
                                          />

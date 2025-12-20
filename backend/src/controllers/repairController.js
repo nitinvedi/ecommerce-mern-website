@@ -14,11 +14,11 @@ export const createRepair = asyncHandler(async (req, res) => {
 
   // Add images if uploaded
   if (req.files && req.files.length > 0) {
-    repairData.images = req.files.map(file => `/uploads/repairs/${file.filename}`);
+    repairData.images = req.files.map(file => file.path);
   }
 
   const repair = await RepairModel.createRepair(repairData);
-  
+
   // Emit socket event for new repair
   emitRepairUpdate(repair._id.toString(), {
     status: repair.status,
@@ -116,7 +116,7 @@ export const updateRepair = asyncHandler(async (req, res) => {
   }
 
   const updatedRepair = await RepairModel.getRepairById(id);
-  
+
   // Emit socket event
   if (req.body.status) {
     emitRepairUpdate(id, {
@@ -141,7 +141,7 @@ export const addStatusUpdate = asyncHandler(async (req, res) => {
   }
 
   const statusUpdate = await RepairModel.addStatusUpdate(id, status, note, userId);
-  
+
   // Emit socket event
   emitRepairUpdate(id, {
     status,

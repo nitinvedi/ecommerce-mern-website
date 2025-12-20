@@ -1,49 +1,40 @@
 import multer from "multer";
+import { v2 as cloudinary } from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
 import path from "path";
-import { fileURLToPath } from "url";
-import fs from "fs";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, "../../uploads");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
+// Cloudinary configuration
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 // Storage configuration
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    let uploadPath = uploadsDir;
-    
-    // Organize by file type
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: (req, file) => {
+    let folderName = "others";
+
+    // Organize by file type - matching original logic
     if (file.fieldname === "productImages") {
-      uploadPath = path.join(uploadsDir, "products");
+      folderName = "products";
     } else if (file.fieldname === "repairImages") {
-      uploadPath = path.join(uploadsDir, "repairs");
+      folderName = "repairs";
     } else if (file.fieldname === "profileImage") {
-      uploadPath = path.join(uploadsDir, "profiles");
+      folderName = "profiles";
     }
-    
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
-    }
-    
-    cb(null, uploadPath);
-  },
-  filename: (req, file, cb) => {
-    // Generate unique filename
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname);
-    const name = path.basename(file.originalname, ext);
-    cb(null, `${name}-${uniqueSuffix}${ext}`);
+
+    return {
+      folder: `ram-mobile/${folderName}`,
+      allowed_formats: ["jpg", "jpeg", "png", "gif", "webp"],
+      public_id: `${path.basename(file.originalname, path.extname(file.originalname))}-${Date.now()}`
+    };
   }
 });
 
-// File filter
+// File filter (CloudinaryStorage handles formats, but we can keep this for early rejection if needed, or rely on allowed_formats)
 const fileFilter = (req, file, cb) => {
-  // Allowed file types
   const allowedMimes = [
     "image/jpeg",
     "image/jpg",
@@ -118,16 +109,17 @@ export const handleUploadError = (err, req, res, next) => {
       message: err.message
     });
   }
-  
+
   if (err) {
     return res.status(400).json({
       success: false,
       message: err.message || "File upload error"
     });
   }
-  
+
   next();
 };
 
 export default upload;
+
 

@@ -53,9 +53,9 @@ if (appConfig.enableRequestLogging) {
 // Rate limiting
 app.use(apiRateLimit);
 
-// Serve static files (uploads)
-const uploadsPath = path.join(__dirname, "../uploads");
-app.use("/uploads", express.static(uploadsPath));
+// Serve static files (uploads) - REMOVED (Migrated to Cloudinary)
+// const uploadsPath = path.join(__dirname, "../uploads");
+// app.use("/uploads", express.static(uploadsPath));
 
 // Health check endpoint
 app.get("/health", (req, res) => {
@@ -86,12 +86,12 @@ app.use(`${apiPrefix}/chat`, chatRoutes);
 if (appConfig.nodeEnv === "production") {
   const frontendPath = path.join(__dirname, "../../frontend/dist");
   app.use(express.static(frontendPath));
-  
+
   // Serve frontend for all non-API routes (SPA Fallback)
   app.use((req, res) => {
     // Don't serve frontend for API routes
     if (req.path.startsWith("/api")) {
-      return notFound(req, res, () => {});
+      return notFound(req, res, () => { });
     }
     res.sendFile(path.join(frontendPath, "index.html"));
   });

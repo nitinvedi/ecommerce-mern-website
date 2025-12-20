@@ -7,7 +7,10 @@ dotenv.config();
 export const validateEnv = () => {
   const required = [
     "MONGO_URI",
-    "JWT_SECRET"
+    "JWT_SECRET",
+    "CLOUDINARY_CLOUD_NAME",
+    "CLOUDINARY_API_KEY",
+    "CLOUDINARY_API_SECRET"
   ];
 
   const missing = required.filter((key) => !process.env[key]);
@@ -27,7 +30,7 @@ export const validateEnv = () => {
   ];
 
   const missingRecommended = recommended.filter((key) => !process.env[key]);
-  
+
   if (missingRecommended.length > 0 && process.env.NODE_ENV === "production") {
     console.warn("⚠️  Missing recommended environment variables:");
     missingRecommended.forEach((key) => console.warn(`   - ${key}`));

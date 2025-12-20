@@ -31,7 +31,7 @@ export const getProducts = asyncHandler(async (req, res) => {
   }
 
   const products = await ProductModel.getAllProducts(filter);
-  
+
   // Paginate
   const startIndex = (page - 1) * limit;
   const endIndex = startIndex + limit;
@@ -86,7 +86,7 @@ export const createProduct = asyncHandler(async (req, res) => {
 
   // Add images if uploaded
   if (req.files && req.files.length > 0) {
-    productData.images = req.files.map(file => `/uploads/products/${file.filename}`);
+    productData.images = req.files.map(file => file.path);
   }
 
   const product = await ProductModel.createProduct(productData);
@@ -135,7 +135,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
 
   // Update images if new files uploaded
   if (req.files && req.files.length > 0) {
-    updateData.images = req.files.map(file => `/uploads/products/${file.filename}`);
+    updateData.images = req.files.map(file => file.path);
   }
 
   const result = await ProductModel.updateProduct(id, updateData);

@@ -173,7 +173,7 @@ export default function Navbar({ openSignUp, openChat }) {
   }, []);
 
   const navLinks = [
-    { name: "Store", path: "/", icon: <ShoppingBag size={18} /> },
+    { name: "Store", path: "/store", icon: <ShoppingBag size={18} /> },
     { name: "Repair", path: "/repair", icon: <Wrench size={18} /> },
     { name: "Support", path: "/contact", icon: <Menu size={18} /> },
   ];
@@ -217,7 +217,7 @@ export default function Navbar({ openSignUp, openChat }) {
           <div className={`hidden md:flex items-center gap-12 absolute left-1/2 -translate-x-1/2 transition-opacity duration-300 ${searchFocused ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
             {navLinks.map((link) => {
               // Update Store link dynamically or rely on hardcoded change below
-              const path = link.name === "Store" ? "/store" : link.path;
+              const path = link.path;
               const isActive = pathname === path;
               return (
                 <Link

@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { X, Mail, Lock, User, ArrowRight, Chrome } from "lucide-react";
+import { X, Mail, Lock, User, ArrowRight, Chrome, KeyRound, ArrowLeft } from "lucide-react";
 import useAuth from "../hooks/useAuth";
 import { api, API_ENDPOINTS, setAuthToken } from "../config/api";
 import { validate, validateForm } from "../utils/validation";
@@ -13,7 +13,7 @@ const variants = {
 };
 
 export default function AuthModal({ open, onClose, onAuthSuccess }) {
-  const [mode, setMode] = useState("signin");
+  const [mode, setMode] = useState("signin"); // signin, signup, forgot, reset
   const navigate = useNavigate();
   const location = useLocation();
   const { login, register, refreshProfile } = useAuth();
@@ -28,8 +28,27 @@ export default function AuthModal({ open, onClose, onAuthSuccess }) {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
   const update = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  // Reset state when switching modes
+  const switchMode = (newMode) => {
+    setMode(newMode);
+    setError("");
+    setSuccessMsg("");
+    // Keep email if switching between related modes for better UX
+    if (newMode === 'signin' || newMode === 'signup') {
+        const email = form.email;
+        setForm({
+            name: "",
+            email: email,
+            password: "",
+            confirmPassword: "",
+            resetToken: ""
+        });
+    }
+  };
 
   /* ---------- SIGN IN ---------- */
   const handleLogin = async (e) => {
@@ -40,10 +59,6 @@ export default function AuthModal({ open, onClose, onAuthSuccess }) {
     );
     
     if (!isValid) {
-        // Just show generic error or toast?
-        // User asked for "proper validation", but login usually keeps it generic for security.
-        // But for inputs like "alphabets in phone", we should valid syntax.
-        // For login, email syntax check is fine.
         if (newErrors.email) return setError(newErrors.email);
         if (newErrors.password) return setError(newErrors.password);
     }
@@ -104,6 +119,71 @@ export default function AuthModal({ open, onClose, onAuthSuccess }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  /* ---------- FORGOT PASSWORD ---------- */
+  const handleForgotPassword = async (e) => {
+      e.preventDefault();
+      setError("");
+      setSuccessMsg("");
+
+      if (!validate.email(form.email)) {
+          return setError("Please enter a valid email address");
+      }
+
+      setLoading(true);
+      try {
+          const res = await api.post(API_ENDPOINTS.AUTH.FORGOT, { email: form.email });
+          
+          if (res.data?.resetToken) {
+              // Dev/Demo mode: Auto-fill token for easier testing
+              setForm(prev => ({ ...prev, resetToken: res.data.resetToken }));
+              setSuccessMsg("Reset token generated! Changing to update password screen...");
+              // Small delay to let user see the success message
+              setTimeout(() => {
+                  setMode("reset");
+                  setError(""); 
+                  setSuccessMsg("Token pre-filled. Please set a new password.");
+              }, 1500);
+          } else {
+             // Production mode: Email sent
+             setSuccessMsg("If an account exists, a reset link has been sent.");
+          }
+      } catch (e) {
+          console.error(e);
+          setError(e.response?.data?.message || "Failed to process request");
+      } finally {
+          setLoading(false);
+      }
+  };
+
+  /* ---------- RESET PASSWORD ---------- */
+  const handleResetPassword = async (e) => {
+      e.preventDefault();
+      setError("");
+      setSuccessMsg("");
+
+      if (!form.resetToken) return setError("Reset token is missing");
+      if (!validate.password(form.password)) return setError("Password must be at least 8 chars with upper, lower, number & special char");
+      if (form.password !== form.confirmPassword) return setError("Passwords do not match");
+
+      setLoading(true);
+      try {
+          await api.post(API_ENDPOINTS.AUTH.RESET, {
+              token: form.resetToken,
+              newPassword: form.password
+          });
+          setSuccessMsg("Password reset successfully! Redirecting to login...");
+          setTimeout(() => {
+              setMode("signin");
+              setSuccessMsg("Please login with your new password");
+              setForm(f => ({ ...f, password: "", confirmPassword: "", resetToken: "" }));
+          }, 2000);
+      } catch (e) {
+          setError(e.response?.data?.message || "Failed to reset password");
+      } finally {
+          setLoading(false);
+      }
   };
 
   /* ---------- GOOGLE ---------- */
@@ -207,13 +287,22 @@ export default function AuthModal({ open, onClose, onAuthSuccess }) {
              {/* RIGHT: Form */}
              <div className="flex-1 p-8 md:p-12 overflow-y-auto">
                 <div className="max-w-sm mx-auto">
+                   
+                   {/* Header Text */}
                    <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                     {mode === "signin" ? "Welcome Back!" : "Create Account"}
+                     {mode === "signin" && "Welcome Back!"}
+                     {mode === "signup" && "Create Account"}
+                     {mode === "forgot" && "Forgot Password?"}
+                     {mode === "reset" && "Reset Password"}
                    </h2>
                    <p className="text-gray-500 mb-8">
-                      {mode === "signin" ? "Enter your details to access your account" : "Start your 30-day free trial today"}
+                      {mode === "signin" && "Enter your details to access your account"}
+                      {mode === "signup" && "Start your 30-day free trial today"}
+                      {mode === "forgot" && "Enter your email to reset your password"}
+                      {mode === "reset" && "Enter your new password below"}
                    </p>
 
+                   {/* Error Alert */}
                    {error && (
                      <motion.div 
                         initial={{ opacity: 0, y: -10 }} 
@@ -225,23 +314,39 @@ export default function AuthModal({ open, onClose, onAuthSuccess }) {
                      </motion.div>
                    )}
 
-                   <div className="flex bg-gray-100 p-1 rounded-xl mb-8">
-                      <button 
-                         onClick={() => setMode("signin")}
-                         className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${mode === "signin" ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                      >
-                         Sign In
-                      </button>
-                      <button 
-                         onClick={() => setMode("signup")}
-                         className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${mode === "signup" ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                      >
-                         Sign Up
-                      </button>
-                   </div>
+                   {/* Success Alert */}
+                   {successMsg && (
+                     <motion.div 
+                        initial={{ opacity: 0, y: -10 }} 
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mb-6 p-4 rounded-xl bg-green-50 text-green-600 text-sm border border-green-100 flex items-center gap-2"
+                     >
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-600" />
+                        {successMsg}
+                     </motion.div>
+                   )}
+
+                   {/* Tabs (Only show for signin/signup) */}
+                   {(mode === "signin" || mode === "signup") && (
+                       <div className="flex bg-gray-100 p-1 rounded-xl mb-8">
+                          <button 
+                             onClick={() => switchMode("signin")}
+                             className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${mode === "signin" ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                          >
+                             Sign In
+                          </button>
+                          <button 
+                             onClick={() => switchMode("signup")}
+                             className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${mode === "signup" ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                          >
+                             Sign Up
+                          </button>
+                       </div>
+                   )}
 
                    <AnimatePresence mode="wait">
-                      {mode === "signin" ? (
+                      {/* SIGN IN FORM */}
+                      {mode === "signin" && (
                          <motion.form key="signin" variants={variants} initial="initial" animate="animate" exit="exit" onSubmit={handleLogin} className="space-y-5">
                             <div className="space-y-2">
                                <label className="text-sm font-medium text-gray-700">Email Address</label>
@@ -260,7 +365,7 @@ export default function AuthModal({ open, onClose, onAuthSuccess }) {
                             <div className="space-y-2">
                                <div className="flex justify-between">
                                   <label className="text-sm font-medium text-gray-700">Password</label>
-                                  <span className="text-sm text-blue-600 hover:underline cursor-pointer">Forgot?</span>
+                                  <span onClick={() => switchMode("forgot")} className="text-sm text-blue-600 hover:underline cursor-pointer">Forgot?</span>
                                </div>
                                <div className="relative">
                                   <Lock size={20} className="absolute left-4 top-3.5 text-gray-400" />
@@ -278,7 +383,10 @@ export default function AuthModal({ open, onClose, onAuthSuccess }) {
                                {loading ? "Signing in..." : "Sign In"} <ArrowRight size={18} />
                             </button>
                          </motion.form>
-                      ) : (
+                      )}
+
+                      {/* SIGN UP FORM */}
+                      {mode === "signup" && (
                          <motion.form key="signup" variants={variants} initial="initial" animate="animate" exit="exit" onSubmit={handleRegister} className="space-y-5">
                             <div className="space-y-2">
                                <label className="text-sm font-medium text-gray-700">Full Name</label>
@@ -356,24 +464,120 @@ export default function AuthModal({ open, onClose, onAuthSuccess }) {
                             </div>
                          </motion.form>
                       )}
+
+                      {/* FORGOT PASSWORD FORM */}
+                      {mode === "forgot" && (
+                         <motion.form key="forgot" variants={variants} initial="initial" animate="animate" exit="exit" onSubmit={handleForgotPassword} className="space-y-5">
+                            <div className="space-y-2">
+                               <label className="text-sm font-medium text-gray-700">Email Address</label>
+                               <div className="relative">
+                                  <Mail size={20} className="absolute left-4 top-3.5 text-gray-400" />
+                                  <input
+                                     type="email"
+                                     value={form.email}
+                                     onChange={(e) => update("email", e.target.value)}
+                                     className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                     placeholder="name@example.com"
+                                     required
+                                  />
+                               </div>
+                            </div>
+
+                            <button disabled={loading} className="w-full bg-gray-900 text-white py-3.5 rounded-xl font-bold hover:bg-black transition-all flex items-center justify-center gap-2 shadow-lg shadow-gray-900/20 disabled:opacity-70">
+                               {loading ? "Sending Link..." : "Send Reset Link"} <ArrowRight size={18} />
+                            </button>
+                            
+                            <div className="text-center">
+                                <button type="button" onClick={() => switchMode("signin")} className="text-sm text-gray-500 hover:text-gray-900 font-medium inline-flex items-center gap-1">
+                                    <ArrowLeft size={16} /> Back to Sign In
+                                </button>
+                            </div>
+                         </motion.form>
+                      )}
+
+                      {/* RESET PASSWORD FORM */}
+                      {mode === "reset" && (
+                         <motion.form key="reset" variants={variants} initial="initial" animate="animate" exit="exit" onSubmit={handleResetPassword} className="space-y-5">
+                            <div className="space-y-2">
+                               <label className="text-sm font-medium text-gray-700">Reset Token</label>
+                               <div className="relative">
+                                  <KeyRound size={20} className="absolute left-4 top-3.5 text-gray-400" />
+                                  <input
+                                     type="text"
+                                     value={form.resetToken}
+                                     onChange={(e) => update("resetToken", e.target.value)}
+                                     className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                     placeholder="Paste token here"
+                                     required
+                                  />
+                               </div>
+                            </div>
+
+                            <div className="space-y-2">
+                               <label className="text-sm font-medium text-gray-700">New Password</label>
+                               <div className="relative">
+                                  <Lock size={20} className="absolute left-4 top-3.5 text-gray-400" />
+                                  <input
+                                     type="password"
+                                     value={form.password}
+                                     onChange={(e) => update("password", e.target.value)}
+                                     className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                     placeholder="New password (min 8 chars)"
+                                     required
+                                  />
+                               </div>
+                            </div>
+
+                            <div className="space-y-2">
+                               <label className="text-sm font-medium text-gray-700">Confirm New Password</label>
+                               <div className="relative">
+                                  <Lock size={20} className="absolute left-4 top-3.5 text-gray-400" />
+                                  <input
+                                     type="password"
+                                     value={form.confirmPassword}
+                                     onChange={(e) => update("confirmPassword", e.target.value)}
+                                     className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                     placeholder="Confirm new password"
+                                     required
+                                  />
+                               </div>
+                            </div>
+
+                            <button disabled={loading} className="w-full bg-gray-900 text-white py-3.5 rounded-xl font-bold hover:bg-black transition-all flex items-center justify-center gap-2 shadow-lg shadow-gray-900/20 disabled:opacity-70">
+                               {loading ? "Resetting..." : "Reset Password"} <ArrowRight size={18} />
+                            </button>
+                            
+                            <div className="text-center">
+                                <button type="button" onClick={() => switchMode("signin")} className="text-sm text-gray-500 hover:text-gray-900 font-medium inline-flex items-center gap-1">
+                                    <ArrowLeft size={16} /> Back to Sign In
+                                </button>
+                            </div>
+                         </motion.form>
+                      )}
+
                    </AnimatePresence>
 
-                   <div className="relative my-8">
-                      <div className="absolute inset-0 flex items-center">
-                         <div className="w-full border-t border-gray-200"></div>
-                      </div>
-                      <div className="relative flex justify-center text-sm">
-                         <span className="px-2 bg-white text-gray-500">Or continue with</span>
-                      </div>
-                   </div>
+                   {/* Separator & Google Auth (Only for Signin/Signup) */}
+                   {(mode === "signin" || mode === "signup") && (
+                       <>
+                           <div className="relative my-8">
+                              <div className="absolute inset-0 flex items-center">
+                                 <div className="w-full border-t border-gray-200"></div>
+                              </div>
+                              <div className="relative flex justify-center text-sm">
+                                 <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                              </div>
+                           </div>
 
-                   <button
-                      onClick={handleGoogleLogin}
-                      className="w-full bg-white border border-gray-200 text-gray-700 py-3 rounded-xl font-medium hover:bg-gray-50 transition-all flex items-center justify-center gap-3"
-                   >
-                      <Chrome size={20} className="text-blue-600" />
-                      Google
-                   </button>
+                           <button
+                              onClick={handleGoogleLogin}
+                              className="w-full bg-white border border-gray-200 text-gray-700 py-3 rounded-xl font-medium hover:bg-gray-50 transition-all flex items-center justify-center gap-3"
+                           >
+                              <Chrome size={20} className="text-blue-600" />
+                              Google
+                           </button>
+                       </>
+                   )}
                 </div>
              </div>
           </motion.div>

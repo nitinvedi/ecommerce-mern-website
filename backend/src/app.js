@@ -90,12 +90,17 @@ if (appConfig.nodeEnv === "production") {
   app.use(express.static(frontendPath));
 
   // Serve frontend for all non-API routes (SPA Fallback)
-  app.use((req, res) => {
-    // Don't serve frontend for API routes
+  app.get("*", (req, res, next) => {
+    // Don't serve frontend for API routes - pass to 404 handler
     if (req.path.startsWith("/api")) {
-      return notFound(req, res, () => { });
+       return next();
     }
-    res.sendFile(path.join(frontendPath, "index.html"));
+    
+    res.sendFile(path.join(frontendPath, "index.html"), (err) => {
+       if (err) {
+          next(err); // Pass error if file sending fails
+       }
+    });
   });
 } else {
   // Development: API root endpoint
@@ -109,10 +114,8 @@ if (appConfig.nodeEnv === "production") {
   });
 }
 
-// 404 handler (only for API routes in development)
-if (appConfig.nodeEnv !== "production") {
-  app.use(notFound);
-}
+// 404 handler (Always active to catch API 404s or failed static files)
+app.use(notFound);
 
 // Error handling middleware (must be last)
 app.use(errorLogger);

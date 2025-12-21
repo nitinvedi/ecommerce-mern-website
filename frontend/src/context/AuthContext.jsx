@@ -1,4 +1,4 @@
-import { createContext, useCallback, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useCallback, useEffect, useMemo, useState } from "react";
 import { api, API_ENDPOINTS, getAuthToken, removeAuthToken, setAuthToken } from "../config/api.js";
 
 export const AuthContext = createContext({
@@ -107,6 +107,8 @@ export function AuthProvider({ children }) {
     </AuthContext.Provider>
   );
 }
+
+export const useAuth = () => useContext(AuthContext);
 
 export default AuthContext;
 

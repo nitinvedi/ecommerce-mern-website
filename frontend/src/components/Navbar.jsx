@@ -202,7 +202,7 @@ export default function Navbar({ openSignUp, openChat }) {
         <div className="max-w-7xl mx-auto px-6 md:px-8 flex items-center justify-between h-12">
 
           {/* 1. Brand */}
-          <Link to="/intro" className="relative z-50 flex items-center gap-2 group">
+          <Link to="/" className="relative z-50 flex items-center gap-2 group">
             <img
               src={logo}
               alt="Ram Mobile Logo"
@@ -216,11 +216,13 @@ export default function Navbar({ openSignUp, openChat }) {
           {/* 2. Desktop Navigation (Minimalist Luxury) */}
           <div className={`hidden md:flex items-center gap-12 absolute left-1/2 -translate-x-1/2 transition-opacity duration-300 ${searchFocused ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
             {navLinks.map((link) => {
-              const isActive = pathname === link.path;
+              // Update Store link dynamically or rely on hardcoded change below
+              const path = link.name === "Store" ? "/store" : link.path;
+              const isActive = pathname === path;
               return (
                 <Link
-                  key={link.path}
-                  to={link.path}
+                  key={path}
+                  to={path}
                   className="relative group flex flex-col items-center py-2"
                 >
                   <span className={`text-[11px] font-bold uppercase tracking-[0.2em] transition-colors duration-300 ${isActive ? "text-black" : "text-gray-400 hover:text-black"}`}>

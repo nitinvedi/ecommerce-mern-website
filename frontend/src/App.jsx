@@ -74,8 +74,8 @@ export default function App() {
       {/* ROUTES */}
       <Routes>
         {/* PUBLIC */}
-        <Route path="/" element={<Store />} />
-        <Route path="/intro" element={<Landing />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/store" element={<Store />} />
         <Route path="/product/:id" element={<Product />} />
         <Route path="/repair" element={<Repair />} />
         <Route path="/contact" element={<Contact />} />

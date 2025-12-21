@@ -4,43 +4,41 @@ import * as ProductModel from "../models/Product.js";
 import { getPagination } from "../utils/helpers.js";
 import logger from "../utils/logger.js";
 
-// Get all products
+// Get all products (with filtering, sorting, pagination)
 export const getProducts = asyncHandler(async (req, res) => {
+  const startTime = Date.now();
+  
+  // Extract query parameters
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
-  const filter = {};
+  // Determine if we should show inactive products (Admins only)
+  const isAdmin = req.user?.role === "admin";
 
-  // Filter by category
-  if (req.query.category) {
-    filter.category = req.query.category;
-  }
-
-  // Filter by brand
-  if (req.query.brand) {
-    filter.brand = req.query.brand;
-  }
-
-  // Search by name
-  if (req.query.search) {
-    filter.name = { $regex: req.query.search, $options: "i" };
-  }
-
-  // Only active products for non-admin users
-  if (req.user?.role !== "admin") {
-    filter.isActive = true;
-  }
-
-  const products = await ProductModel.getAllProducts(filter);
-
-  // Paginate
-  const startIndex = (page - 1) * limit;
-  const endIndex = startIndex + limit;
-  const paginatedProducts = products.slice(startIndex, endIndex);
-
-  return sendPaginated(res, paginatedProducts, {
+  const searchParams = {
     page,
     limit,
-    total: products.length
+    q: req.query.search,
+    category: req.query.category,
+    brand: req.query.brand,
+    sort: req.query.sort,
+    minPrice: req.query.minPrice,
+    maxPrice: req.query.maxPrice,
+    minRating: req.query.minRating,
+    inStock: req.query.inStock,
+    includeInactive: isAdmin // Pass this flag to the model
+  };
+
+  // For non-admin users, force active products only (handled in searchProducts via includeInactive flag)
+  // Logic: includeInactive is true ONLY if admin. result: model defaults to isActive=true if includeInactive is false.
+
+  const result = await ProductModel.searchProducts(searchParams);
+
+  // logger.info(`Products fetched in ${Date.now() - startTime}ms`);
+
+  return sendPaginated(res, result.products, {
+    page: result.pagination.page,
+    limit: result.pagination.limit,
+    total: result.pagination.total
   });
 });
 

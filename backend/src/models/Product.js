@@ -247,7 +247,12 @@ export const incrementViewCount = async (productId) => {
 // Search products with filters
 export const searchProducts = async (searchParams) => {
   const collection = getCollection();
-  const query = { isActive: true };
+  
+  // Default to active only, unless explicit override (e.g. for admins)
+  const query = {};
+  if (!searchParams.includeInactive) {
+      query.isActive = true;
+  }
   
   // Text search
   if (searchParams.q) {
@@ -291,6 +296,7 @@ export const searchProducts = async (searchParams) => {
   else if (searchParams.sort === 'price_desc') sort = { price: -1 };
   else if (searchParams.sort === 'popular') sort = { viewCount: -1 };
   else if (searchParams.sort === 'rating') sort = { rating: -1 };
+  else if (searchParams.sort === '-createdAt') sort = { createdAt: -1 }; // Explicit support
   
   // Pagination
   const page = parseInt(searchParams.page) || 1;

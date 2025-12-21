@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Send, Minimize2, Check, Clock } from "lucide-react";
-import { api } from "../config/api.js";
+import { api, API_ENDPOINTS } from "../config/api.js";
 import useAuth from "../hooks/useAuth.js";
 import { useToast } from "../context/ToastContext.jsx";
 import { useChatSocket } from "../hooks/useChatSocket.js";
@@ -26,21 +26,21 @@ export default function ChatWidget({ isOpen, onClose }) {
   const fetchMessages = React.useCallback(async () => {
     if (!supportAdmin) {
       try {
-        const adminRes = await api.get("/api/v1/chat/support-admin");
+        const adminRes = await api.get(API_ENDPOINTS.CHAT.SUPPORT_ADMIN);
         const admin = adminRes.admin;
         setSupportAdmin(admin);
 
-        const res = await api.get(`/api/v1/chat/messages/${admin._id}`);
+        const res = await api.get(API_ENDPOINTS.CHAT.MESSAGES(admin._id));
         setMessages(res.messages || []);
       } catch (error) {
-        console.error("Failed to fetch messages");
+        console.error("Failed to fetch messages or support admin:", error);
       }
     } else {
       try {
-        const res = await api.get(`/api/v1/chat/messages/${supportAdmin._id}`);
+        const res = await api.get(API_ENDPOINTS.CHAT.MESSAGES(supportAdmin._id));
         setMessages(res.messages || []);
       } catch (error) {
-        console.error("Failed to fetch messages");
+        console.error("Failed to fetch messages:", error);
       }
     }
   }, [supportAdmin]);
@@ -97,7 +97,7 @@ export default function ChatWidget({ isOpen, onClose }) {
     if (!newMessage.trim() || !supportAdmin) return;
 
     try {
-      const res = await api.post("/api/v1/chat/send", {
+      const res = await api.post(API_ENDPOINTS.CHAT.SEND, {
         receiver: supportAdmin._id,
         message: newMessage
       });

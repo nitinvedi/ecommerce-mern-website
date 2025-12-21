@@ -94,6 +94,7 @@ export const API_ENDPOINTS = {
     CONVERSATIONS: `${API_BASE_URL}/chat/conversations`,
     MESSAGES: (userId) => `${API_BASE_URL}/chat/messages/${userId}`,
     UNREAD: `${API_BASE_URL}/chat/unread-count`,
+    SUPPORT_ADMIN: `${API_BASE_URL}/chat/support-admin`,
   },
 
   // Parts Inventory

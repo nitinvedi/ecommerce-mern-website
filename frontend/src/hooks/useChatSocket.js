@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { useToast } from '../context/ToastContext.jsx';
+import { SOCKET_URL } from '../config/api.js';
 
 export const useChatSocket = ({ user, onMessageReceived, enabled = true }) => {
   const [socket, setSocket] = useState(null);
@@ -12,13 +13,8 @@ export const useChatSocket = ({ user, onMessageReceived, enabled = true }) => {
   useEffect(() => {
     if (!user || !enabled) return;
 
-    const token = localStorage.getItem("token");
-    const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
-    
-    console.log("[Chat] Attempting connection to:", socketUrl);
-    
     // Initialize socket
-    const newSocket = io(socketUrl, {
+    const newSocket = io(SOCKET_URL, {
       auth: { token },
       reconnection: true,
       reconnectionAttempts: 5,

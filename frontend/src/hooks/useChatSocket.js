@@ -14,6 +14,7 @@ export const useChatSocket = ({ user, onMessageReceived, enabled = true }) => {
     if (!user || !enabled) return;
 
     // Initialize socket
+    const token = localStorage.getItem("token");
     const newSocket = io(SOCKET_URL, {
       auth: { token },
       reconnection: true,

@@ -142,7 +142,7 @@ function CheckoutPage() {
           <div className="lg:col-span-2 space-y-8">
             
             {/* Address Section */}
-            <section className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+            <section className="bg-white p-5 md:p-8 rounded-3xl shadow-sm border border-gray-100">
               <div className="flex items-center gap-4 mb-8">
                 <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
                   <MapPin size={24} />
@@ -243,7 +243,7 @@ function CheckoutPage() {
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-3 gap-2 md:gap-4">
                 {paymentOptions.map((option) => (
                    <div 
                       key={option.id}

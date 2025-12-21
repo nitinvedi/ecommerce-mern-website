@@ -112,7 +112,7 @@ export default function Cart() {
                      className="flex gap-6 group"
                    >
                      {/* Image */}
-                     <div className="w-32 h-32 bg-[#F5F5F7] rounded-xl flex-shrink-0 p-4 cursor-pointer" onClick={() => navigate(`/product/${item._id}`)}>
+                     <div className="w-20 h-20 md:w-32 md:h-32 bg-[#F5F5F7] rounded-xl flex-shrink-0 p-2 md:p-4 cursor-pointer" onClick={() => navigate(`/product/${item._id}`)}>
                         <img
                            src={item.images?.[0]?.startsWith("http") ? item.images[0] : `${SOCKET_URL}${item.images?.[0]}`}
                            alt={item.name}
@@ -211,6 +211,20 @@ export default function Cart() {
 
         </div>
       </main>
+
+      {/* Mobile Floating Checkout */}
+      <div className="lg:hidden fixed bottom-16 left-0 right-0 z-40 bg-white border-t border-gray-100 p-4 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+         <div className="flex items-center justify-between mb-3">
+            <span className="text-gray-500 font-medium">Total</span>
+            <span className="text-2xl font-bold">₹{total.toLocaleString()}</span>
+         </div>
+         <button
+            onClick={() => navigate("/checkout")}
+            className="w-full bg-black text-white py-3 rounded-xl font-bold text-lg flex items-center justify-center gap-2"
+         >
+            Checkout <ArrowRight size={18} />
+         </button>
+      </div>
     </div>
   );
 }

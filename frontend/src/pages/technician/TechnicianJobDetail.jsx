@@ -42,6 +42,12 @@ export default function TechnicianJobDetail() {
   };
 
   const handleSave = async () => {
+    // Validation
+    if (status === 'Completed' && (!finalCost || Number(finalCost) <= 0)) {
+        toast.error("Please enter a valid final cost before completing the job.");
+        return;
+    }
+
     setSaving(true);
     try {
         const promises = [];
@@ -55,8 +61,7 @@ export default function TechnicianJobDetail() {
         }
 
         // 2. Update Cost (General Update)
-        // Only if cost changed or status is becoming Completed (require cost?)
-        if (finalCost !== job.finalRepairCost) {
+        if (finalCost !== String(job.finalRepairCost)) {
             promises.push(api.put(API_ENDPOINTS.REPAIRS.BY_ID(id), {
                 finalRepairCost: Number(finalCost)
             }));
@@ -69,11 +74,12 @@ export default function TechnicianJobDetail() {
             fetchJob(); // Refresh
         } else {
             toast.info("No changes to save");
+            // Still refresh just in case
         }
 
     } catch (error) {
         console.error(error);
-        toast.error("Failed to update job");
+        toast.error(error.message || "Failed to update job");
     } finally {
         setSaving(false);
     }
@@ -166,14 +172,20 @@ export default function TechnicianJobDetail() {
                         <div>
                             <p className="text-sm text-gray-500 mb-2">Attached Images</p>
                             <div className="flex gap-2 overflow-x-auto pb-2">
-                                {job.images.map((img, i) => (
-                                    <img 
-                                        key={i} 
-                                        src={img.startsWith('http') ? img : `${SOCKET_URL}${img}`} 
-                                        alt="Device" 
-                                        className="h-24 w-24 object-cover rounded-lg border border-gray-200"
-                                    />
-                                ))}
+                                {job.images.map((img, i) => {
+                                    const imgSrc = img.startsWith('http') || img.startsWith('/uploads') 
+                                        ? img 
+                                        : `${SOCKET_URL}${img}`;
+                                    return (
+                                        <img 
+                                            key={i} 
+                                            src={imgSrc} 
+                                            alt="Device" 
+                                            className="h-24 w-24 object-cover rounded-lg border border-gray-200"
+                                            onError={(e) => { e.target.src = "https://placehold.co/400?text=No+Image"; }}
+                                        />
+                                    );
+                                })}
                             </div>
                         </div>
                     )}

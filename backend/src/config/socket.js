@@ -1,4 +1,5 @@
 import { Server } from "socket.io";
+import jwt from "jsonwebtoken";
 
 let io;
 
@@ -33,9 +34,35 @@ export const initializeSocket = (server) => {
     pingInterval: 25000
   });
 
+  // Middleware: Authenticate Socket
+  io.use((socket, next) => {
+     const token = socket.handshake.auth.token;
+     if (token) {
+        try {
+           const decoded = jwt.verify(token, process.env.JWT_SECRET);
+           socket.user = decoded; // { id, role, ... }
+           next();
+        } catch (err) {
+           console.error("Socket auth error:", err.message);
+           next(new Error("Authentication error"));
+        }
+     } else {
+        next(); // Allow public connections (if any needed), but they won't have socket.user
+     }
+  });
+
   // Connection handling
   io.on("connection", (socket) => {
-    console.log(`✅ Client connected: ${socket.id}`);
+    // Join User Room
+    if (socket.user) {
+        const userId = socket.user.id || socket.user._id; // Accommodate different payload shapes
+        if (userId) {
+            socket.join(`user:${userId}`);
+            console.log(`✅ Client ${socket.id} authenticated as User ${userId}`);
+        }
+    } else {
+        console.log(`Client ${socket.id} connected (Guest)`);
+    }
 
     // Join repair room for live updates
     socket.on("join_repair", (repairId) => {
@@ -63,7 +90,7 @@ export const initializeSocket = (server) => {
 
     // Disconnect handling
     socket.on("disconnect", () => {
-      console.log(`❌ Client disconnected: ${socket.id}`);
+      // console.log(`❌ Client disconnected: ${socket.id}`);
     });
   });
 
@@ -105,6 +132,14 @@ export const emitOrderUpdate = (orderId, data) => {
   }
 };
 
+// Emit User Notification
+export const emitNotification = (userId, notification) => {
+    if (io && userId) {
+        io.to(`user:${userId}`).emit("new_notification", notification);
+        console.log(`[Socket] Emitted notification to user:${userId}`);
+    }
+};
+
 // Broadcast to all connected clients
 export const broadcast = (event, data) => {
   if (io) {
@@ -117,6 +152,7 @@ export default {
   getIO,
   emitRepairUpdate,
   emitOrderUpdate,
+  emitNotification,
   broadcast
 };
 

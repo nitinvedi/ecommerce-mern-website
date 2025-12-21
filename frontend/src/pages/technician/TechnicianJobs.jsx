@@ -12,6 +12,8 @@ export default function TechnicianJobs() {
   const { user } = useAuth();
   const toast = useToast();
 
+  /* ---------------- Tabs ---------------- */
+  const [activeTab, setActiveTab] = useState("my-jobs"); // my-jobs | available
   const [repairs, setRepairs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -21,11 +23,19 @@ export default function TechnicianJobs() {
     if (user?.role === "technician") {
       fetchRepairs();
     }
-  }, [user]);
+  }, [user, activeTab]);
 
   const fetchRepairs = async () => {
+    setLoading(true);
     try {
-      const res = await api.get(`${API_ENDPOINTS.REPAIRS.BASE}?technician=me`);
+      let url = `${API_ENDPOINTS.REPAIRS.BASE}`;
+      if (activeTab === "my-jobs") {
+        url += "?technician=me";
+      } else {
+        url += "?technician=null"; // Fetch unassigned
+      }
+
+      const res = await api.get(url);
       const items =
         res?.data?.items ||
         res?.data?.repairs ||
@@ -35,11 +45,25 @@ export default function TechnicianJobs() {
       setRepairs(Array.isArray(items) ? items : []);
     } catch (err) {
       console.error("Failed to load technician repairs", err);
-      toast.error("Failed to load your jobs");
+      toast.error("Failed to load jobs");
       setRepairs([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleTakeJob = async (jobId) => {
+      if (!window.confirm("Are you sure you want to take this job?")) return;
+      try {
+          await api.put(API_ENDPOINTS.REPAIRS.BY_ID(jobId), {
+              technician: user._id
+          });
+          toast.success("Job assigned to you");
+          fetchRepairs(); // Refresh
+      } catch (err) {
+          console.error(err);
+          toast.error("Failed to take job");
+      }
   };
 
   const filtered = useMemo(() => {
@@ -58,9 +82,28 @@ export default function TechnicianJobs() {
 
       <main className="max-w-5xl mx-auto px-6 pt-24 pb-12">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
-          <h1 className="text-2xl font-semibold text-gray-900">Assigned Repairs</h1>
-          <div className="flex gap-3">
-            <div className="relative">
+          <h1 className="text-2xl font-semibold text-gray-900">
+            {activeTab === 'my-jobs' ? 'My Assignments' : 'Available Jobs'}
+          </h1>
+          
+          <div className="flex items-center gap-2 bg-white p-1 rounded-lg border border-gray-200">
+             <button 
+                onClick={() => setActiveTab("my-jobs")}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition ${activeTab === 'my-jobs' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50'}`}
+             >
+                My Jobs
+             </button>
+             <button 
+                onClick={() => setActiveTab("available")}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition ${activeTab === 'available' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50'}`}
+             >
+                Available Pool
+             </button>
+          </div>
+        </div>
+
+        <div className="flex gap-3 mb-6">
+            <div className="relative flex-1">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 value={search}
@@ -75,21 +118,23 @@ export default function TechnicianJobs() {
               className="rounded-lg border border-black/10 px-3 py-2 text-sm"
             >
               <option value="all">All status</option>
-              <option>Pending</option>
-              <option>Confirmed</option>
-              <option>In Progress</option>
-              <option>Diagnosed</option>
-              <option>Repairing</option>
-              <option>Quality Check</option>
-              <option>Completed</option>
-              <option>Delivered</option>
-              <option>Cancelled</option>
+              {activeTab === 'available' ? (
+                  <option>Pending</option>
+              ) : (
+                  <>
+                    <option>Confirmed</option>
+                    <option>In Progress</option>
+                    <option>Diagnosed</option>
+                    <option>Repairing</option>
+                    <option>Quality Check</option>
+                    <option>Completed</option>
+                  </>
+              )}
             </select>
-          </div>
         </div>
 
         {loading ? (
-          <p className="text-sm text-gray-500">Loading your jobs…</p>
+          <p className="text-sm text-gray-500">Loading jobs…</p>
         ) : filtered.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-black/10 p-8 text-center text-sm text-gray-500">
             No jobs found
@@ -104,7 +149,7 @@ export default function TechnicianJobs() {
                 className="bg-white rounded-2xl border border-black/5 p-5 flex items-center justify-between hover:bg-gray-50 transition"
               >
                 <div className="flex items-center gap-4">
-                  <div className="rounded-xl bg-black/5 p-2">
+                  <div className={`rounded-xl p-2 ${activeTab === 'available' ? 'bg-green-50 text-green-600' : 'bg-black/5'}`}>
                     <Wrench />
                   </div>
                   <div>
@@ -117,12 +162,23 @@ export default function TechnicianJobs() {
                   </div>
                 </div>
 
-                <button
-                  onClick={() => navigate(`/technician/job/${job._id}`)}
-                  className="text-sm text-gray-700 hover:text-black flex items-center gap-1"
-                >
-                  Open <ArrowRight size={14} />
-                </button>
+                <div className="flex items-center gap-3">
+                    {activeTab === 'available' ? (
+                        <button 
+                            onClick={() => handleTakeJob(job._id)}
+                            className="text-xs bg-black text-white px-3 py-2 rounded-lg hover:bg-gray-800 transition"
+                        >
+                            Take Job
+                        </button>
+                    ) : (
+                        <button
+                          onClick={() => navigate(`/technician/job/${job._id}`)}
+                          className="text-sm text-gray-700 hover:text-black flex items-center gap-1"
+                        >
+                          Open <ArrowRight size={14} />
+                        </button>
+                    )}
+                </div>
               </motion.div>
             ))}
           </div>

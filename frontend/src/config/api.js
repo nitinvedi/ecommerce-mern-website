@@ -3,6 +3,9 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || "/api/v1";
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
 
+import { io } from "socket.io-client";
+export const socket = io(SOCKET_URL, { autoConnect: false });
+
 // API Endpoints
 export const API_ENDPOINTS = {
   // Auth
@@ -83,6 +86,21 @@ export const API_ENDPOINTS = {
     MARK_READ: (id) => `${API_BASE_URL}/notifications/${id}/read`,
     MARK_ALL_READ: `${API_BASE_URL}/notifications/read-all`,
     DELETE: (id) => `${API_BASE_URL}/notifications/${id}`,
+  },
+
+  // Chat
+  CHAT: {
+    SEND: `${API_BASE_URL}/chat/send`,
+    CONVERSATIONS: `${API_BASE_URL}/chat/conversations`,
+    MESSAGES: (userId) => `${API_BASE_URL}/chat/messages/${userId}`,
+    UNREAD: `${API_BASE_URL}/chat/unread-count`,
+  },
+
+  // Parts Inventory
+  PARTS: {
+    BASE: `${API_BASE_URL}/parts`,
+    BY_ID: (id) => `${API_BASE_URL}/parts/${id}`,
+    STOCK: (id) => `${API_BASE_URL}/parts/${id}/stock`,
   },
 };
 

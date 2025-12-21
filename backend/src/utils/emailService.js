@@ -74,26 +74,27 @@ export const emailTemplates = {
     text: `Your order #${order._id.slice(-8)} has been shipped!`
   }),
 
-  repairUpdate: (repair) => ({
-    subject: `Repair Update - ${repair.trackingId}`,
+  repairUpdate: (repair, title, message) => ({
+    subject: `Update: ${title} - ${repair.trackingId}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #2563eb;">Repair Status Update 🔧</h2>
-        <p>Hi ${repair.fullName},</p>
-        <p>Your repair request has been updated.</p>
+        <h2 style="color: #2563eb;">${title} 🔧</h2>
+        <p>Hi ${repair.fullName || repair.user?.name},</p>
+        <p>${message}</p>
         
         <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <h3>Repair Details</h3>
           <p><strong>Tracking ID:</strong> ${repair.trackingId}</p>
-          <p><strong>Device:</strong> ${repair.deviceType} - ${repair.brand} ${repair.model}</p>
-          <p><strong>Status:</strong> ${repair.status}</p>
+          <p><strong>Device:</strong> ${repair.deviceType || "Device"} - ${repair.brand} ${repair.model}</p>
+          <p><strong>Current Status:</strong> <span style="font-weight:bold; color: #2563eb">${repair.status}</span></p>
+          ${repair.finalRepairCost ? `<p><strong>Final Cost:</strong> ₹${repair.finalRepairCost}</p>` : ''}
         </div>
         
-        <p>We'll keep you updated on the progress.</p>
+        <p>Login to your dashboard for full details.</p>
         <p>Best regards,<br>TechStore Team</p>
       </div>
     `,
-    text: `Repair ${repair.trackingId} status: ${repair.status}`
+    text: `${title}: ${message}. Tracking ID: ${repair.trackingId}`
   }),
 
   welcomeEmail: (user) => ({

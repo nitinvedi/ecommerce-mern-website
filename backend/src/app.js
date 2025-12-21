@@ -26,6 +26,7 @@ import notificationRoutes from "./routes/notificationRoutes.js";
 import addressRoutes from "./routes/addressRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
+import partsRoutes from "./routes/partsRoutes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -53,9 +54,9 @@ if (appConfig.enableRequestLogging) {
 // Rate limiting
 app.use(apiRateLimit);
 
-// Serve static files (uploads) - REMOVED (Migrated to Cloudinary)
-// const uploadsPath = path.join(__dirname, "../uploads");
-// app.use("/uploads", express.static(uploadsPath));
+// Serve static files (uploads) - Restored for legacy support
+const uploadsPath = path.join(__dirname, "../uploads");
+app.use("/uploads", express.static(uploadsPath));
 
 // Health check endpoint
 app.get("/health", (req, res) => {
@@ -81,6 +82,7 @@ app.use(`${apiPrefix}/notifications`, notificationRoutes);
 app.use(`${apiPrefix}/addresses`, addressRoutes);
 app.use(`${apiPrefix}/dashboard`, dashboardRoutes);
 app.use(`${apiPrefix}/chat`, chatRoutes);
+app.use(`${apiPrefix}/parts`, partsRoutes);
 
 // Serve frontend in production
 if (appConfig.nodeEnv === "production") {

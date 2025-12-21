@@ -11,42 +11,51 @@ export default function TechnicianDashboard() {
   const navigate = useNavigate();
   const toast = useToast();
 
-  const [repairs, setRepairs] = useState([]);
+  const [statsData, setStatsData] = useState({ assigned: 0, inProgress: 0, completed: 0, available: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (user?.role === "technician") {
-      fetchRepairs();
+      fetchDashboardData();
     }
   }, [user]);
 
-  const fetchRepairs = async () => {
+  const fetchDashboardData = async () => {
     try {
-      const res = await api.get(`${API_ENDPOINTS.REPAIRS.BASE}?technician=me`);
-      const items =
-        res?.data?.items ||
-        res?.data?.repairs ||
-        res?.data?.data ||
-        res?.data ||
-        [];
-      setRepairs(Array.isArray(items) ? items : []);
+      // Fetch assigned
+      const assignedRes = await api.get(`${API_ENDPOINTS.REPAIRS.BASE}?technician=me`);
+      const assignedItems = assignedRes.data?.items || assignedRes.data || [];
+      const assignedCount = Array.isArray(assignedItems) ? assignedItems.length : 0;
+      
+      const inProgressCount = Array.isArray(assignedItems) ? assignedItems.filter((r) =>
+        ["In Progress", "Diagnosed", "Repairing", "Quality Check", "Confirmed"].includes(r.status)
+      ).length : 0;
+
+      const completedCount = Array.isArray(assignedItems) ? assignedItems.filter((r) => 
+        r.status === "Completed" || r.status === "Delivered"
+      ).length : 0;
+
+      // Fetch available
+      const availableRes = await api.get(`${API_ENDPOINTS.REPAIRS.BASE}?technician=null`);
+      const availableItems = availableRes.data?.items || availableRes.data || [];
+      const availableCount = Array.isArray(availableItems) ? availableItems.length : 0;
+
+      setStatsData({
+        assigned: assignedCount,
+        inProgress: inProgressCount,
+        completed: completedCount,
+        available: availableCount
+      });
+
     } catch (err) {
-      console.error("Failed to load technician dashboard data", err);
-      toast.error("Failed to load your repairs");
-      setRepairs([]);
+      console.error("Failed to load dashboard data", err);
+      toast.error("Failed to refresh dashboard");
     } finally {
       setLoading(false);
     }
   };
 
-  const stats = useMemo(() => {
-    const total = repairs.length;
-    const inProgress = repairs.filter((r) =>
-      ["In Progress", "Diagnosed", "Repairing", "Quality Check", "Confirmed"].includes(r.status)
-    ).length;
-    const completed = repairs.filter((r) => r.status === "Completed" || r.status === "Delivered").length;
-    return { total, inProgress, completed };
-  }, [repairs]);
+
 
   return (
     <div className="min-h-screen bg-neutral-50">
@@ -66,20 +75,26 @@ export default function TechnicianDashboard() {
         </section>
 
         {/* Cards */}
-        <section className="grid sm:grid-cols-3 gap-6">
+        <section className="grid sm:grid-cols-4 gap-6">
           <StatCard
-            title="Assigned Jobs"
-            value={loading ? "…" : stats.total}
+            title="Available Jobs"
+            value={loading ? "…" : statsData.available}
+            icon={<PackagePlus />}
+            color="bg-green-50 text-green-600"
+          />
+          <StatCard
+            title="Assigned"
+            value={loading ? "…" : statsData.assigned}
             icon={<Wrench />}
           />
           <StatCard
-            title="In Progress"
-            value={loading ? "…" : stats.inProgress}
+            title="Working On"
+            value={loading ? "…" : statsData.inProgress}
             icon={<Clock />}
           />
           <StatCard
             title="Completed"
-            value={loading ? "…" : stats.completed}
+            value={loading ? "…" : statsData.completed}
             icon={<CheckCircle2 />}
           />
         </section>
@@ -121,7 +136,7 @@ export default function TechnicianDashboard() {
 }
 
 /* --- Small stat card --- */
-function StatCard({ title, value, icon }) {
+function StatCard({ title, value, icon, color }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -129,7 +144,7 @@ function StatCard({ title, value, icon }) {
       className="rounded-2xl bg-white border border-black/5 p-5"
     >
       <div className="flex items-center gap-3">
-        <div className="rounded-xl bg-black/5 p-2">
+        <div className={`rounded-xl p-2 ${color || 'bg-black/5'}`}>
           {icon}
         </div>
         <div>

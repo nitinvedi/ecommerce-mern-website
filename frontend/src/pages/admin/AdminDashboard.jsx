@@ -11,64 +11,90 @@ import { motion } from "framer-motion";
 import { api, API_ENDPOINTS } from "../../config/api";
 import useAuth from "../../hooks/useAuth";
 import AdminLayout from "../../layouts/AdminLayout";
+import { RevenueChart } from "../../components/dashboard/AdminStatsChart";
+import { RecentActivity, TopProducts, InventoryAlert } from "../../components/dashboard/DashboardWidgets";
 
 export default function AdminDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
+  const [activities, setActivities] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user || user.role !== "admin") {
       navigate("/dashboard");
       return;
     }
-    fetchStats();
+    fetchData();
   }, [user]);
 
-  const fetchStats = async () => {
-    const res = await api.get(API_ENDPOINTS.ADMIN.DASHBOARD_STATS);
-    setStats(res.data);
+  const fetchData = async () => {
+    try {
+      const [statsRes, activityRes] = await Promise.all([
+        api.get(API_ENDPOINTS.ADMIN.DASHBOARD_STATS),
+        api.get(API_ENDPOINTS.ADMIN.DASHBOARD_ACTIVITIES + "?limit=10")
+      ]);
+      setStats(statsRes.data);
+      setActivities(activityRes.data);
+    } catch (error) {
+      console.error("Failed to fetch dashboard data", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const cards = [
-    { label: "Users", value: stats?.users?.total, icon: Users },
-    { label: "Orders", value: stats?.orders?.total, icon: ShoppingCart },
-    { label: "Products", value: stats?.products?.total, icon: Package },
-    { label: "Repairs", value: stats?.repairs?.total, icon: Wrench },
+    { label: "Total Users", value: stats?.users?.total, icon: Users, color: "bg-blue-500" },
+    { label: "Total Orders", value: stats?.orders?.total, icon: ShoppingCart, color: "bg-purple-500" },
+    { label: "Active Products", value: stats?.products?.total, icon: Package, color: "bg-orange-500" },
+    { label: "Pending Repairs", value: stats?.repairs?.pending, icon: Wrench, color: "bg-pink-500" },
     {
-      label: "Revenue",
+      label: "Total Revenue",
       value: `₹${(stats?.orders?.revenue || 0).toLocaleString()}`,
-      icon: DollarSign
+      icon: DollarSign,
+      color: "bg-green-500"
     }
   ];
+
+  if (loading) {
+     return (
+        <AdminLayout>
+           <div className="flex items-center justify-center h-[60vh]">
+              <div className="animate-spin w-8 h-8 border-2 border-gray-900 border-t-transparent rounded-full" />
+           </div>
+        </AdminLayout>
+     );
+  }
 
   return (
     <AdminLayout>
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900">
-          Dashboard
+        <h1 className="text-2xl font-bold text-gray-900">
+          Admin Dashboard
         </h1>
         <p className="text-sm text-gray-500">
-          Overview of platform activity
+          Welcome back, here's what's happening today.
         </p>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+      {/* Stats Grid */}
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5 mb-8">
         {cards.map((c, i) => (
           <motion.div
             key={c.label}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
-            className="rounded-2xl border border-black/5 bg-white p-5 shadow-sm"
+            className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm hover:shadow-md transition-shadow"
           >
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-black/5 p-2">
-                <c.icon className="h-5 w-5 text-black" />
+            <div className="flex items-center gap-4">
+              <div className={`rounded-xl p-3 ${c.color} bg-opacity-10`}>
+                <c.icon className={`h-6 w-6 ${c.color.replace('bg-', 'text-')}`} />
               </div>
               <div>
-                <p className="text-xs text-gray-500">{c.label}</p>
-                <p className="text-lg font-semibold text-gray-900">
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{c.label}</p>
+                <p className="text-xl font-bold text-gray-900 mt-0.5">
                   {c.value ?? "—"}
                 </p>
               </div>
@@ -76,6 +102,26 @@ export default function AdminDashboard() {
           </motion.div>
         ))}
       </div>
+
+      {/* Charts & Widgets Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+         {/* Main Chart */}
+         <div className="lg:col-span-2">
+            <RevenueChart data={stats?.charts?.revenue} />
+         </div>
+
+         {/* Side Widgets */}
+         <div className="space-y-8">
+            <InventoryAlert products={stats?.products?.lowStock} />
+            <TopProducts products={stats?.products?.top} />
+         </div>
+      </div>
+
+      {/* Activity Feed */}
+      <div className="grid grid-cols-1 gap-8">
+         <RecentActivity activities={activities} />
+      </div>
+
     </AdminLayout>
   );
 }

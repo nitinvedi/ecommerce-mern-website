@@ -1,20 +1,24 @@
-// CORS Configuration
+// Helper to strip trailing slash
+const stripSlash = (url) => url && url.endsWith('/') ? url.slice(0, -1) : url;
+
+const frontendUrl = process.env.FRONTEND_URL;
+const frontendUrlAlt = process.env.FRONTEND_URL_ALT;
+
 export const allowedOrigins = [
-  process.env.FRONTEND_URL || "http://localhost:3000",
-  process.env.FRONTEND_URL_ALT || "http://localhost:5173",
   "http://localhost:3000",
   "http://localhost:5173",
   "http://127.0.0.1:3000",
   "http://127.0.0.1:5173"
 ];
 
-// Add production URLs if provided
-if (process.env.PRODUCTION_URL) {
-  allowedOrigins.push(process.env.PRODUCTION_URL);
+if (frontendUrl) {
+  allowedOrigins.push(frontendUrl);
+  allowedOrigins.push(stripSlash(frontendUrl));
 }
 
-if (process.env.PRODUCTION_URL_ALT) {
-  allowedOrigins.push(process.env.PRODUCTION_URL_ALT);
+if (frontendUrlAlt) {
+  allowedOrigins.push(frontendUrlAlt);
+  allowedOrigins.push(stripSlash(frontendUrlAlt));
 }
 
 export const corsOptions = {

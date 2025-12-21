@@ -41,7 +41,7 @@ export default function Landing() {
           </motion.div>
 
           {/* Massive Heading */}
-          <motion.h1 variants={fadeInUp} className="font-serif italic font-black text-5xl sm:text-7xl md:text-8xl lg:text-[7rem] leading-[0.9] tracking-tighter uppercase mb-8 text-black">
+          <motion.h1 variants={fadeInUp} className="font-serif italic font-black text-4xl sm:text-7xl md:text-8xl lg:text-[7rem] leading-none md:leading-[0.9] tracking-tighter uppercase mb-8 text-black">
             The First <span className="text-stroke-black text-transparent">Premium</span><br/>
             Mobile Network
           </motion.h1>
@@ -69,7 +69,7 @@ export default function Landing() {
 
 
       {/* 2. CHOOSE YOUR PLAN (BENTO GRID) */}
-      <section className="px-4 md:px-8 py-20 max-w-[1400px] mx-auto">
+      <section className="px-4 md:px-8 py-12 md:py-20 max-w-[1400px] mx-auto">
          <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -90,7 +90,7 @@ export default function Landing() {
             {/* CARD 1: REPAIR (Purple) */}
             <motion.div 
                whileHover={{ y: -10 }}
-               className="bg-[#F3E8FF] rounded-[2.5rem] p-8 border-2 border-transparent hover:border-black transition-all flex flex-col justify-between min-h-[400px] group cursor-pointer"
+               className="bg-[#F3E8FF] rounded-[2.5rem] p-6 md:p-8 border-2 border-transparent hover:border-black transition-all flex flex-col justify-between min-h-[340px] md:min-h-[400px] group cursor-pointer"
                onClick={() => navigate('/repair')}
             >
                <div>

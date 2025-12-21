@@ -6,11 +6,11 @@ import {
   Edit2,
   Trash2,
   Search,
-  X
+  X,
+  AlertTriangle
 } from "lucide-react";
-import { api, API_ENDPOINTS, uploadForm } from "../../config/api";
+import { api, API_ENDPOINTS } from "../../config/api";
 import useAuth from "../../hooks/useAuth";
-
 import { useToast } from "../../context/ToastContext";
 
 const input =
@@ -22,7 +22,7 @@ export default function TechnicianProducts() {
   const { user } = useAuth();
   const toast = useToast();
 
-  const [products, setProducts] = useState([]);
+  const [parts, setParts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [search, setSearch] = useState("");
@@ -31,62 +31,55 @@ export default function TechnicianProducts() {
 
   const [form, setForm] = useState({
     name: "",
-    brand: "",
+    sku: "",
+    category: "Screen",
     description: "",
     price: "",
     stock: "",
-    category: "Mobile",
-    isActive: true,
-    images: [],
+    reorderLevel: 5,
+    supplier: ""
   });
-  const [files, setFiles] = useState([]);
 
   useEffect(() => {
     if (user?.role === "technician") {
-      fetchProducts();
+      fetchParts();
     }
   }, [user]);
 
-  const fetchProducts = async () => {
+  const fetchParts = async () => {
     try {
-      const res = await api.get(API_ENDPOINTS.PRODUCTS.BASE);
-      const items =
-        res?.data?.items ||
-        res?.data?.products ||
-        res?.data?.data ||
-        res?.data ||
-        [];
-      setProducts(Array.isArray(items) ? items : []);
+      const res = await api.get(API_ENDPOINTS.PARTS.BASE);
+      const items = res.data || [];
+      setParts(Array.isArray(items) ? items : []);
     } catch (err) {
-      console.error("Fetch products failed", err);
-      toast.error("Failed to load products");
-      setProducts([]);
+      console.error("Fetch parts failed", err);
+      toast.error("Failed to load inventory");
+      setParts([]);
     } finally {
       setLoading(false);
     }
   };
 
   const filtered = useMemo(() => {
-    return products.filter(
+    return parts.filter(
       (p) =>
         p.name?.toLowerCase().includes(search.toLowerCase()) ||
-        p.brand?.toLowerCase().includes(search.toLowerCase())
+        p.sku?.toLowerCase().includes(search.toLowerCase())
     );
-  }, [products, search]);
+  }, [parts, search]);
 
   const openCreate = () => {
     setEditing(null);
     setForm({
       name: "",
-      brand: "",
+      sku: "",
+      category: "Screen",
       description: "",
       price: "",
       stock: "",
-      category: "Mobile",
-      isActive: true,
-      images: [],
+      reorderLevel: 5,
+      supplier: ""
     });
-    setFiles([]);
     setShowModal(true);
   };
 
@@ -94,54 +87,51 @@ export default function TechnicianProducts() {
     setEditing(p);
     setForm({
       name: p.name || "",
-      brand: p.brand || "",
+      sku: p.sku || "",
+      category: p.category || "Screen",
       description: p.description || "",
       price: p.price || "",
       stock: p.stock || "",
-      category: p.category || "Mobile",
-      isActive: p.isActive !== false,
-      images: p.images || [],
+      reorderLevel: p.reorderLevel || 5,
+      supplier: p.supplier || ""
     });
-    setFiles([]);
     setShowModal(true);
   };
 
   const save = async (e) => {
     e.preventDefault();
-
-    const fd = new FormData();
-    fd.append("name", form.name);
-    fd.append("brand", form.brand);
-    fd.append("description", form.description);
-    fd.append("price", Number(form.price));
-    fd.append("stock", Number(form.stock));
-    fd.append("category", form.category);
-    fd.append("isActive", form.isActive);
-    if (form.images?.length) {
-      fd.append("existingImages", JSON.stringify(form.images));
-    }
-    files.forEach((file) => fd.append("productImages", file));
+    const payload = {
+        ...form,
+        price: Number(form.price),
+        stock: Number(form.stock),
+        reorderLevel: Number(form.reorderLevel)
+    };
 
     try {
       if (editing) {
-        await uploadForm(API_ENDPOINTS.PRODUCTS.BY_ID(editing._id), fd, "PUT");
-        toast.success("Product updated");
+        await api.put(API_ENDPOINTS.PARTS.BY_ID(editing._id), payload);
+        toast.success("Part updated");
       } else {
-        await uploadForm(API_ENDPOINTS.PRODUCTS.BASE, fd, "POST");
-        toast.success("Product created");
+        await api.post(API_ENDPOINTS.PARTS.BASE, payload);
+        toast.success("Part added");
       }
       setShowModal(false);
-      fetchProducts();
+      fetchParts();
     } catch (err) {
       console.error("Save failed", err);
-      toast.error("Failed to save product");
+      toast.error(err.message || "Failed to save part");
     }
   };
 
   const remove = async (id) => {
-    if (!window.confirm("Request admin to delete this product?")) return;
-    // Technicians cannot hard-delete; surface a friendly message.
-    toast.info("Only admins can delete products. Please contact an admin.");
+    if (!window.confirm("Are you sure you want to remove this part?")) return;
+    try {
+        await api.delete(API_ENDPOINTS.PARTS.BY_ID(id));
+        toast.success("Part removed");
+        fetchParts();
+    } catch (err) {
+        toast.error("Failed to delete part");
+    }
   };
 
   return (
@@ -150,10 +140,10 @@ export default function TechnicianProducts() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">
-              Technician Products
+              Parts Inventory
             </h1>
             <p className="text-sm text-gray-500">
-              Add and update products you work with
+              Manage spare parts and stock levels
             </p>
           </div>
 
@@ -162,7 +152,7 @@ export default function TechnicianProducts() {
             className="inline-flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-900"
           >
             <Plus size={16} />
-            Add product
+            Add Part
           </button>
         </div>
 
@@ -174,72 +164,65 @@ export default function TechnicianProducts() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search products..."
+            placeholder="Search parts by name/SKU..."
             className="w-full rounded-lg border border-black/10 pl-9 pr-3 py-2 text-sm"
           />
         </div>
 
         {loading ? (
-          <p className="text-sm text-gray-500">Loading products…</p>
+          <p className="text-sm text-gray-500">Loading inventory…</p>
         ) : filtered.length === 0 ? (
           <div className="rounded-xl border border-dashed border-black/10 p-10 text-center text-sm text-gray-500">
-            No products found
+            No parts found
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((p) => (
+            {filtered.map((p) => {
+                const isLowStock = p.stock <= (p.reorderLevel || 5);
+                return (
               <motion.div
                 key={p._id}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="rounded-xl border border-black/5 bg-white p-5 shadow-sm"
+                className={`rounded-xl border bg-white p-5 shadow-sm ${isLowStock ? 'border-amber-200 bg-amber-50/30' : 'border-black/5'}`}
               >
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="font-medium text-gray-900">{p.name}</h3>
-                    <p className="text-xs text-gray-500">{p.brand}</p>
+                    <p className="text-xs text-gray-500 font-mono">{p.sku}</p>
                   </div>
-                  <span
-                    className={`text-xs px-2 py-1 rounded-full ${
-                      p.isActive
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
-                    }`}
-                  >
-                    {p.isActive ? "Active" : "Inactive"}
+                  <span className="text-[10px] px-2 py-1 bg-gray-100 rounded-full text-gray-600">
+                      {p.category}
                   </span>
                 </div>
-
-                <p className="mt-3 text-sm text-gray-600 line-clamp-2">
-                  {p.description}
-                </p>
 
                 <div className="mt-4 flex items-center justify-between">
                   <p className="font-semibold text-gray-900">
                     ₹{p.price?.toLocaleString()}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <div className={`text-xs px-2 py-0.5 rounded flex items-center gap-1 ${isLowStock ? 'bg-red-100 text-red-700 font-bold' : 'text-gray-500 bg-gray-100'}`}>
+                    {isLowStock && <AlertTriangle size={10} />}
                     Stock: {p.stock}
-                  </p>
+                  </div>
                 </div>
 
                 <div className="mt-4 flex gap-2">
                   <button
                     onClick={() => openEdit(p)}
-                    className="flex-1 rounded-lg border border-black/10 px-3 py-2 text-sm hover:bg-black/5 flex items-center justify-center gap-1"
+                    className="flex-1 rounded-lg border border-black/10 px-3 py-2 text-sm hover:bg-black/5 flex items-center justify-center gap-1 bg-white"
                   >
                     <Edit2 size={14} />
                     Edit
                   </button>
                   <button
                     onClick={() => remove(p._id)}
-                    className="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                    className="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-600 hover:bg-red-50 bg-white"
                   >
                     <Trash2 size={16} />
                   </button>
                 </div>
               </motion.div>
-            ))}
+            )})}
           </div>
         )}
 
@@ -260,7 +243,7 @@ export default function TechnicianProducts() {
               >
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold">
-                    {editing ? "Edit product" : "Add product"}
+                    {editing ? "Edit Part" : "Add Part"}
                   </h2>
                   <button type="button" onClick={() => setShowModal(false)}>
                     <X />
@@ -269,7 +252,7 @@ export default function TechnicianProducts() {
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className={label}>Name</label>
+                    <label className={label}>Part Name</label>
                     <input
                       className={input}
                       value={form.name}
@@ -280,44 +263,54 @@ export default function TechnicianProducts() {
                     />
                   </div>
                   <div>
-                    <label className={label}>Brand</label>
+                    <label className={label}>SKU</label>
                     <input
                       className={input}
-                      value={form.brand}
+                      value={form.sku}
                       onChange={(e) =>
-                        setForm({ ...form, brand: e.target.value })
+                        setForm({ ...form, sku: e.target.value })
                       }
+                      required
                     />
                   </div>
+                  <div>
+                      <label className={label}>Category</label>
+                      <select 
+                        className={input}
+                        value={form.category} 
+                        onChange={e => setForm({...form, category: e.target.value})}
+                      >
+                          <option>Screen</option>
+                          <option>Battery</option>
+                          <option>Camera</option>
+                          <option>Motherboard</option>
+                          <option>Accessory</option>
+                          <option>General</option>
+                      </select>
+                  </div>
+                  <div>
+                      <label className={label}>Supplier</label>
+                      <input 
+                        className={input}
+                        value={form.supplier} 
+                        onChange={e => setForm({...form, supplier: e.target.value})} 
+                      />
+                  </div>
+
                   <div className="sm:col-span-2">
                     <label className={label}>Description</label>
                     <textarea
-                      rows={3}
+                      rows={2}
                       className={input}
                       value={form.description}
                       onChange={(e) =>
                         setForm({ ...form, description: e.target.value })
                       }
-                      required
                     />
                   </div>
-                <div className="sm:col-span-2">
-                  <label className={label}>Images</label>
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    className={input}
-                    onChange={(e) => setFiles(Array.from(e.target.files || []))}
-                  />
-                  {form.images?.length > 0 && (
-                    <p className="mt-1 text-xs text-gray-500">
-                      Existing images will be kept unless you upload new ones.
-                    </p>
-                  )}
-                </div>
+
                   <div>
-                    <label className={label}>Price</label>
+                    <label className={label}>Unit Price (₹)</label>
                     <input
                       type="number"
                       className={input}
@@ -329,7 +322,7 @@ export default function TechnicianProducts() {
                     />
                   </div>
                   <div>
-                    <label className={label}>Stock</label>
+                    <label className={label}>Stock Qty</label>
                     <input
                       type="number"
                       className={input}

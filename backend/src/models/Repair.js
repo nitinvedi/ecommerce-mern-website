@@ -141,9 +141,86 @@ export const createRepair = async (repairData) => {
 };
 
 // Get repair by ID
+// Get repair by ID with population
 export const getRepairById = async (repairId) => {
   const collection = getCollection();
-  return await collection.findOne({ _id: new ObjectId(repairId) });
+  
+  const pipeline = [
+    { $match: { _id: new ObjectId(repairId) } },
+    {
+      $lookup: {
+        from: "users",
+        localField: "user",
+        foreignField: "_id",
+        as: "userInfo"
+      }
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "technician",
+        foreignField: "_id",
+        as: "technicianInfo"
+      }
+    },
+    {
+      $unwind: {
+        path: "$userInfo",
+        preserveNullAndEmptyArrays: true
+      }
+    },
+    {
+      $unwind: {
+        path: "$technicianInfo",
+        preserveNullAndEmptyArrays: true
+      }
+    },
+    {
+      $project: {
+        _id: 1,
+        user: {
+            _id: "$userInfo._id",
+            name: "$userInfo.name",
+            email: "$userInfo.email"
+        },
+        deviceType: 1,
+        brand: 1,
+        model: 1,
+        issueDescription: "$problemDescription",
+        problemDescription: 1,
+        technician: {
+            _id: "$technicianInfo._id",
+            name: "$technicianInfo.name",
+            email: "$technicianInfo.email"
+        },
+        status: 1,
+        statusUpdates: 1,
+        trackingId: 1,
+        device: {
+             brand: "$brand",
+             model: "$model",
+             serialNumber: "$imeiNumber"
+        },
+        estimatedRepairCost: 1,
+        finalRepairCost: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        issue: 1,
+        fullName: 1,
+        phoneNumber: 1,
+        pickupAddress: 1,
+        city: 1,
+        pincode: 1,
+        pickupDate: 1,
+        pickupTimeSlot: 1,
+        notes: 1,
+        images: 1
+      }
+    }
+  ];
+
+  const results = await collection.aggregate(pipeline).toArray();
+  return results[0] || null;
 };
 
 // Get repair by tracking ID
@@ -165,12 +242,12 @@ export const getRepairsByTechnician = async (technicianId) => {
 };
 
 // Get all repairs
+// Get all repairs with population
 export const getAllRepairs = async (filter = {}) => {
   const collection = getCollection();
 
   const normalizedFilter = { ...filter };
 
-  // Normalize IDs to ObjectId where applicable
   if (normalizedFilter.user && typeof normalizedFilter.user === "string") {
     normalizedFilter.user = new ObjectId(normalizedFilter.user);
   }
@@ -178,7 +255,84 @@ export const getAllRepairs = async (filter = {}) => {
     normalizedFilter.technician = new ObjectId(normalizedFilter.technician);
   }
 
-  return await collection.find(normalizedFilter).sort({ createdAt: -1 }).toArray();
+  const pipeline = [
+    { $match: normalizedFilter },
+    { $sort: { createdAt: -1 } },
+    // Lookup User (Customer)
+    {
+      $lookup: {
+        from: "users",
+        localField: "user",
+        foreignField: "_id",
+        as: "userInfo"
+      }
+    },
+    // Lookup Technician
+    {
+      $lookup: {
+        from: "users",
+        localField: "technician",
+        foreignField: "_id",
+        as: "technicianInfo"
+      }
+    },
+    // Unwind (preserve if empty)
+    {
+      $unwind: {
+        path: "$userInfo",
+        preserveNullAndEmptyArrays: true
+      }
+    },
+    {
+      $unwind: {
+        path: "$technicianInfo",
+        preserveNullAndEmptyArrays: true
+      }
+    },
+    // Project necessary fields
+    {
+      $project: {
+        _id: 1,
+        user: {
+            _id: "$userInfo._id",
+            name: "$userInfo.name",
+            email: "$userInfo.email"
+        },
+        deviceType: 1,
+        brand: 1,
+        model: 1,
+        issueDescription: "$problemDescription", // Alias for frontend compatibility if needed, or stick to problemDescription
+        // Frontend uses problemDescription? Let's check ManageRepairs.jsx again.
+        // It uses r.issueDescription in one place and r.device?.model in another...
+        // Wait, ManageRepairs.jsx uses r.issueDescription line 147 and 187.
+        // But Repair.js stores it as `problemDescription`.
+        // Map problemDescription to issueDescription for frontend.
+        problemDescription: 1,
+        technician: {
+            _id: "$technicianInfo._id",
+            name: "$technicianInfo.name",
+            email: "$technicianInfo.email"
+        },
+        status: 1,
+        trackingId: 1,
+        priority: 1, // field doesn't exist in model but was in UI
+        device: { // Frontend expects r.device.brand etc
+             brand: "$brand",
+             model: "$model",
+             serialNumber: "$imeiNumber"
+        },
+        estimatedRepairCost: 1,
+        finalRepairCost: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        issue: 1,
+        fullName: 1,
+        phoneNumber: 1
+      }
+    }
+  ];
+
+  return await collection.aggregate(pipeline).toArray();
 };
 
 // Update repair

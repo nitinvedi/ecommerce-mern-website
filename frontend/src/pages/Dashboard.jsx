@@ -11,7 +11,8 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  Truck
+  Truck,
+  Menu
 } from "lucide-react";
 import { api, SOCKET_URL } from "../config/api.js";
 import { DASHBOARD_ENDPOINTS } from "../config/dashboardApi.js";
@@ -27,6 +28,7 @@ export default function Dashboard() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [greeting, setGreeting] = useState("");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
@@ -76,18 +78,33 @@ export default function Dashboard() {
 
 
       <div className="flex max-w-[1600px] mx-auto">
-        <DashboardSidebar />
+        <DashboardSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-        <main className="flex-1 p-6 lg:p-12 pt-24">
+        <main className="flex-1 p-6 lg:p-12 pt-24 w-full overflow-hidden">
+           
+           {/* Mobile Header with Menu Toggle */}
+           <div className="lg:hidden flex items-center justify-between mb-8">
+              <h1 className="text-2xl font-bold">Dashboard</h1>
+              <button 
+                onClick={() => setSidebarOpen(true)}
+                className="p-2 -mr-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+              >
+                <Menu className="w-6 h-6" />
+              </button>
+           </div>
+
            {/* Header */}
            <div className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                 <h1 className="text-3xl font-bold text-gray-900 mb-1">
+                 <h1 className="text-3xl font-bold text-gray-900 mb-1 hidden lg:block">
                     {greeting}, {summary?.userName}!
                  </h1>
-                 <p className="text-gray-500">Here's what's happening with your account today.</p>
+                 <h1 className="text-xl font-bold text-gray-900 mb-1 lg:hidden">
+                    {greeting}, {summary?.userName?.split(' ')[0]}!
+                 </h1>
+                 <p className="text-sm md:text-base text-gray-500">Here's what's happening today.</p>
               </div>
-              <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full border border-gray-200 shadow-sm">
+              <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full border border-gray-200 shadow-sm w-fit">
                  <div className={`w-2.5 h-2.5 rounded-full ${summary?.accountStatus === 'Active' ? 'bg-green-500' : 'bg-yellow-500'}`} />
                  <span className="text-sm font-medium text-gray-700">{summary?.accountStatus || "Active"} Member</span>
               </div>

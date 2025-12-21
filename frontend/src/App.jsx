@@ -227,7 +227,7 @@ export default function App() {
       <ChatWidget isOpen={chatOpen} onClose={() => setChatOpen(false)} />
       
       {/* Mobile Bottom Navigation */}
-      <MobileBottomNav />
+      <MobileBottomNav openSignUp={() => setAuthOpen(true)} />
     </NotificationProvider>
     </>
   );

@@ -15,12 +15,15 @@ export const useChatSocket = ({ user, onMessageReceived, enabled = true }) => {
     const token = localStorage.getItem("token");
     const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
     
+    console.log("[Chat] Attempting connection to:", socketUrl);
+    
     // Initialize socket
     const newSocket = io(socketUrl, {
       auth: { token },
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
+      withCredentials: true, // Ensure cookies/headers are sent if needed
     });
 
     newSocket.on("connect", () => {
@@ -34,7 +37,7 @@ export const useChatSocket = ({ user, onMessageReceived, enabled = true }) => {
     });
 
     newSocket.on("connect_error", (err) => {
-        console.error("Socket connection error:", err);
+        console.error("[Chat] Connection failed:", err.message);
         setIsConnected(false);
     });
 

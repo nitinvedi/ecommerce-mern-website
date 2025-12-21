@@ -134,7 +134,23 @@ export default function Product() {
     : null;
 
   return (
-    <div className="bg-gray-50 min-h-screen text-gray-900 pb-20">
+    <div className="bg-gray-50 min-h-screen text-gray-900 pb-32 lg:pb-20">
+      
+      {/* Mobile Sticky Action Bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-100 p-4 px-6 pb-24 md:pb-6 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] flex items-center gap-4">
+          <div className="flex-1">
+             <div className="text-xs text-gray-500 font-bold uppercase tracking-wider">Total Price</div>
+             <div className="text-2xl font-bold">₹{product.price?.toLocaleString()}</div>
+          </div>
+          <button
+             onClick={handleAddToCart}
+             disabled={product.stock <= 0}
+             className="flex-1 bg-black text-white h-12 rounded-full font-bold flex items-center justify-center gap-2 shadow-lg disabled:bg-gray-200 disabled:text-gray-400"
+          >
+             <ShoppingCart size={18} />
+             {product.stock > 0 ? "Add to Cart" : "No Stock"}
+          </button>
+      </div>
 
 
       <main className="max-w-7xl mx-auto px-6 pt-24">

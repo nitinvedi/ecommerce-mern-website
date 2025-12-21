@@ -337,9 +337,23 @@ export default function AuthModal({ open, onClose, onAuthSuccess }) {
                                   </div>
                                </div>
                             </div>
-                            <button disabled={loading} className="w-full bg-gray-900 text-white py-3.5 rounded-xl font-bold hover:bg-black transition-all flex items-center justify-center gap-2 shadow-lg shadow-gray-900/20 disabled:opacity-70">
-                               {loading ? "Creating Account..." : "Create Account"} <ArrowRight size={18} />
-                            </button>
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2">
+                                   <input
+                                      type="checkbox"
+                                      id="terms"
+                                      checked={form.termsAgreed || false}
+                                      onChange={(e) => update("termsAgreed", e.target.checked)}
+                                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                   />
+                                   <label htmlFor="terms" className="text-sm text-gray-600 select-none cursor-pointer">
+                                      I agree to the <span className="text-blue-600 font-medium hover:underline">Terms & Conditions</span>
+                                   </label>
+                                </div>
+                                <button disabled={loading} className="w-full bg-gray-900 text-white py-3.5 rounded-xl font-bold hover:bg-black transition-all flex items-center justify-center gap-2 shadow-lg shadow-gray-900/20 disabled:opacity-70">
+                                   {loading ? "Creating Account..." : "Create Account"} <ArrowRight size={18} />
+                                </button>
+                            </div>
                          </motion.form>
                       )}
                    </AnimatePresence>

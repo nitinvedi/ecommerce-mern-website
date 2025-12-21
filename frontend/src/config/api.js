@@ -1,7 +1,7 @@
 // API Configuration
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "/api/v1";
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || (window.location.hostname === "localhost" ? "http://localhost:5000" : window.location.origin);
 
 import { io } from "socket.io-client";
 export const socket = io(SOCKET_URL, { autoConnect: false });

@@ -21,9 +21,17 @@ export const initializeSocket = (server) => {
   io = new Server(server, {
     cors: {
       origin: (origin, callback) => {
-        if (!origin || allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === "development") {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === "development") {
           callback(null, true);
         } else {
+          // Dynamic check: allow if it matches the deployments domain pattern if applicable
+          // For now, let's trust the allowedOrigins list + manually added production URL
+          // But safer: just allow the origin if it matches the current server's domain? 
+          // Socket.io CORS is strict. Let's add a wildcard for subdomains if needed or just log the rejection.
+          console.log("Cors Origin Rejection:", origin);
           callback(new Error("Not allowed by CORS"));
         }
       },

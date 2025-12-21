@@ -18,10 +18,30 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const registerUser = async (req, res) => {
     try {
-        const { name, email, password, confirmPassword } = req.body;
+        const { name, email, password, confirmPassword, termsAgreed } = req.body;
 
         if (!name || !email || !password || !confirmPassword) {
             return res.status(400).json({ message: "All fields required" });
+        }
+
+        // 1. Strict Terms Validation
+        if (termsAgreed !== true) {
+            return res.status(400).json({ message: "You must agree to the Terms and Conditions" });
+        }
+
+        // 2. Strong Password Validation
+        // At least 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char
+        // Regex: 
+        // (?=.*[a-z]) -> at least one lower
+        // (?=.*[A-Z]) -> at least one upper
+        // (?=.*\d)    -> at least one digit
+        // (?=.*[\W_]) -> at least one special char (non-word or underscore)
+        // .{8,}       -> at least 8 chars total
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+        if (!passwordRegex.test(password)) {
+            return res.status(400).json({ 
+                message: "Password must be at least 8 characters and include uppercase, lowercase, number, and special character." 
+            });
         }
 
         if (password !== confirmPassword) {

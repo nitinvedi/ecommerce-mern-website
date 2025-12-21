@@ -27,6 +27,7 @@ import addressRoutes from "./routes/addressRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import partsRoutes from "./routes/partsRoutes.js";
+import cartRoutes from "./routes/cartRoutes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -83,6 +84,7 @@ app.use(`${apiPrefix}/addresses`, addressRoutes);
 app.use(`${apiPrefix}/dashboard`, dashboardRoutes);
 app.use(`${apiPrefix}/chat`, chatRoutes);
 app.use(`${apiPrefix}/parts`, partsRoutes);
+app.use(`${apiPrefix}/cart`, cartRoutes);
 
 // Serve frontend in production
 if (appConfig.nodeEnv === "production") {

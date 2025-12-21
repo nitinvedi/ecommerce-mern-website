@@ -22,4 +22,7 @@ router.get("/unread-count", chatController.getUnreadCount);
 // Get support admin
 router.get("/support-admin", chatController.getSupportAdmin);
 
+// Delete conversation
+router.delete("/conversations/:userId", chatController.deleteConversation);
+
 export default router;

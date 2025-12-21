@@ -130,10 +130,26 @@ export const getSupportAdmin = async (req, res) => {
   }
 };
 
+// Delete conversation
+export const deleteConversation = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    // Delete all messages between current user (admin) and target user
+    await ChatMessage.deleteConversation(req.user._id, userId);
+
+    res.json({ message: "Conversation deleted successfully" });
+  } catch (error) {
+    console.error("Delete conversation error:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export default {
   sendMessage,
   getMessages,
   getConversations,
   getUnreadCount,
-  getSupportAdmin
+  getSupportAdmin,
+  deleteConversation
 };

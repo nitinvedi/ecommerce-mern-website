@@ -10,6 +10,13 @@ export const useChatSocket = ({ user, onMessageReceived, enabled = true }) => {
   const typingTimeoutRef = useRef(null);
   const toast = useToast();
 
+  // Ref for callback to prevent stale closures
+  const onMessageReceivedRef = useRef(onMessageReceived);
+
+  useEffect(() => {
+    onMessageReceivedRef.current = onMessageReceived;
+  }, [onMessageReceived]);
+
   useEffect(() => {
     if (!user || !enabled) return;
 
@@ -20,7 +27,7 @@ export const useChatSocket = ({ user, onMessageReceived, enabled = true }) => {
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
-      withCredentials: true, // Ensure cookies/headers are sent if needed
+      withCredentials: true,
     });
 
     newSocket.on("connect", () => {
@@ -40,22 +47,21 @@ export const useChatSocket = ({ user, onMessageReceived, enabled = true }) => {
 
     // Message listener
     newSocket.on("receive_message", (data) => {
-        if (onMessageReceived) {
-            onMessageReceived(data);
+        if (onMessageReceivedRef.current) {
+            onMessageReceivedRef.current(data);
         }
     });
     
-    // Admin specific listener (might be ignored by User chat)
+    // Admin specific listener
     newSocket.on("new_customer_message", (data) => {
-        if (onMessageReceived) {
-            onMessageReceived(data); // Re-use same handler or robustly fetch
+        if (onMessageReceivedRef.current) {
+            onMessageReceivedRef.current(data);
         }
     });
 
     // Typing listeners
     newSocket.on("user_typing", (data) => {
         setIsTyping(true);
-        // Auto clear typing status after 3 seconds if no stop signal received
         if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
         typingTimeoutRef.current = setTimeout(() => setIsTyping(false), 3000);
     });
@@ -75,7 +81,7 @@ export const useChatSocket = ({ user, onMessageReceived, enabled = true }) => {
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       newSocket.disconnect();
     };
-  }, [user, enabled]); // Intentionally minimal dependencies
+  }, [user, enabled]);
 
   // Helpers
   const sendTyping = useCallback((receiverId) => {

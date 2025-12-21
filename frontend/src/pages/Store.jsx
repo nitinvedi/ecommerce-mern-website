@@ -271,7 +271,7 @@ export default function Store() {
   };
 
   return (
-    <div className="bg-[#fcfcfc] min-h-screen font-sans text-gray-900 selection:bg-black selection:text-white pb-20 md:pb-0">
+    <div className="bg-[#fcfcfc] min-h-screen font-sans text-gray-900 selection:bg-black selection:text-white pb-20 md:pb-0 overflow-x-hidden">
       
       {/* Search Overlay */}
       <AnimatePresence>
@@ -318,14 +318,14 @@ export default function Store() {
       </AnimatePresence>
 
       <div className="max-w-[1800px] mx-auto px-6 py-24 md:py-32" ref={productsRef}>
-        <div className="flex flex-col lg:flex-row gap-12">
-          <aside className="hidden lg:block w-72 flex-shrink-0">
+        <div className="flex flex-col lg:flex-row gap-8">
+          <aside className="hidden lg:block w-64 flex-shrink-0">
              <div className="sticky top-28 bg-white/50 backdrop-blur-xl rounded-[32px] border border-white/50 shadow-sm p-6">
                <ProductFilters onFilterChange={setFilters} products={products} />
              </div>
           </aside>
 
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
               <Breadcrumbs category={selectedCategory} />
 
              <div className="flex flex-col gap-6 mb-10 border-b border-gray-100 pb-6 sticky top-0 z-30 bg-[#fcfcfc]/85 backdrop-blur-xl transition-all pt-4 -mx-6 px-6">
@@ -379,7 +379,7 @@ export default function Store() {
                 )}
              </div>
 
-             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
+             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-12 w-full">
                {loading ? Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={i} />) 
                : filteredProducts.length > 0 ? (
                  <>
@@ -499,34 +499,34 @@ function ProductCard({ product, index, wishlistItems, toggleWishlist, handleAddT
       viewport={{ once: true, margin: "100px" }}
       transition={{ duration: 0.5, delay: index * 0.05 }}
       style={{ perspective: 1000 }}
-      className={`group relative z-0 hover:z-10 ${isOutOfStock ? "opacity-75 grayscale-[0.5]" : ""}`}
+      className={`group relative z-0 hover:z-10 w-full min-w-0 ${isOutOfStock ? "opacity-75 grayscale-[0.5]" : ""}`}
     >
       <motion.div
         style={{ rotateX, rotateY }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        className="relative aspect-[3/4] bg-white rounded-[24px] overflow-hidden mb-5 cursor-pointer shadow-sm border border-gray-100 hover:shadow-2xl hover:border-transparent transition-all duration-500 ease-out"
+        className="relative aspect-[4/5] bg-white rounded-[20px] overflow-hidden mb-3 cursor-pointer shadow-sm border border-gray-100 hover:shadow-2xl hover:border-transparent transition-all duration-500 ease-out"
         onClick={() => navigate(`/product/${product._id}`)}
       >
          
          {/* Badges */}
-         <div className="absolute top-4 left-4 z-10 flex flex-col gap-2 pointer-events-none">
+         <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5 pointer-events-none">
             {isOutOfStock ? (
-               <span className="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-wider rounded-full self-start">Sold Out</span>
+               <span className="px-2.5 py-1 bg-black text-white text-[9px] font-bold uppercase tracking-wider rounded-full self-start">Sold Out</span>
             ) : (
                 <>
                 {product.isRefurbished && (
-                    <span className="px-3 py-1 bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wider rounded-full shadow-sm flex items-center gap-1 self-start">
-                       <RefreshCw size={10} /> Certified Refurbished
+                    <span className="px-2.5 py-1 bg-green-100 text-green-700 text-[9px] font-bold uppercase tracking-wider rounded-full shadow-sm flex items-center gap-1 self-start">
+                       <RefreshCw size={9} /> Refurbished
                     </span>
                 )}
                 {product.discountPercent > 0 && (
-                    <span className="px-3 py-1 bg-white text-black text-[10px] font-bold uppercase tracking-wider rounded-full shadow-sm flex items-center gap-1 self-start">
-                       <Tag size={10} /> Save ₹{savingsAmount.toLocaleString()}
+                    <span className="px-2.5 py-1 bg-white text-black text-[9px] font-bold uppercase tracking-wider rounded-full shadow-sm flex items-center gap-1 self-start">
+                       <Tag size={9} /> Save ₹{savingsAmount.toLocaleString()}
                     </span>
                 )}
                 {isNew && (
-                    <span className="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-wider rounded-full self-start relative overflow-hidden">
+                    <span className="px-2.5 py-1 bg-black text-white text-[9px] font-bold uppercase tracking-wider rounded-full self-start relative overflow-hidden">
                        <span className="relative z-10">New</span>
                        <span className="absolute inset-0 bg-white/20 animate-pulse" />
                     </span>
@@ -535,21 +535,21 @@ function ProductCard({ product, index, wishlistItems, toggleWishlist, handleAddT
             )}
          </div>
 
-         <button onClick={(e) => toggleWishlist(product._id, e)} className="absolute top-4 right-4 z-10 p-2.5 bg-white/80 backdrop-blur-sm rounded-full shadow-sm hover:scale-110 transition-transform opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 duration-300">
-            <Heart size={16} className={wishlistItems.includes(product._id) ? "fill-red-500 stroke-red-500" : "stroke-gray-900"} />
+         <button onClick={(e) => toggleWishlist(product._id, e)} className="absolute top-3 right-3 z-10 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm hover:scale-110 transition-transform opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 duration-300">
+            <Heart size={15} className={wishlistItems.includes(product._id) ? "fill-red-500 stroke-red-500" : "stroke-gray-900"} />
          </button>
 
          {/* Image Swap */}
-         <div className="w-full h-full p-8 flex items-center justify-center relative transform transition-transform duration-700 group-hover:scale-105">
+         <div className="w-full h-full p-6 flex items-center justify-center relative transform transition-transform duration-700 group-hover:scale-105">
             <img 
                src={image1} 
                alt={product.name} 
-               className="absolute inset-0 w-full h-full object-contain p-8 mix-blend-multiply transition-all duration-700 group-hover:opacity-0" 
+               className="absolute inset-0 w-full h-full object-contain p-6 mix-blend-multiply transition-all duration-700 group-hover:opacity-0" 
             />
             <img 
                src={image2} 
                alt={product.name} 
-               className="absolute inset-0 w-full h-full object-contain p-8 mix-blend-multiply opacity-0 transition-all duration-700 group-hover:opacity-100" 
+               className="absolute inset-0 w-full h-full object-contain p-6 mix-blend-multiply opacity-0 transition-all duration-700 group-hover:opacity-100" 
             />
          </div>
         
@@ -586,15 +586,6 @@ function ProductCard({ product, index, wishlistItems, toggleWishlist, handleAddT
             </div>
          </div>
          
-         <div className="flex items-center gap-2">
-            <div className="flex -space-x-1">
-                {colors.map((c, i) => (
-                    <div key={i} className="w-3 h-3 rounded-full border border-white ring-1 ring-gray-200" style={{backgroundColor: c}} />
-                ))}
-            </div>
-            <span className="text-xs text-gray-400">+2 more</span>
-         </div>
-
          <div className="flex items-baseline gap-2 pt-1">
             <span className="font-bold text-gray-900">₹{product.price?.toLocaleString()}</span>
             {product.discountPercent > 0 && <span className="text-sm text-gray-400 line-through decoration-gray-300">₹{Math.round(product.price / (1 - product.discountPercent / 100)).toLocaleString()}</span>}

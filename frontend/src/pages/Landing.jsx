@@ -295,59 +295,31 @@ const FAQ = () => {
 
 const Footer = () => {
     return (
-        <footer className="bg-[#1d1d1f] text-white pt-20 pb-10">
-            <div className="max-w-[1400px] mx-auto px-6">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16 border-b border-gray-800 pb-16">
-                    {/* Newsletter */}
-                    <div className="md:col-span-1">
-                        <h3 className="text-2xl font-semibold mb-6">Stay in the loop.</h3>
-                        <p className="text-gray-400 mb-6 text-sm">Get the latest tech news and exclusive offers delivered to your inbox.</p>
-                        <div className="flex gap-2">
-                             <input type="email" placeholder="Email address" className="bg-white/10 border-none rounded-lg px-4 py-3 w-full text-sm focus:ring-1 focus:ring-[#2997ff]" />
-                             <button className="bg-[#2997ff] text-white px-4 py-3 rounded-lg hover:bg-[#0077ed] transition-colors"><ArrowRight size={18} /></button>
-                        </div>
-                    </div>
+        <footer className="bg-[#1d1d1f] text-white py-10 border-t border-gray-800">
+            <div className="max-w-[1400px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+                 {/* Brand */}
+                 <div className="text-center md:text-left">
+                     <h3 className="text-lg font-bold tracking-tight text-white/90">Ram Mobile.</h3>
+                     <p className="text-xs text-gray-500 mt-1">Premium Tech & Repair Center.</p>
+                 </div>
 
-                    {/* Links */}
-                    <div>
-                        <h4 className="font-semibold text-gray-100 mb-6">Shop</h4>
-                        <ul className="space-y-4 text-sm text-gray-400">
-                            <li><a href="/store?category=Mobile" className="hover:text-[#2997ff]">Mobiles</a></li>
-                            <li><a href="/store?category=Laptop" className="hover:text-[#2997ff]">Laptops</a></li>
-                            <li><a href="/store?category=Accessories" className="hover:text-[#2997ff]">Accessories</a></li>
-                            <li><a href="/store?category=Tablet" className="hover:text-[#2997ff]">Tablets</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 className="font-semibold text-gray-100 mb-6">Services</h4>
-                        <ul className="space-y-4 text-sm text-gray-400">
-                            <li><a href="/repair" className="hover:text-[#2997ff]">Book a Repair</a></li>
-                            <li><a href="/status" className="hover:text-[#2997ff]">Check Status</a></li>
-                            <li><a href="/contact" className="hover:text-[#2997ff]">Sell Device</a></li>
-                            <li><a href="/contact" className="hover:text-[#2997ff]">Business Support</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                         <h4 className="font-semibold text-gray-100 mb-6">Account</h4>
-                         <ul className="space-y-4 text-sm text-gray-400">
-                            <li><a href="/dashboard" className="hover:text-[#2997ff]">Manage Orders</a></li>
-                            <li><a href="/profile" className="hover:text-[#2997ff]">Profile</a></li>
-                            <li><a href="/addresses" className="hover:text-[#2997ff]">Addresses</a></li>
-                            <li><a href="/contact" className="hover:text-[#2997ff]">Help</a></li>
-                         </ul>
-                    </div>
-                </div>
+                 {/* Minimal Nav - Only Valid Routes */}
+                 <nav className="flex flex-wrap justify-center gap-8 text-sm text-gray-400 font-medium">
+                     <a href="/store" className="hover:text-white transition-colors">Store</a>
+                     <a href="/repair" className="hover:text-white transition-colors">Book Repair</a>
+                     <a href="/dashboard" className="hover:text-white transition-colors">My Orders</a>
+                     <a href="/contact" className="hover:text-white transition-colors">Contact</a>
+                 </nav>
 
-                <div className="flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-gray-500">
-                    <p>Copyright © {new Date().getFullYear()} Ram Mobile Inc. All rights reserved.</p>
-                    <div className="flex gap-6">
-                        <a href="#" className="hover:text-white">Privacy Policy</a>
-                        <a href="#" className="hover:text-white">Terms of Use</a>
-                        <a href="#" className="hover:text-white">Sales Policy</a>
-                        <a href="#" className="hover:text-white">Legal</a>
-                        <a href="#" className="hover:text-white">Site Map</a>
-                    </div>
-                </div>
+                 {/* Socials & Legal */}
+                 <div className="flex flex-col items-center md:items-end gap-3">
+                      <div className="flex gap-5">
+                          <a href="#" className="text-gray-400 hover:text-white transition-colors"><Instagram size={18} /></a>
+                          <a href="#" className="text-gray-400 hover:text-white transition-colors"><Twitter size={18} /></a>
+                          <a href="#" className="text-gray-400 hover:text-white transition-colors"><Facebook size={18} /></a>
+                      </div>
+                      <p className="text-[11px] text-gray-600">© {new Date().getFullYear()} Ram Mobile Inc.</p>
+                 </div>
             </div>
         </footer>
     )

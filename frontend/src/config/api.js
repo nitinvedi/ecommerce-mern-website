@@ -71,6 +71,12 @@ export const API_ENDPOINTS = {
     CHECK: (productId) => `${API_BASE_URL}/wishlist/check/${productId}`,
   },
 
+  // Cart
+  CART: {
+    BASE: `${API_BASE_URL}/cart`,
+    SYNC: `${API_BASE_URL}/cart/sync`,
+  },
+
   // Addresses
   ADDRESSES: {
     BASE: `${API_BASE_URL}/addresses`,
@@ -95,6 +101,7 @@ export const API_ENDPOINTS = {
     MESSAGES: (userId) => `${API_BASE_URL}/chat/messages/${userId}`,
     UNREAD: `${API_BASE_URL}/chat/unread-count`,
     SUPPORT_ADMIN: `${API_BASE_URL}/chat/support-admin`,
+    DELETE: (userId) => `${API_BASE_URL}/chat/conversations/${userId}`,
   },
 
   // Parts Inventory

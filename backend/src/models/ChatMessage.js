@@ -126,6 +126,17 @@ export const getMessageById = async (messageId) => {
   return await collection.findOne({ _id: new ObjectId(messageId) });
 };
 
+// Delete conversation (all messages between two users)
+export const deleteConversation = async (userId1, userId2) => {
+  const collection = getCollection();
+  return await collection.deleteMany({
+    $or: [
+      { sender: new ObjectId(userId1), receiver: new ObjectId(userId2) },
+      { sender: new ObjectId(userId2), receiver: new ObjectId(userId1) }
+    ]
+  });
+};
+
 export default {
   createMessage,
   getMessagesBetweenUsers,
@@ -133,5 +144,6 @@ export default {
   getUnreadCount,
   markAsRead,
   deleteMessage,
+  deleteConversation,
   getMessageById
 };

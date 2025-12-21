@@ -137,9 +137,25 @@ export const deleteConversation = async (userId1, userId2) => {
   });
 };
 
+// Get last message between two users
+export const getLastMessageBetweenUsers = async (userId1, userId2) => {
+  const collection = getCollection();
+  
+  return await collection.findOne(
+    {
+      $or: [
+        { sender: new ObjectId(userId1), receiver: new ObjectId(userId2) },
+        { sender: new ObjectId(userId2), receiver: new ObjectId(userId1) }
+      ]
+    },
+    { sort: { createdAt: -1 } }
+  );
+};
+
 export default {
   createMessage,
   getMessagesBetweenUsers,
+  getLastMessageBetweenUsers,
   getUserConversations,
   getUnreadCount,
   markAsRead,

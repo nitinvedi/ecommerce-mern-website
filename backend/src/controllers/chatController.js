@@ -60,10 +60,9 @@ export const getConversations = async (req, res) => {
     const conversations = await Promise.all(
       partnerIds.map(async (partnerId) => {
         const partner = await User.getUserById(partnerId);
-        const messages = await ChatMessage.getMessagesBetweenUsers(
+        const lastMessage = await ChatMessage.getLastMessageBetweenUsers(
           req.user._id,
-          partnerId,
-          1
+          partnerId
         );
 
         return {
@@ -73,7 +72,7 @@ export const getConversations = async (req, res) => {
             email: partner.email,
             role: partner.role
           },
-          lastMessage: messages[messages.length - 1] || null
+          lastMessage: lastMessage || null
         };
       })
     );

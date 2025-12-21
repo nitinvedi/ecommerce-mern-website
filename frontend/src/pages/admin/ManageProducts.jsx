@@ -49,6 +49,7 @@ export default function ManageProducts() {
     stock: "",
     category: "",
     isActive: true,
+    isRefurbished: false,
     images: [] // existing images URLs
   });
   const [files, setFiles] = useState([]); // new files
@@ -132,6 +133,7 @@ export default function ManageProducts() {
     fd.append("stock", Number(form.stock));
     fd.append("category", form.category);
     fd.append("isActive", form.isActive);
+    fd.append("isRefurbished", form.isRefurbished);
     
     if (form.images?.length) {
        fd.append("existingImages", JSON.stringify(form.images)); 
@@ -176,6 +178,7 @@ export default function ManageProducts() {
       stock: product.stock,
       category: product.category,
       isActive: product.isActive,
+      isRefurbished: product.isRefurbished || false,
       images: product.images || []
     });
     setFiles([]);
@@ -402,9 +405,15 @@ export default function ManageProducts() {
                         <input type="file" multiple onChange={e => setFiles([...e.target.files])} className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
                      </div>
 
-                     <div className="flex items-center gap-2 mt-2">
-                        <input type="checkbox" checked={form.isActive} onChange={e => setForm({...form, isActive: e.target.checked})} id="isActive" />
-                        <label htmlFor="isActive" className="text-sm font-medium text-gray-700">Active Product</label>
+                     <div className="flex items-center gap-6 mt-4">
+                        <div className="flex items-center gap-2">
+                           <input type="checkbox" checked={form.isActive} onChange={e => setForm({...form, isActive: e.target.checked})} id="isActive" className="w-4 h-4 rounded border-gray-300 text-black focus:ring-black" />
+                           <label htmlFor="isActive" className="text-sm font-medium text-gray-700">Active Product</label>
+                        </div>
+                        <div className="flex items-center gap-2">
+                           <input type="checkbox" checked={form.isRefurbished} onChange={e => setForm({...form, isRefurbished: e.target.checked})} id="isRefurbished" className="w-4 h-4 rounded border-gray-300 text-black focus:ring-black" />
+                           <label htmlFor="isRefurbished" className="text-sm font-medium text-gray-700">Refurbished</label>
+                        </div>
                      </div>
 
                      <div className="flex gap-3 mt-6">

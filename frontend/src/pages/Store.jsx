@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { motion, useScroll, useTransform, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
 import {
   Search,
   Heart,
@@ -11,7 +11,18 @@ import {
   ArrowDown,
   Filter,
   Check,
-  Tag
+  Tag,
+  Smartphone,
+  Laptop,
+  Tablet,
+  Headphones,
+  Zap,
+  Package,
+  ChevronRight,
+  RefreshCw,
+  Gift,
+  Plus,
+  Eye
 } from "lucide-react";
 
 import { api, API_ENDPOINTS, SOCKET_URL } from "../config/api.js";
@@ -22,6 +33,101 @@ import ProductFilters from "../components/ProductFilters.jsx";
 import ProductSort from "../components/ProductSort.jsx";
 import { ProductCardSkeleton } from "../components/Skeleton.jsx";
 import QuickViewModal from "../components/QuickViewModal.jsx";
+
+// --- UI COMPONENTS ---
+
+const CategoryPills = ({ selected, onSelect, products }) => {
+  const categories = [
+    { id: "all", label: "All Products", icon: Package },
+    { id: "Mobile", label: "iPhone & Android", icon: Smartphone },
+    { id: "Laptop", label: "MacBook & Laptops", icon: Laptop },
+    { id: "Tablet", label: "iPads & Tablets", icon: Tablet },
+    { id: "Accessories", label: "Accessories", icon: Headphones },
+  ];
+
+  const getCount = (catId) => {
+    if (catId === "all") return products.length;
+    return products.filter(p => p.category === catId).length;
+  };
+
+  return (
+    <div className="flex gap-3 overflow-x-auto pb-4 md:pb-0 px-1 scrollbar-hide py-2 md:px-0">
+      {categories.map((cat) => {
+        const isActive = selected === cat.id;
+        return (
+          <button
+            key={cat.id}
+            onClick={() => onSelect(cat.id)}
+            className={`
+              flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 border backdrop-blur-md
+              ${isActive 
+                ? "bg-black text-white border-black shadow-lg shadow-black/20" 
+                : "bg-white/80 text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-white"}
+            `}
+          >
+            <cat.icon size={16} className={isActive ? "text-white" : "text-gray-400"} />
+            <span className="whitespace-nowrap">{cat.label}</span>
+            <span className={`
+              text-[10px] px-1.5 py-0.5 rounded-full ml-1
+              ${isActive ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"}
+            `}>
+              {getCount(cat.id)}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
+const Breadcrumbs = ({ category }) => (
+  <nav className="flex items-center gap-2 text-sm text-gray-500 mb-8 font-medium">
+    <span className="hover:text-black cursor-pointer transition-colors">Home</span>
+    <ChevronRight size={14} />
+    <span className="hover:text-black cursor-pointer transition-colors">Store</span>
+    <ChevronRight size={14} />
+    <span className="text-black capitalize">{category === 'all' ? 'All Products' : category}</span>
+  </nav>
+);
+
+const EmptyState = ({ clearFilters }) => (
+  <div className="col-span-full py-20 flex flex-col items-center text-center">
+    <div className="w-48 h-48 bg-gray-50 rounded-full flex items-center justify-center mb-8 relative group">
+       <Search size={64} className="text-gray-300 group-hover:scale-110 transition-transform duration-500" />
+       <div className="absolute top-10 right-10 w-4 h-4 bg-red-400 rounded-full animate-bounce" />
+       <div className="absolute bottom-12 left-12 w-3 h-3 bg-blue-400 rounded-full animate-bounce delay-100" />
+    </div>
+    <h3 className="text-2xl font-bold text-[#1d1d1f] mb-3">No products found</h3>
+    <p className="text-gray-500 max-w-md mx-auto mb-8 leading-relaxed">
+      We couldn't find matches for your current filters. Try checking your spelling or clearing some filters.
+    </p>
+    <button 
+      onClick={clearFilters}
+      className="px-8 py-3 bg-black text-white rounded-full font-medium hover:bg-gray-800 transition-colors shadow-lg hover:shadow-xl"
+    >
+      Clear All Filters
+    </button>
+  </div>
+);
+
+const InterstitialBanner = () => (
+    <div className="col-span-full xl:col-span-2 row-span-1 bg-black rounded-[30px] p-8 md:p-10 relative overflow-hidden text-white group cursor-pointer my-0 h-full flex flex-col justify-center">
+        <div className="relative z-10 max-w-lg">
+            <span className="inline-block px-3 py-1 bg-[#DFFF00] text-black text-xs font-bold uppercase tracking-wider rounded-full mb-4 animate-pulse">Limited Time</span>
+            <h3 className="text-3xl font-bold mb-4 leading-tight">Trade-in <br/>and upgrade.</h3>
+            <p className="text-gray-400 text-sm mb-6">Get ₹2,000 - ₹45,000 credit toward a new device.</p>
+            <div className="flex items-center gap-2 text-[#DFFF00] font-bold text-sm group-hover:gap-4 transition-all">
+                Check Value <ChevronRight size={16} />
+            </div>
+        </div>
+        
+        {/* Abstract Shapes */}
+        <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-gradient-to-bl from-blue-600/30 to-purple-600/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+        <RefreshCw size={150} className="absolute -bottom-8 -right-8 text-white/5 rotate-12 group-hover:rotate-0 transition-transform duration-700" />
+    </div>
+);
+
+// --- MAIN PAGE ---
 
 export default function Store() {
   const navigate = useNavigate();
@@ -37,8 +143,7 @@ export default function Store() {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [wishlistItems, setWishlistItems] = useState([]);
   
-  // 1. Logic: Deep URL Sync State Initialization
-  // Initialize state from URL params if available
+  // URL Sync State
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "all");
   const [sortBy, setSortBy] = useState(searchParams.get("sort") || "popularity");
@@ -53,28 +158,15 @@ export default function Store() {
   });
 
   const productsRef = useRef(null);
-  const heroOpacity = useTransform(scrollY, [0, 600], [1, 0]); // Slower fade
-  const showBackToTop = useTransform(scrollY, [500, 600], [0, 1]); // Framer motion value
   const [isBackToTopVisible, setIsBackToTopVisible] = useState(false);
 
-  // 2. Logic: Back To Top Visibility using specialized effect
   useEffect(() => {
     return scrollY.onChange((latest) => {
       setIsBackToTopVisible(latest > 500);
     });
   }, [scrollY]);
 
-  // Scroll Snap Logic
-  useEffect(() => {
-    document.documentElement.style.scrollSnapType = "y mandatory";
-    document.documentElement.style.scrollBehavior = "smooth";
-    return () => {
-        document.documentElement.style.scrollSnapType = "";
-        document.documentElement.style.scrollBehavior = "";
-    };
-  }, []);
-
-  // 3. Logic: Deep URL Sync Effect (Write to URL)
+  // URL Sync Effect
   useEffect(() => {
     const params = {};
     if (searchTerm) params.search = searchTerm;
@@ -85,13 +177,10 @@ export default function Store() {
     if (filters.brands.length > 0) params.brands = filters.brands.join(",");
     if (filters.rating > 0) params.rating = filters.rating;
     if (filters.inStock) params.inStock = "true";
-    
     setSearchParams(params, { replace: true });
     
-    // 4. Feature: Dynamic Page Title
     const titleCat = selectedCategory === "all" ? "Store" : selectedCategory;
     document.title = searchTerm ? `Search: ${searchTerm} | Ram Mobile` : `${titleCat} | Ram Mobile`;
-    
   }, [searchTerm, selectedCategory, sortBy, filters, setSearchParams]);
 
   useEffect(() => {
@@ -102,11 +191,7 @@ export default function Store() {
   const fetchProducts = async () => {
     try {
       const res = await api.get(`${API_ENDPOINTS.PRODUCTS.BASE}?limit=100`);
-      let items = [];
-      if (res?.data?.items) items = res.data.items;
-      else if (res?.items) items = res.items;
-      else if (Array.isArray(res?.data)) items = res.data;
-      else if (Array.isArray(res)) items = res;
+      let items = res?.data?.items || res?.items || (Array.isArray(res?.data) ? res.data : []) || (Array.isArray(res) ? res : []);
       setProducts(items);
     } catch (error) {
       toast.error("Failed to load products");
@@ -149,7 +234,7 @@ export default function Store() {
   };
 
   const handleAddToCart = (product, e) => {
-    e.stopPropagation();
+    e?.stopPropagation();
     addToCart(product, 1);
     toast.success("Added to cart");
   };
@@ -175,33 +260,18 @@ export default function Store() {
     });
   }, [products, searchTerm, selectedCategory, filters, sortBy]);
 
-  // 5. Logic: Category Counts
-  const categories = ["all", "Mobile", "Tablet", "Laptop", "Accessories"];
-  const getCategoryCount = (cat) => {
-    if (cat === "all") return products.length;
-    return products.filter(p => p.category === cat).length;
-  };
-
-  const featured = products[0];
   const [visibleCount, setVisibleCount] = useState(12);
   const visibleProducts = filteredProducts.slice(0, visibleCount);
   const [quickViewProduct, setQuickViewProduct] = useState(null);
 
   useEffect(() => { setVisibleCount(12); }, [selectedCategory, searchTerm, filters, sortBy]);
 
-  // 6. Feature: Smart Fallback Recommendations (e.g. Popular or Newest)
-  const fallbackProducts = useMemo(() => {
-    if (filteredProducts.length > 0) return [];
-    return [...products].sort((a, b) => (b.numReviews || 0) - (a.numReviews || 0)).slice(0, 4);
-  }, [filteredProducts.length, products]);
-
-  // Scroll to top handler
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
-    <div className="bg-white min-h-screen font-sans text-gray-900 selection:bg-black selection:text-white pb-20 md:pb-0">
+    <div className="bg-[#fcfcfc] min-h-screen font-sans text-gray-900 selection:bg-black selection:text-white pb-20 md:pb-0">
       
       {/* Search Overlay */}
       <AnimatePresence>
@@ -227,43 +297,12 @@ export default function Store() {
                 style={{ fontFamily: 'Inter, sans-serif' }}
               />
               
-              {/* Live Suggestions Results */}
-              {searchTerm && (
-                <div className="mt-12 w-full max-w-2xl mx-auto text-left space-y-2">
-                   <p className="text-sm font-medium text-gray-400 mb-4 px-4 uppercase tracking-wider">Top Results</p>
-                   {products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).slice(0, 5).map(product => (
-                      <div 
-                        key={product._id}
-                        onClick={() => { navigate(`/product/${product._id}`); setShowSearch(false); }}
-                        className="flex items-center gap-4 p-4 hover:bg-gray-50 rounded-2xl cursor-pointer group transition-all"
-                      >
-                         <img 
-                            src={product.images?.[0]?.startsWith('http') ? product.images[0] : `${SOCKET_URL}${product.images?.[0]}`} 
-                            alt={product.name}
-                            className="w-16 h-16 object-contain mix-blend-multiply p-2 bg-white rounded-xl border border-gray-100"
-                         />
-                         <div className="flex-1">
-                            <h4 className="font-bold text-lg text-gray-900 group-hover:text-black">{product.name}</h4>
-                            <p className="text-sm text-gray-500">{product.category} • ₹{product.price.toLocaleString()}</p>
-                         </div>
-                         <div className="p-2 bg-white rounded-full border border-gray-100 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <ArrowUp className="rotate-45" size={16} />
-                         </div>
-                      </div>
-                   ))}
-                   {products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
-                      <p className="text-center text-gray-400 py-8">No matching products found.</p>
-                   )}
-                </div>
-              )}
-
               {!searchTerm && <p className="mt-6 text-gray-400">Press Enter to see all results</p>}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* 7. Feature: Back To Top Button */}
       <AnimatePresence>
         {isBackToTopVisible && (
           <motion.button
@@ -278,150 +317,27 @@ export default function Store() {
         )}
       </AnimatePresence>
 
-      {/* Floating Search FAB REMOVED */}
-      
-      {/* Hero Section */}
-      {/* Hero Section */}
-      <div className="relative min-h-[60vh] md:min-h-[85vh] bg-[#F5F5F7] overflow-hidden flex items-center border-b border-black/5 snap-start snap-always">
-         
-         {/* Background Elements */}
-         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}></div>
-         <div className="absolute -top-[20%] -right-[10%] w-[600px] h-[600px] bg-gradient-to-br from-purple-200/40 to-blue-200/40 rounded-full blur-[100px] pointer-events-none" />
-         <div className="absolute top-[40%] -left-[10%] w-[400px] h-[400px] bg-gradient-to-tr from-[#DFFF00]/20 to-transparent rounded-full blur-[80px] pointer-events-none" />
-
-         <motion.div style={{ opacity: heroOpacity }} className="max-w-[1700px] mx-auto px-6 lg:px-12 grid lg:grid-cols-2 gap-16 w-full h-full items-center relative z-10 pt-20 lg:pt-0">
-            
-            {/* Left Content */}
-            <div className="space-y-10 order-2 lg:order-1 flex flex-col justify-center">
-               <motion.div 
-                 initial={{ opacity: 0, y: 30 }} 
-                 animate={{ opacity: 1, y: 0 }} 
-                 transition={{ duration: 0.8, ease: "easeOut" }}
-               >
-                 {/* Badge */}
-                 <div className="inline-flex items-center gap-2.5 px-5 py-2.5 border border-black/5 rounded-full bg-white/50 backdrop-blur-md mb-8 shadow-sm">
-                    <span className="relative flex h-2.5 w-2.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
-                    </span>
-                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-900">New Drop</span>
-                 </div>
-
-                 {/* Headline */}
-                 <h1 className="text-7xl lg:text-9xl font-black leading-[0.9] tracking-tighter text-black mb-8">
-                    {featured ? (
-                         <>
-                         <span className="block font-serif italic font-medium tracking-normal text-6xl lg:text-8xl mb-2 text-gray-800">The All-New</span>
-                         {featured.name.split(' ').slice(0, 3).join(' ')} <span className="text-[#DFFF00] inline-block mix-blend-multiply">.</span>
-                         </>
-                    ) : (
-                        <>Future <br/> <span className="font-serif italic font-medium text-gray-500">Tech.</span></>
-                    )}
-                 </h1>
-
-                 {/* Description */}
-                 <p className="text-lg lg:text-xl text-gray-500 max-w-lg leading-relaxed font-medium">
-                    {featured ? featured.description.slice(0, 150) + "..." : "Experience the next generation. Curated for the bold, designed for the future."}
-                 </p>
-               </motion.div>
-
-               {/* CTA */}
-               <motion.div 
-                 initial={{ opacity: 0 }} 
-                 animate={{ opacity: 1 }} 
-                 transition={{ delay: 0.4 }} 
-                 className="flex flex-wrap gap-4"
-               >
-                  <button onClick={() => navigate(featured ? `/product/${featured._id}` : '/')} className="group relative px-10 py-5 bg-black text-white rounded-full font-bold overflow-hidden">
-                     <span className="relative z-10 group-hover:text-black transition-colors duration-300">Shop Collection</span>
-                     <div className="absolute inset-0 bg-[#DFFF00] transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300 ease-out" />
-                  </button>
-                  <button onClick={() => {}} className="px-10 py-5 bg-white text-black border border-gray-200 rounded-full font-bold hover:bg-gray-50 transition-colors">
-                     View Details
-                  </button>
-               </motion.div>
-            </div>
-
-            {/* Right Content (Image) */}
-            <div className="order-1 lg:order-2 h-[45vh] lg:h-full flex items-center justify-center relative pointer-events-none">
-               {featured && (
-                 <motion.div
-                   initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
-                   animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                   transition={{ duration: 1, ease: "easeOut" }}
-                   className="relative w-full max-w-xs md:max-w-md lg:max-w-lg aspect-square flex items-center justify-center pointer-events-auto"
-                 >
-                    {/* Floating Circle Backdrop - Reduced Size */}
-                    <motion.div 
-                        animate={{ scale: [1, 1.05, 1], rotate: [0, 5, 0] }}
-                        transition={{ repeat: Infinity, duration: 10, ease: "easeInOut" }}
-                        className="absolute inset-0 bg-white rounded-full mix-blend-overlay opacity-40 blur-2xl transform scale-75" 
-                    />
-                    
-                    {/* Product Image - Constrained Height */}
-                    <motion.img 
-                       animate={{ y: [0, -15, 0] }}
-                       transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
-                       src={featured.images?.[0]}
-                       className="w-full h-full object-contain drop-shadow-2xl relative z-10 max-h-[300px] md:max-h-[400px] lg:max-h-[500px]"
-                       alt="Hero Product"
-                    />
-
-                    {/* Floating Price Tag - Repositioned */}
-                    <motion.div 
-                       initial={{ opacity: 0, scale: 0.8 }}
-                       animate={{ opacity: 1, scale: 1 }}
-                       transition={{ delay: 0.8 }}
-                       className="absolute -bottom-4 -right-4 lg:bottom-10 lg:-right-8 z-20 bg-white/90 backdrop-blur border border-white/50 px-6 py-4 rounded-3xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] hidden sm:block"
-                    >
-                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Price</p>
-                         <p className="text-2xl font-black tracking-tight">₹{featured.price?.toLocaleString()}</p>
-                    </motion.div>
-                 </motion.div>
-               )}
-            </div>
-         </motion.div>
-      </div>
-
-      <div className="max-w-[1800px] mx-auto px-6 py-20 snap-start snap-always scroll-mt-24" ref={productsRef}>
-        <div className="flex flex-col lg:flex-row gap-16">
-          <aside className="hidden lg:block w-64 flex-shrink-0">
-             <div className="sticky top-28">
+      <div className="max-w-[1800px] mx-auto px-6 py-24 md:py-32" ref={productsRef}>
+        <div className="flex flex-col lg:flex-row gap-12">
+          <aside className="hidden lg:block w-72 flex-shrink-0">
+             <div className="sticky top-28 bg-white/50 backdrop-blur-xl rounded-[32px] border border-white/50 shadow-sm p-6">
                <ProductFilters onFilterChange={setFilters} products={products} />
              </div>
           </aside>
 
           <div className="flex-1">
-             <div className="flex flex-col gap-6 mb-10 border-b border-gray-100 pb-6">
-                
-                {/* 8. Feature: Mobile Sticky Bar Holder (Logic in CSS/Component) */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 sticky top-0 z-30 bg-white/95 backdrop-blur py-2 md:static">
-                    <div className="overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-                      <div className="flex gap-2">
-                        {categories.map(cat => (
-                          <button
-                            key={cat}
-                            onClick={() => setSelectedCategory(cat)}
-                            className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2 ${
-                              selectedCategory === cat
-                                ? 'bg-black text-white'
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            }`}
-                          >
-                            {cat === "all" ? "All" : cat}
-                            {/* Feature: Category Counts */}
-                            <span className={`text-[10px] py-0.5 px-1.5 rounded-full ${selectedCategory === cat ? 'bg-white text-black' : 'bg-gray-200 text-gray-500'}`}>
-                              {getCategoryCount(cat)}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
+              <Breadcrumbs category={selectedCategory} />
+
+             <div className="flex flex-col gap-6 mb-10 border-b border-gray-100 pb-6 sticky top-0 z-30 bg-[#fcfcfc]/85 backdrop-blur-xl transition-all pt-4 -mx-6 px-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="overflow-x-auto pb-0 scrollbar-hide -mx-2 px-2">
+                       <CategoryPills selected={selectedCategory} onSelect={setSelectedCategory} products={products} />
                     </div>
                     
                     <div className="flex items-center justify-between md:justify-end gap-3 flex-1 md:flex-none">
                         <button 
                             onClick={() => setShowSearch(true)} 
-                            className="hidden md:flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 hover:border-black rounded-full text-sm font-medium transition-all hover:shadow-lg group"
+                            className="hidden md:flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 rounded-full text-sm font-medium transition-all group hover:border-gray-400"
                         >
                            <Search size={18} className="text-gray-500 group-hover:text-black transition-colors" />
                            <span className="text-gray-600 group-hover:text-black">Search</span>
@@ -431,7 +347,6 @@ export default function Store() {
                            <Filter size={16} /> Filters
                         </button>
                         
-                        {/* Mobile Search Icon (only visible on small screens) */}
                          <button 
                             onClick={() => setShowSearch(true)} 
                             className="md:hidden flex items-center justify-center w-10 h-10 bg-white border border-gray-200 rounded-full text-gray-900 shadow-sm"
@@ -443,7 +358,7 @@ export default function Store() {
                     </div>
                 </div>
 
-                {/* 9. Feature: Active Filter Chips */}
+                {/* Active Filter Chips */}
                 {(searchTerm || filters.brands.length > 0 || filters.rating > 0 || filters.inStock) && (
                   <div className="flex flex-wrap gap-2 items-center">
                     <span className="text-sm text-gray-500 mr-2">Active:</span>
@@ -457,16 +372,6 @@ export default function Store() {
                          {b} <X size={12} />
                        </button>
                     ))}
-                    {filters.rating > 0 && (
-                      <button onClick={() => setFilters(prev => ({...prev, rating: 0}))} className="flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full text-xs font-medium hover:bg-gray-200">
-                         {filters.rating}+ Stars <X size={12} />
-                       </button>
-                    )}
-                    {filters.inStock && (
-                      <button onClick={() => setFilters(prev => ({...prev, inStock: false}))} className="flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full text-xs font-medium hover:bg-gray-200">
-                         In Stock <X size={12} />
-                       </button>
-                    )}
                     <button onClick={() => { setSearchTerm(""); setFilters({ priceRange: [0, 1000000], brands: [], rating: 0, inStock: false }); }} className="text-xs font-medium text-red-500 hover:text-red-700 underline">
                         Clear All
                     </button>
@@ -474,47 +379,32 @@ export default function Store() {
                 )}
              </div>
 
-             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-6 gap-y-12">
+             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
                {loading ? Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={i} />) 
                : filteredProducts.length > 0 ? (
-                 visibleProducts.map((product, index) => (
-                   <ProductCard
-                     key={product._id}
-                     product={product}
-                     index={index}
-                     wishlistItems={wishlistItems}
-                     toggleWishlist={toggleWishlist}
-                     handleAddToCart={handleAddToCart}
-                     navigate={navigate}
-                     openQuickView={() => setQuickViewProduct(product)}
-                   />
-                 ))
+                 <>
+                    {visibleProducts.map((product, index) => {
+                         // Insert banner logic: At index 4 (5th position)
+                         const showBanner = index === 4;
+                         
+                         return (
+                            <React.Fragment key={product._id}>
+                                {showBanner && <InterstitialBanner />}
+                                <ProductCard
+                                    product={product}
+                                    index={index}
+                                    wishlistItems={wishlistItems}
+                                    toggleWishlist={toggleWishlist}
+                                    handleAddToCart={handleAddToCart}
+                                    navigate={navigate}
+                                    openQuickView={() => setQuickViewProduct(product)}
+                                />
+                            </React.Fragment>
+                        );
+                    })}
+                 </>
                ) : (
-                 <div className="col-span-full py-24 text-center">
-                    <h3 className="text-2xl font-bold mb-4">No results found</h3>
-                    <p className="text-gray-500 mb-8">Try adjusting your filters or search criteria.</p>
-                    
-                    {/* Feature: Fallback Recommendations */}
-                    {fallbackProducts.length > 0 && (
-                      <div className="mt-12 text-left">
-                         <h4 className="text-lg font-bold mb-6 border-t pt-8">Popular Products You Might Like</h4>
-                         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                            {fallbackProducts.map((p, i) => (
-                              <ProductCard 
-                                key={p._id} 
-                                product={p} 
-                                index={i} 
-                                wishlistItems={wishlistItems} 
-                                toggleWishlist={toggleWishlist} 
-                                handleAddToCart={handleAddToCart}
-                                navigate={navigate}
-                                openQuickView={() => setQuickViewProduct(p)}
-                              />
-                            ))}
-                         </div>
-                      </div>
-                    )}
-                 </div>
+                 <EmptyState clearFilters={() => { setSearchTerm(""); setFilters({ priceRange: [0, 1000000], brands: [], rating: 0, inStock: false }); }} />
                )}
              </div>
 
@@ -571,19 +461,36 @@ export default function Store() {
 }
 
 function ProductCard({ product, index, wishlistItems, toggleWishlist, handleAddToCart, navigate, openQuickView }) {
-  const isNew = (new Date() - new Date(product.createdAt)) / (1000 * 60 * 60 * 24) < 60;
+  const isNew = (new Date() - new Date(product.createdAt)) / (1000 * 60 * 60 * 24) < 30;
   const isOutOfStock = product.stock <= 0;
   
-  // 10. Feature: Hover Image Swap Logic
   const image1 = product.images?.[0]?.startsWith("http") ? product.images[0] : `${SOCKET_URL}${product.images?.[0]}`;
   const image2 = product.images?.[1] 
       ? (product.images[1].startsWith("http") ? product.images[1] : `${SOCKET_URL}${product.images[1]}`) 
       : image1;
 
-  // 11. Feature: Savings Calculation badge
   const savingsAmount = product.discountPercent > 0 
     ? Math.round((product.price / (1 - product.discountPercent / 100)) - product.price) 
     : 0;
+  
+  const colors = ["#1d1d1f", "#f5f5f7", "#2997ff"];
+  
+  // 3D Motion Logic
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const rotateX = useTransform(y, [-100, 100], [5, -5]);
+  const rotateY = useTransform(x, [-100, 100], [-5, 5]);
+
+  const handleMouseMove = (event) => {
+      const rect = event.currentTarget.getBoundingClientRect();
+      x.set(event.clientX - rect.left - rect.width / 2);
+      y.set(event.clientY - rect.top - rect.height / 2);
+  };
+
+  const handleMouseLeave = () => {
+      x.set(0);
+      y.set(0);
+  };
 
   return (
     <motion.div
@@ -591,75 +498,106 @@ function ProductCard({ product, index, wishlistItems, toggleWishlist, handleAddT
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "100px" }}
       transition={{ duration: 0.5, delay: index * 0.05 }}
-      className={`group ${isOutOfStock ? "opacity-75 grayscale-[0.5]" : ""}`}
+      style={{ perspective: 1000 }}
+      className={`group relative z-0 hover:z-10 ${isOutOfStock ? "opacity-75 grayscale-[0.5]" : ""}`}
     >
-      <div className="relative aspect-[3/4] bg-[#F5F5F7] rounded-[20px] overflow-hidden mb-5 cursor-pointer" onClick={() => navigate(`/product/${product._id}`)}>
+      <motion.div
+        style={{ rotateX, rotateY }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        className="relative aspect-[3/4] bg-white rounded-[24px] overflow-hidden mb-5 cursor-pointer shadow-sm border border-gray-100 hover:shadow-2xl hover:border-transparent transition-all duration-500 ease-out"
+        onClick={() => navigate(`/product/${product._id}`)}
+      >
+         
          {/* Badges */}
-         <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+         <div className="absolute top-4 left-4 z-10 flex flex-col gap-2 pointer-events-none">
             {isOutOfStock ? (
-               <span className="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-wider rounded-full">
-                  Sold Out
-               </span>
+               <span className="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-wider rounded-full self-start">Sold Out</span>
             ) : (
                 <>
+                {product.isRefurbished && (
+                    <span className="px-3 py-1 bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wider rounded-full shadow-sm flex items-center gap-1 self-start">
+                       <RefreshCw size={10} /> Certified Refurbished
+                    </span>
+                )}
                 {product.discountPercent > 0 && (
-                    <span className="px-3 py-1 bg-white text-black text-[10px] font-bold uppercase tracking-wider rounded-full shadow-sm flex items-center gap-1">
+                    <span className="px-3 py-1 bg-white text-black text-[10px] font-bold uppercase tracking-wider rounded-full shadow-sm flex items-center gap-1 self-start">
                        <Tag size={10} /> Save ₹{savingsAmount.toLocaleString()}
                     </span>
                 )}
-                {isNew && <span className="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-wider rounded-full">New</span>}
-                
-                {/* 12. Feature: Low Stock Badge */}
-                {product.stock > 0 && product.stock < 5 && (
-                   <span className="px-3 py-1 bg-red-100 text-red-600 text-[10px] font-bold uppercase tracking-wider rounded-full">
-                      Only {product.stock} Left
-                   </span>
+                {isNew && (
+                    <span className="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-wider rounded-full self-start relative overflow-hidden">
+                       <span className="relative z-10">New</span>
+                       <span className="absolute inset-0 bg-white/20 animate-pulse" />
+                    </span>
                 )}
                 </>
             )}
          </div>
 
-         <button onClick={(e) => toggleWishlist(product._id, e)} className="absolute top-4 right-4 z-10 p-2.5 bg-white rounded-full shadow-sm hover:scale-110 transition-transform opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 duration-300">
+         <button onClick={(e) => toggleWishlist(product._id, e)} className="absolute top-4 right-4 z-10 p-2.5 bg-white/80 backdrop-blur-sm rounded-full shadow-sm hover:scale-110 transition-transform opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 duration-300">
             <Heart size={16} className={wishlistItems.includes(product._id) ? "fill-red-500 stroke-red-500" : "stroke-gray-900"} />
          </button>
 
-         {/* Image Swap Container */}
-         <div className="w-full h-full p-8 flex items-center justify-center relative">
+         {/* Image Swap */}
+         <div className="w-full h-full p-8 flex items-center justify-center relative transform transition-transform duration-700 group-hover:scale-105">
             <img 
                src={image1} 
                alt={product.name} 
-               className="absolute inset-0 w-full h-full object-contain p-8 mix-blend-multiply transition-opacity duration-500 group-hover:opacity-0" 
+               className="absolute inset-0 w-full h-full object-contain p-8 mix-blend-multiply transition-all duration-700 group-hover:opacity-0" 
             />
             <img 
                src={image2} 
                alt={product.name} 
-               className="absolute inset-0 w-full h-full object-contain p-8 mix-blend-multiply opacity-0 transition-opacity duration-500 group-hover:opacity-100 scale-110" 
+               className="absolute inset-0 w-full h-full object-contain p-8 mix-blend-multiply opacity-0 transition-all duration-700 group-hover:opacity-100" 
             />
          </div>
+        
+         {/* Spec Reveal Overlay */}
+         <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none translate-y-4 group-hover:translate-y-0 z-20">
+             {/* Dual Action Buttons */}
+             {!isOutOfStock && (
+                <div className="flex gap-2 pointer-events-auto">
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); openQuickView(); }}
+                        className="flex-1 py-3 bg-white/90 backdrop-blur text-black text-xs font-bold uppercase tracking-widest rounded-xl shadow-lg border border-gray-100 hover:bg-black hover:text-white transition-colors flex items-center justify-center gap-2"
+                    >
+                        <Eye size={14} /> View
+                    </button>
+                    <button 
+                        onClick={(e) => handleAddToCart(product, e)}
+                        className="py-3 px-4 bg-black/90 backdrop-blur text-white rounded-xl shadow-lg hover:bg-black transition-colors"
+                    >
+                        <Plus size={18} />
+                    </button>
+                </div>
+             )}
+         </div>
 
-         {!isOutOfStock && (
-            <button 
-                onClick={(e) => { e.stopPropagation(); openQuickView(); }}
-                className="absolute bottom-4 left-4 right-4 py-3 bg-white/90 backdrop-blur text-black text-xs font-bold uppercase tracking-widest rounded-xl shadow-lg translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300"
-            >
-                Quick View
-            </button>
-         )}
-      </div>
+      </motion.div>
 
-      <div className="space-y-1.5 px-1">
+      <div className="space-y-2 px-1">
          <div className="flex justify-between items-start">
-            <h3 className="font-medium text-base text-gray-900 leading-snug cursor-pointer hover:underline decoration-1 underline-offset-4" onClick={() => navigate(`/product/${product._id}`)}>
+            <h3 className="font-semibold text-base text-gray-900 leading-snug cursor-pointer group-hover:text-[#0071e3] transition-colors" onClick={() => navigate(`/product/${product._id}`)}>
               {product.name}
             </h3>
-            <div className="flex items-center gap-1 text-xs font-bold bg-gray-100 px-1.5 py-0.5 rounded ml-2">
+            <div className="flex items-center gap-1 text-[10px] font-bold bg-white border border-gray-100 px-1.5 py-0.5 rounded ml-2 text-gray-600 shadow-sm">
                <Star size={10} className="fill-black stroke-black" /> {product.rating?.toFixed(1) || "New"}
             </div>
          </div>
-         <p className="text-sm text-gray-500">{product.brand}</p>
-         <div className="flex items-center gap-2 pt-1">
+         
+         <div className="flex items-center gap-2">
+            <div className="flex -space-x-1">
+                {colors.map((c, i) => (
+                    <div key={i} className="w-3 h-3 rounded-full border border-white ring-1 ring-gray-200" style={{backgroundColor: c}} />
+                ))}
+            </div>
+            <span className="text-xs text-gray-400">+2 more</span>
+         </div>
+
+         <div className="flex items-baseline gap-2 pt-1">
             <span className="font-bold text-gray-900">₹{product.price?.toLocaleString()}</span>
-            {product.discountPercent > 0 && <span className="text-sm text-gray-400 line-through">₹{Math.round(product.price / (1 - product.discountPercent / 100)).toLocaleString()}</span>}
+            {product.discountPercent > 0 && <span className="text-sm text-gray-400 line-through decoration-gray-300">₹{Math.round(product.price / (1 - product.discountPercent / 100)).toLocaleString()}</span>}
          </div>
       </div>
     </motion.div>

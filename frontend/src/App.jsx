@@ -24,6 +24,7 @@ import LiveUpdates from "./pages/LiveUpdates";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import MyOrders from "./pages/MyOrders";
+import MyRepairs from "./pages/MyRepairs";
 import Wishlist from "./pages/Wishlist";
 import Addresses from "./pages/Addresses";
 import Notifications from "./pages/Notifications";
@@ -107,6 +108,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Wishlist />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-repairs"
+          element={
+            <ProtectedRoute>
+              <MyRepairs />
             </ProtectedRoute>
           }
         />

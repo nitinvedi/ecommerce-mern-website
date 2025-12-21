@@ -1,9 +1,7 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Filter, X, Check } from "lucide-react";
+import { Check } from "lucide-react";
 
 export default function ProductFilters({ onFilterChange, products, className }) {
-  const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     priceRange: [0, 100000],
     brands: [],
@@ -58,11 +56,11 @@ export default function ProductFilters({ onFilterChange, products, className }) 
     <div className={className}>
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
-        <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900">Filters</h3>
+        <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Filters</h3>
         {activeFilterCount > 0 && (
           <button
             onClick={clearFilters}
-            className="text-xs font-semibold text-gray-400 hover:text-black transition-colors underline decoration-gray-300 underline-offset-4"
+            className="text-[10px] font-bold uppercase tracking-wider text-black bg-gray-100 px-2 py-1 rounded-md hover:bg-gray-200 transition-colors"
           >
             Reset
           </button>
@@ -71,35 +69,55 @@ export default function ProductFilters({ onFilterChange, products, className }) 
 
       {/* Price Range */}
       <div className="mb-10">
-        <h4 className="text-sm font-semibold text-gray-900 mb-4">Price Range</h4>
+        <h4 className="text-sm font-bold text-gray-900 mb-4">Price Range</h4>
         <div className="space-y-4">
-          <input
-            type="range"
-            min="0"
-            max="100000"
-            step="1000"
-            value={filters.priceRange[1]}
-            onChange={(e) => handlePriceChange(1, e.target.value)}
-            className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
-          />
+          <div className="relative h-1.5 bg-gray-100 rounded-full mb-6">
+             <div 
+                className="absolute h-full bg-black rounded-full" 
+                style={{ 
+                    left: `${(filters.priceRange[0] / 100000) * 100}%`, 
+                    right: `${100 - (filters.priceRange[1] / 100000) * 100}%` 
+                }} 
+             />
+             <input
+                type="range"
+                min="0"
+                max="100000"
+                step="1000"
+                value={filters.priceRange[1]}
+                onChange={(e) => handlePriceChange(1, e.target.value)}
+                className="absolute w-full h-full opacity-0 cursor-pointer z-10"
+             />
+             <div 
+                className="absolute w-4 h-4 bg-white border-2 border-black rounded-full shadow-md top-1/2 -translate-y-1/2 pointer-events-none transition-all"
+                style={{ left: `${(filters.priceRange[1] / 100000) * 100}%` }}
+             />
+          </div>
+
           <div className="flex items-center gap-3">
-            <div className="flex-1 bg-white border border-gray-200 rounded-lg px-3 py-2">
-               <span className="text-xs text-gray-400 block mb-0.5">Min</span>
-               <input
-                 type="number"
-                 value={filters.priceRange[0]}
-                 onChange={(e) => handlePriceChange(0, e.target.value)}
-                 className="w-full text-sm font-medium outline-none"
-               />
+            <div className="flex-1 bg-gray-50 border border-transparent hover:border-gray-200 rounded-xl px-3 py-2 transition-colors">
+               <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block mb-0.5">Min</span>
+               <div className="flex items-center">
+                  <span className="text-sm font-medium text-gray-400 mr-1">₹</span>
+                  <input
+                    type="number"
+                    value={filters.priceRange[0]}
+                    onChange={(e) => handlePriceChange(0, e.target.value)}
+                    className="w-full text-sm font-bold bg-transparent outline-none text-gray-900"
+                  />
+               </div>
             </div>
-            <div className="flex-1 bg-white border border-gray-200 rounded-lg px-3 py-2">
-               <span className="text-xs text-gray-400 block mb-0.5">Max</span>
-               <input
-                 type="number"
-                 value={filters.priceRange[1]}
-                 onChange={(e) => handlePriceChange(1, e.target.value)}
-                 className="w-full text-sm font-medium outline-none"
-               />
+            <div className="flex-1 bg-gray-50 border border-transparent hover:border-gray-200 rounded-xl px-3 py-2 transition-colors">
+               <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block mb-0.5">Max</span>
+               <div className="flex items-center">
+                  <span className="text-sm font-medium text-gray-400 mr-1">₹</span>
+                  <input
+                    type="number"
+                    value={filters.priceRange[1]}
+                    onChange={(e) => handlePriceChange(1, e.target.value)}
+                    className="w-full text-sm font-bold bg-transparent outline-none text-gray-900"
+                  />
+               </div>
             </div>
           </div>
         </div>
@@ -108,17 +126,20 @@ export default function ProductFilters({ onFilterChange, products, className }) 
       {/* Brands */}
       {brands.length > 0 && (
         <div className="mb-10">
-          <h4 className="text-sm font-semibold text-gray-900 mb-4">Brand</h4>
-          <div className="space-y-2.5">
+          <h4 className="text-sm font-bold text-gray-900 mb-4">Brand</h4>
+          <div className="space-y-2">
             {brands.map((brand) => (
               <label
                 key={brand}
-                className="flex items-center group cursor-pointer"
+                className="flex items-center group cursor-pointer justify-between py-1"
               >
-                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors mr-3 ${
-                  filters.brands.includes(brand) ? "bg-black border-black" : "bg-white border-gray-300 group-hover:border-gray-400"
+                <span className={`text-sm transition-colors ${filters.brands.includes(brand) ? "text-black font-semibold" : "text-gray-500 group-hover:text-gray-900"}`}>
+                  {brand}
+                </span>
+                <div className={`w-5 h-5 rounded-md flex items-center justify-center transition-all duration-300 ${
+                  filters.brands.includes(brand) ? "bg-black text-white scale-100" : "bg-gray-100 text-transparent scale-90 group-hover:scale-100"
                 }`}>
-                  {filters.brands.includes(brand) && <Check size={12} className="text-white" />}
+                  <Check size={12} strokeWidth={3} />
                 </div>
                 <input
                   type="checkbox"
@@ -126,9 +147,6 @@ export default function ProductFilters({ onFilterChange, products, className }) 
                   onChange={() => toggleBrand(brand)}
                   className="hidden"
                 />
-                <span className={`text-sm transition-colors ${filters.brands.includes(brand) ? "text-gray-900 font-medium" : "text-gray-600 group-hover:text-gray-900"}`}>
-                  {brand}
-                </span>
               </label>
             ))}
           </div>
@@ -137,18 +155,24 @@ export default function ProductFilters({ onFilterChange, products, className }) 
 
       {/* Rating */}
       <div className="mb-10">
-        <h4 className="text-sm font-semibold text-gray-900 mb-4">Rating</h4>
-        <div className="space-y-2.5">
+        <h4 className="text-sm font-bold text-gray-900 mb-4">Rating</h4>
+        <div className="space-y-1">
           {[4, 3, 2, 1].map((rating) => (
             <label
               key={rating}
-              className="flex items-center group cursor-pointer"
+              className={`flex items-center group cursor-pointer justify-between p-2 rounded-lg transition-colors ${filters.rating === rating ? "bg-gray-100" : "hover:bg-gray-50"}`}
             >
-              <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors mr-3 ${
-                filters.rating === rating ? "border-black" : "border-gray-300 group-hover:border-gray-400"
-              }`}>
-                {filters.rating === rating && <div className="w-2.5 h-2.5 bg-black rounded-full" />}
+              <span className="flex items-center gap-1">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <span key={i} className={`text-sm ${i < rating ? "text-yellow-400" : "text-gray-200"}`}>★</span>
+                ))}
+                <span className="text-xs text-gray-400 ml-2 font-medium">& Up</span>
+              </span>
+              
+              <div className={`w-4 h-4 rounded-full border border-gray-300 flex items-center justify-center ${filters.rating === rating ? "border-black" : ""}`}>
+                 {filters.rating === rating && <div className="w-2 h-2 bg-black rounded-full" />}
               </div>
+
               <input
                 type="radio"
                 name="rating"
@@ -156,12 +180,6 @@ export default function ProductFilters({ onFilterChange, products, className }) 
                 onChange={() => handleRatingChange(rating)}
                 className="hidden"
               />
-              <span className={`text-sm flex items-center gap-1 ${filters.rating === rating ? "text-gray-900 font-medium" : "text-gray-600"}`}>
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <span key={i} className={i < rating ? "text-yellow-400" : "text-gray-200"}>★</span>
-                ))}
-                <span className="text-xs text-gray-400 ml-1">& Up</span>
-              </span>
             </label>
           ))}
         </div>
@@ -169,9 +187,9 @@ export default function ProductFilters({ onFilterChange, products, className }) 
 
       {/* Availability */}
       <div>
-        <h4 className="text-sm font-semibold text-gray-900 mb-4">Status</h4>
-        <label className="flex items-center group cursor-pointer">
-          <div className={`w-9 h-5 rounded-full p-0.5 transition-colors mr-3 ${
+        <label className="flex items-center justify-between cursor-pointer group p-3 bg-gray-50 rounded-xl border border-transparent hover:border-gray-200 transition-all">
+          <span className="text-sm font-semibold text-gray-900">In Stock Only</span>
+          <div className={`w-10 h-6 rounded-full p-1 transition-colors ${
             filters.inStock ? "bg-black" : "bg-gray-200"
           }`}>
             <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${
@@ -188,7 +206,6 @@ export default function ProductFilters({ onFilterChange, products, className }) 
             }}
             className="hidden"
           />
-          <span className="text-sm text-gray-600 group-hover:text-gray-900">In Stock Only</span>
         </label>
       </div>
     </div>

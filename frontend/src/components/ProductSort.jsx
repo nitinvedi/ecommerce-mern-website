@@ -28,10 +28,10 @@ export default function ProductSort({ onSortChange, currentSort }) {
   }, []);
 
   return (
-    <div className="relative z-20" ref={dropdownRef}>
+    <div className="relative z-50" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 hover:border-gray-300 rounded-full text-sm font-medium text-gray-700 transition-all shadow-sm hover:shadow-md min-w-[180px] justify-between group"
+        className="flex items-center gap-2 px-5 py-2.5 bg-white/80 backdrop-blur-md border border-gray-200/50 hover:border-gray-300 rounded-full text-sm font-medium text-gray-700 transition-all shadow-sm hover:shadow-md min-w-[180px] justify-between group"
       >
         <span>{selectedLabel}</span>
         <ChevronDown
@@ -47,8 +47,9 @@ export default function ProductSort({ onSortChange, currentSort }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden py-2 origin-top-right"
+            className="absolute right-0 mt-2 w-64 bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-100 overflow-hidden py-2 origin-top-right ring-1 ring-black/5"
           >
+            <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Sort Products By</div>
             {sortOptions.map((option) => (
                <button
                  key={option.value}
@@ -56,12 +57,12 @@ export default function ProductSort({ onSortChange, currentSort }) {
                    onSortChange(option.value);
                    setIsOpen(false);
                  }}
-                 className={`w-full text-left px-4 py-2.5 text-sm flex items-center justify-between hover:bg-gray-50 transition-colors ${
-                   currentSort === option.value ? "text-blue-600 font-semibold bg-blue-50/50" : "text-gray-600"
+                 className={`w-full text-left px-4 py-3 text-sm flex items-center justify-between hover:bg-gray-50/50 transition-colors ${
+                   currentSort === option.value ? "text-black font-semibold bg-gray-50" : "text-gray-600"
                  }`}
                >
                  {option.label}
-                 {currentSort === option.value && <Check size={14} />}
+                 {currentSort === option.value && <div className="w-1.5 h-1.5 rounded-full bg-black" />}
                </button>
             ))}
           </motion.div>

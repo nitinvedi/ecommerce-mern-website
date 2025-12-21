@@ -143,12 +143,20 @@ export default function Dashboard() {
            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="p-8 border-b border-gray-100 flex items-center justify-between">
                  <h2 className="text-lg font-bold text-gray-900">Recent Orders</h2>
-                 <button 
-                  onClick={() => navigate('/orders')}
-                  className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1"
-                 >
-                    View All <ArrowRight size={16} />
-                 </button>
+                 <div className="flex gap-4">
+                    <button 
+                      onClick={() => navigate('/my-repairs')}
+                      className="text-sm font-medium text-gray-500 hover:text-[#0071e3] flex items-center gap-1 transition-colors"
+                    >
+                        <Wrench size={16} /> My Repairs
+                    </button>
+                    <button 
+                      onClick={() => navigate('/orders')}
+                      className="text-sm font-medium text-[#0071e3] hover:text-blue-800 flex items-center gap-1"
+                    >
+                        View All Orders <ArrowRight size={16} />
+                    </button>
+                 </div>
               </div>
               
               <div className="overflow-x-auto">

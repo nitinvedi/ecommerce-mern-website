@@ -9,22 +9,25 @@ import { AuthProvider } from "./context/AuthContext.jsx";
 import { SocketProvider } from "./context/SocketContext.jsx";
 import { ToastProvider } from "./context/ToastContext.jsx";
 import { CartProvider } from "./context/CartContext.jsx";
+import { HelmetProvider } from "react-helmet-async";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ErrorBoundary>
-      <BrowserRouter>
-        <ToastProvider>
-          <AuthProvider>
-            <SocketProvider>
-              <CartProvider>
-                <App />
-              </CartProvider>
-            </SocketProvider>
-          </AuthProvider>
-        </ToastProvider>
-      </BrowserRouter>
+      <HelmetProvider>
+        <BrowserRouter>
+          <ToastProvider>
+            <AuthProvider>
+              <SocketProvider>
+                <CartProvider>
+                  <App />
+                </CartProvider>
+              </SocketProvider>
+            </AuthProvider>
+          </ToastProvider>
+        </BrowserRouter>
+      </HelmetProvider>
     </ErrorBoundary>
   </StrictMode>
 );

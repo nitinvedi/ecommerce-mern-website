@@ -107,6 +107,7 @@ export const createProduct = async (productData) => {
       ? productData.price - (productData.price * productData.discountPercent / 100)
       : productData.price,
     isActive: productData.isActive !== undefined ? productData.isActive : true,
+    isRefurbished: productData.isRefurbished || false,
     featured: productData.featured || false,
     createdAt: new Date(),
     updatedAt: new Date()

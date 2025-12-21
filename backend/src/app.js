@@ -92,7 +92,7 @@ if (appConfig.nodeEnv === "production") {
   app.use(express.static(frontendPath));
 
   // Serve frontend for all non-API routes (SPA Fallback)
-  app.get("*", (req, res, next) => {
+  app.get(/(.*)/, (req, res, next) => {
     // Don't serve frontend for API routes - pass to 404 handler
     if (req.path.startsWith("/api")) {
        return next();

@@ -1,5 +1,6 @@
 import * as Notification from "../models/Notification.js";
 import { sendEmail, emailTemplates } from "../utils/emailService.js";
+import { emitNotification } from "../socket/socketHandler.js";
 
 // Get all notifications for user
 export const getNotifications = async (req, res) => {
@@ -58,16 +59,25 @@ export const deleteNotification = async (req, res) => {
   }
 };
 
+
+
 // Create notification (helper function)
 export const createNotification = async (userId, type, title, message, data = {}) => {
   try {
-    return await Notification.createNotification({
+    const notification = await Notification.createNotification({
       user: userId,
       type,
       title,
       message,
       data
     });
+    
+    // Emit real-time notification
+    if (notification) {
+        emitNotification(userId, notification);
+    }
+
+    return notification;
   } catch (error) {
     console.error("Create notification error:", error);
     return null;

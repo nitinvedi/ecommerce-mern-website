@@ -14,60 +14,116 @@ import { useCart } from "../context/CartContext";
 
 const ScrollSection = ({ title, highlight, products }) => {
   const navigate = useNavigate();
+  const scrollRef = React.useRef(null);
+  const [showLeft, setShowLeft] = useState(false);
+  const [showRight, setShowRight] = useState(true);
+
+  const scroll = (direction) => {
+    if (scrollRef.current) {
+      const { current } = scrollRef;
+      const scrollAmount = direction === "left" ? -400 : 400;
+      current.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    }
+  };
+
+  const handleScroll = () => {
+    if (scrollRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+        setShowLeft(scrollLeft > 0);
+        setShowRight(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  useEffect(() => {
+     handleScroll(); // Initial check
+  }, [products]);
 
   return (
-    <div className="py-12">
-      <div className="max-w-[1400px] mx-auto px-6 mb-6">
+    <div className="py-12 group/section">
+      <div className="max-w-[1400px] mx-auto px-6 mb-6 flex justify-between items-end">
         <h2 className="text-2xl md:text-3xl font-semibold text-[#1d1d1f]">
           {title} <span className="text-[#6e6e73]">{highlight}</span>
         </h2>
+        {/* Desktop Controls */}
+        <div className="hidden md:flex gap-2">
+            <button 
+                onClick={() => scroll("left")}
+                disabled={!showLeft}
+                className={`w-10 h-10 rounded-full flex items-center justify-center border border-gray-200 transition-all ${showLeft ? "hover:bg-[#0071e3] hover:border-[#0071e3] hover:text-white text-gray-600 bg-white" : "opacity-30 cursor-not-allowed"}`}
+            >
+                <ChevronRight size={20} className="rotate-180" />
+            </button>
+            <button 
+                onClick={() => scroll("right")}
+                disabled={!showRight}
+                className={`w-10 h-10 rounded-full flex items-center justify-center border border-gray-200 transition-all ${showRight ? "hover:bg-[#0071e3] hover:border-[#0071e3] hover:text-white text-gray-600 bg-white" : "opacity-30 cursor-not-allowed"}`}
+            >
+                <ChevronRight size={20} />
+            </button>
+        </div>
       </div>
 
-      <div className="overflow-x-auto pb-8 hide-scrollbar px-6 flex gap-6 snap-x snap-mandatory">
-        <div className="min-w-[max(0px,calc(50vw-700px-1.5rem))]" />
-        {products.map((product) => (
-          <div
-            key={product._id}
-            onClick={() => navigate(`/product/${product._id}`)}
-            className="snap-center shrink-0 w-[300px] md:w-[400px] h-[500px] bg-white rounded-[18px] p-6 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col justify-between group border border-gray-100"
+      <div className="relative group/slider">
+          {/* Mobile/Tablet Fade Edges */}
+          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#f5f5f7] to-transparent z-10 md:hidden pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#f5f5f7] to-transparent z-10 md:hidden pointer-events-none" />
+
+          <div 
+            ref={scrollRef}
+            onScroll={handleScroll}
+            className="flex gap-6 overflow-x-auto px-6 pb-12 snap-x snap-mandatory scrollbar-hide"
+            style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}
           >
-            <div>
-              <p className="text-xs font-semibold text-[#bf4800] uppercase mb-1">New</p>
-              <h3 className="text-2xl font-semibold text-[#1d1d1f] group-hover:underline decoration-2 underline-offset-4">
-                {product.name}
-              </h3>
-              <p className="text-sm text-gray-500 mt-1">{product.category}</p>
-            </div>
-            <div className="w-full h-[250px] flex items-center justify-center my-4">
-              <img
-                src={product.images?.[0] || "/placeholder.png"}
-                alt={product.name}
-                className="max-w-full max-h-full object-contain transition-transform duration-500 group-hover:scale-105"
-              />
-            </div>
-            <div className="flex justify-between items-end">
-              <div className="text-[#1d1d1f]">
-                <p className="text-sm">From</p>
-                <p className="font-semibold">₹{product.price.toLocaleString()}</p>
+            <div className="min-w-[max(0px,calc(50vw-700px-1.5rem))]" />
+            {products.map((product) => (
+              <div
+                key={product._id}
+                onClick={() => navigate(`/product/${product._id}`)}
+                className="snap-center shrink-0 w-[280px] md:w-[360px] h-[480px] bg-white rounded-[24px] p-6 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-500 cursor-pointer flex flex-col justify-between group border border-transparent hover:border-gray-100"
+              >
+                <div>
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="px-2.5 py-1 bg-gray-100 text-[#1d1d1f] text-[10px] font-bold uppercase tracking-wider rounded-md">New</span>
+                    {/* Like Button Placeholder */}
+                  </div>
+                  <h3 className="text-xl font-semibold text-[#1d1d1f] line-clamp-2 min-h-[56px]">
+                    {product.name}
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1">{product.category}</p>
+                </div>
+                
+                <div className="flex-1 flex items-center justify-center p-4">
+                  <img
+                    src={product.images?.[0] || "/placeholder.png"}
+                    alt={product.name}
+                    className="max-w-full max-h-[220px] object-contain transition-transform duration-700 group-hover:scale-110 drop-shadow-sm"
+                  />
+                </div>
+                
+                <div className="flex justify-between items-center pt-4 border-t border-gray-50">
+                  <div className="text-[#1d1d1f]">
+                    <p className="text-xs text-gray-500 font-medium">Starting at</p>
+                    <p className="text-lg font-bold">₹{product.price.toLocaleString()}</p>
+                  </div>
+                  <button className="bg-[#1d1d1f] text-white rounded-full p-2.5 hover:scale-110 transition-transform shadow-lg shadow-black/10">
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
               </div>
-              <button className="bg-[#0071e3] text-white rounded-full p-2 hover:bg-[#0077ed] transition-colors">
-                <ChevronRight size={20} />
-              </button>
+            ))}
+            
+            {/* View All Card */}
+            <div
+              onClick={() => navigate("/store")}
+              className="snap-center shrink-0 w-[280px] md:w-[360px] h-[480px] bg-white rounded-[24px] flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-all border border-gray-100 group gap-4 shadow-sm hover:shadow-lg"
+            >
+                <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+                     <ArrowRight size={24} className="text-[#1d1d1f]" />
+                </div>
+                <p className="text-lg font-semibold text-[#1d1d1f]">View all products</p>
             </div>
+            <div className="min-w-[max(0px,calc(50vw-700px-1.5rem))]" />
           </div>
-        ))}
-        <div
-          onClick={() => navigate("/store")}
-          className="snap-center shrink-0 w-[300px] md:w-[400px] h-[500px] bg-[#f5f5f7] rounded-[18px] flex items-center justify-center cursor-pointer hover:bg-[#e8e8ed] transition-colors border border-gray-200"
-        >
-          <div className="text-center">
-            <p className="text-xl font-semibold text-[#1d1d1f] mb-2">View all products</p>
-            <div className="inline-flex items-center justify-center bg-white rounded-full p-3 shadow-sm">
-              <ArrowRight size={24} color="#1d1d1f" />
-            </div>
-          </div>
-        </div>
-        <div className="min-w-[max(0px,calc(50vw-700px-1.5rem))]" />
       </div>
     </div>
   );
@@ -175,46 +231,96 @@ const FeaturesSection = () => {
 }
 
 const Testimonials = () => {
+    const scrollRef = React.useRef(null);
+    const [showLeft, setShowLeft] = useState(false);
+    const [showRight, setShowRight] = useState(true);
+
     const reviews = [
         { name: "Aditya R.", role: "Student", text: "Fixed my iPhone screen in 20 minutes! Saved me from buying a new one.", rating: 5 },
         { name: "Priya S.", role: "Designer", text: "The refurbished MacBook I bought works perfectly. Highly recommend.", rating: 5 },
         { name: "Rahul K.", role: "Engineer", text: "Authentic accessories and great advice from the staff. My go-to tech shop.", rating: 4 },
         { name: "Neha M.", role: "Freelancer", text: "Super quick battery replacement. Phone feels brand new again.", rating: 5 },
+        { name: "Vikram S.", role: "Photographer", text: "Best trade-in value I found in the city. Seamless process.", rating: 5 }
     ];
 
+    const scroll = (direction) => {
+        if (scrollRef.current) {
+          const { current } = scrollRef;
+          const scrollAmount = direction === "left" ? -350 : 350;
+          current.scrollBy({ left: scrollAmount, behavior: "smooth" });
+        }
+    };
+    
+    const handleScroll = () => {
+        if (scrollRef.current) {
+            const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+            setShowLeft(scrollLeft > 0);
+            setShowRight(scrollLeft < scrollWidth - clientWidth - 10);
+        }
+    };
+
     return (
-        <section className="py-16 bg-[#f5f5f7] overflow-hidden">
-             <div className="max-w-[1400px] mx-auto px-6 mb-10">
+        <section className="py-16 bg-[#f5f5f7] overflow-hidden group/section">
+             <div className="max-w-[1400px] mx-auto px-6 mb-10 flex justify-between items-end">
                 <h2 className="text-2xl md:text-3xl font-semibold text-[#1d1d1f]">
                     Loved by <span className="text-[#6e6e73]">Locals.</span>
                 </h2>
+                {/* Controls */}
+                <div className="hidden md:flex gap-2">
+                    <button 
+                        onClick={() => scroll("left")}
+                        disabled={!showLeft}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center border border-gray-200 transition-all ${showLeft ? "hover:bg-[#0071e3] hover:border-[#0071e3] hover:text-white text-gray-600 bg-white" : "opacity-30 cursor-not-allowed"}`}
+                    >
+                        <ChevronRight size={20} className="rotate-180" />
+                    </button>
+                    <button 
+                        onClick={() => scroll("right")}
+                        disabled={!showRight}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center border border-gray-200 transition-all ${showRight ? "hover:bg-[#0071e3] hover:border-[#0071e3] hover:text-white text-gray-600 bg-white" : "opacity-30 cursor-not-allowed"}`}
+                    >
+                        <ChevronRight size={20} />
+                    </button>
+                </div>
             </div>
-            <div className="flex gap-6 overflow-x-auto px-6 pb-8 hide-scrollbar snap-x snap-mandatory">
-                 <div className="min-w-[max(0px,calc(50vw-700px-1.5rem))]" />
-                 {reviews.map((r, i) => (
-                     <div key={i} className="snap-center shrink-0 w-[300px] bg-white p-8 rounded-[24px] shadow-sm border border-gray-100">
-                         <div className="flex gap-1 mb-4">
-                             {[...Array(5)].map((_, starI) => (
-                                 <Star key={starI} size={16} className={`${starI < r.rating ? "fill-[#ffa500] text-[#ffa500]" : "text-gray-300"}`} />
-                             ))}
-                         </div>
-                         <p className="text-[#1d1d1f] font-medium text-lg leading-relaxed mb-6">"{r.text}"</p>
-                         <div className="flex items-center gap-3">
-                             <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold">
-                                 {r.name.charAt(0)}
+
+            <div className="relative">
+                {/* Fade Edges */}
+                <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-[#f5f5f7] to-transparent z-10 pointer-events-none" />
+                <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-[#f5f5f7] to-transparent z-10 pointer-events-none" />
+
+                <div 
+                    ref={scrollRef}
+                    onScroll={handleScroll}
+                    className="flex gap-6 overflow-x-auto px-6 pb-12 snap-x snap-mandatory scrollbar-hide"
+                    style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}
+                >
+                     <div className="min-w-[max(0px,calc(50vw-700px-1.5rem))]" />
+                     {reviews.map((r, i) => (
+                         <div key={i} className="snap-center shrink-0 w-[320px] bg-white p-8 rounded-[24px] shadow-sm border border-transparent hover:border-gray-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                             <div className="flex gap-1 mb-4">
+                                 {[...Array(5)].map((_, starI) => (
+                                     <Star key={starI} size={16} className={`${starI < r.rating ? "fill-[#ffa500] text-[#ffa500]" : "text-gray-200"}`} />
+                                 ))}
                              </div>
-                             <div>
-                                 <p className="text-sm font-semibold text-[#1d1d1f]">{r.name}</p>
-                                 <p className="text-xs text-gray-500">{r.role}</p>
+                             <p className="text-[#1d1d1f] font-medium text-lg leading-relaxed mb-6 line-clamp-3">"{r.text}"</p>
+                             <div className="flex items-center gap-3 pt-4 border-t border-gray-50">
+                                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-gray-500 font-bold border border-white shadow-sm">
+                                     {r.name.charAt(0)}
+                                 </div>
+                                 <div>
+                                     <p className="text-sm font-semibold text-[#1d1d1f]">{r.name}</p>
+                                     <p className="text-xs text-gray-500">{r.role}</p>
+                                 </div>
                              </div>
                          </div>
-                     </div>
-                 ))}
-                 <div className="min-w-[max(0px,calc(50vw-700px-1.5rem))]" />
+                     ))}
+                     <div className="min-w-[max(0px,calc(50vw-700px-1.5rem))]" />
+                </div>
             </div>
         </section>
-    )
-}
+    );
+};
 
 const TrackRepairWidget = () => {
     const navigate = useNavigate();

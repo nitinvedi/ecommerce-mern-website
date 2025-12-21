@@ -258,27 +258,27 @@ export default function AuthModal({ open, onClose, onAuthSuccess }) {
              </button>
 
              {/* LEFT: Image / Branding */}
-             <div className="hidden md:flex md:w-1/2 bg-blue-600 relative overflow-hidden items-center justify-center text-white p-12">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-purple-700 opacity-90" />
+             <div className="hidden md:flex md:w-1/2 bg-black relative overflow-hidden items-center justify-center text-white p-12">
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-950 to-black opacity-90" />
                 <img 
                    src="https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?auto=format&fit=crop&q=80&w=1000" 
-                   className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-50"
+                   className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-40 grayscale"
                    alt="Auth Banner"
                 />
                 
                 <div className="relative z-10 space-y-6">
                    <h2 className="text-4xl font-bold leading-tight">Welcome to the future of shopping.</h2>
-                   <p className="text-blue-100 text-lg">Join thousands of users getting the best deals on premium tech every day.</p>
+                   <p className="text-gray-300 text-lg">Join thousands of users getting the best deals on premium tech every day.</p>
                    
                    <div className="flex gap-4 pt-4">
                       <div className="flex -space-x-4">
                          {[1,2,3,4].map(i => (
-                            <div key={i} className="w-10 h-10 rounded-full bg-white/20 border-2 border-white backdrop-blur-sm" />
+                            <div key={i} className="w-10 h-10 rounded-full bg-white/10 border-2 border-white/50 backdrop-blur-sm" />
                          ))}
                       </div>
                       <div className="flex flex-col text-sm font-medium">
                          <span>10k+ Users</span>
-                         <span className="text-blue-200">Trusted Community</span>
+                         <span className="text-gray-400">Trusted Community</span>
                       </div>
                    </div>
                 </div>

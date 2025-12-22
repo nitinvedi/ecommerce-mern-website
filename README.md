@@ -2,7 +2,7 @@
 
 This guide explains how the frontend and backend are connected and how to run them together.
 
-# live link of project
+## Project Live Link
 https://ecommerce-mern-website-1.onrender.com/
 
 ## Architecture

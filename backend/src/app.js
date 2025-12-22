@@ -27,11 +27,6 @@ import addressRoutes from "./routes/addressRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import partsRoutes from "./routes/partsRoutes.js";
-// <<<<<<< Updated upstream
-// import cartRoutes from "./routes/cartRoutes.js";
-// =======
-// import paymentRoutes from "./routes/paymentRoutes.js";
-// >>>>>>> Stashed changes
 import cartRoutes from "./routes/cartRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 
@@ -91,23 +86,19 @@ app.use(`${apiPrefix}/addresses`, addressRoutes);
 app.use(`${apiPrefix}/dashboard`, dashboardRoutes);
 app.use(`${apiPrefix}/chat`, chatRoutes);
 app.use(`${apiPrefix}/parts`, partsRoutes);
-// <<<<<<< Updated upstream
-// app.use(`${apiPrefix}/cart`, cartRoutes);
-// =======
-// app.use(`${apiPrefix}/payment`, paymentRoutes);
-// >>>>>>> Stashed changes
 app.use(`${apiPrefix}/cart`, cartRoutes);
 app.use(`${apiPrefix}/payment`, paymentRoutes);
 
 
 // Serve frontend in production
-// Serve frontend in production
 if (appConfig.nodeEnv === "production") {
-  const rootPath = path.resolve(); // Use rootPath to avoid conflict/confusion with top-level __dirname
-  app.use(express.static(path.join(rootPath, "frontend/dist")));
+  // Frontend is located two directories up from src/app.js: ../../frontend/dist
+  const frontendPath = path.join(__dirname, "../../frontend/dist");
+  app.use(express.static(frontendPath));
 
-  app.get("*", (req, res) => {
-    res.sendFile(path.resolve(rootPath, "frontend", "dist", "index.html"));
+  // Express 5 wildcard match
+  app.get(/(.*)/, (req, res) => {
+    res.sendFile(path.join(frontendPath, "index.html"));
   });
 } else {
   // Development: API root endpoint

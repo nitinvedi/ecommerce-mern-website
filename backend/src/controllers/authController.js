@@ -1,11 +1,11 @@
 import crypto from "crypto";
 import {
-  createUser,
-  getUserByEmail,
-  matchPassword,
-  getUserByResetToken,
-  getUserByIdWithPassword,
-  updatePassword
+    createUser,
+    getUserByEmail,
+    matchPassword,
+    getUserByResetToken,
+    getUserByIdWithPassword,
+    updatePassword
 } from "../models/User.js";
 import { generateToken } from "../config/jwt.js";
 import { sendSuccess, sendError, sendCreated } from "../utils/response.js";
@@ -39,8 +39,8 @@ export const registerUser = async (req, res) => {
         // .{8,}       -> at least 8 chars total
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
         if (!passwordRegex.test(password)) {
-            return res.status(400).json({ 
-                message: "Password must be at least 8 characters and include uppercase, lowercase, number, and special character." 
+            return res.status(400).json({
+                message: "Password must be at least 8 characters and include uppercase, lowercase, number, and special character."
             });
         }
 
@@ -54,7 +54,7 @@ export const registerUser = async (req, res) => {
             password
         });
 
-        const token = generateToken({ id: createdUser._id.toString() });
+        const token = generateToken({ id: createdUser._id.toString(), role: createdUser.role });
 
         return sendCreated(res, "Signup successful", {
             token,
@@ -92,7 +92,7 @@ export const loginUser = async (req, res) => {
         }
 
         // Generate token
-        const token = generateToken({ id: user._id.toString() });
+        const token = generateToken({ id: user._id.toString(), role: user.role });
 
         // Remove password from user object
         const { password: _, ...userWithoutPassword } = user;
@@ -220,13 +220,13 @@ export const googleLogin = async (req, res) => {
             if (user.picture !== payload.picture) updates.picture = payload.picture; // Sync Avatar
 
             if (Object.keys(updates).length > 0) {
-               await usersCollection.updateOne(
-                   { _id: user._id },
-                   { $set: { ...updates, updatedAt: new Date() } }
-               );
-               // Update local user object to reflect changes immediately
-               if (updates.googleId) user.googleId = updates.googleId;
-               if (updates.picture) user.picture = updates.picture;
+                await usersCollection.updateOne(
+                    { _id: user._id },
+                    { $set: { ...updates, updatedAt: new Date() } }
+                );
+                // Update local user object to reflect changes immediately
+                if (updates.googleId) user.googleId = updates.googleId;
+                if (updates.picture) user.picture = updates.picture;
             }
         } else {
             // Create a lightweight user record for Google sign-in
@@ -248,7 +248,7 @@ export const googleLogin = async (req, res) => {
         }
 
         // generate app token via existing JWT helper
-        const token = generateToken({ id: user._id.toString() });
+        const token = generateToken({ id: user._id.toString(), role: user.role });
 
         return res.json({
             success: true,
@@ -267,8 +267,8 @@ export const googleLogin = async (req, res) => {
             stack: err.stack,
             configuredClientId: process.env.GOOGLE_CLIENT_ID ? "Present" : "Missing"
         });
-        res.status(500).json({ 
-            success: false, 
+        res.status(500).json({
+            success: false,
             message: "Google login failed",
             debug: err.message // Temporary: sending error to frontend for debugging
         });

@@ -23,7 +23,7 @@ export const initializeSocket = (server) => {
       origin: (origin, callback) => {
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
-        
+
         if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === "development") {
           callback(null, true);
         } else {
@@ -44,32 +44,38 @@ export const initializeSocket = (server) => {
 
   // Middleware: Authenticate Socket
   io.use((socket, next) => {
-     const token = socket.handshake.auth.token;
-     if (token) {
-        try {
-           const decoded = jwt.verify(token, process.env.JWT_SECRET);
-           socket.user = decoded; // { id, role, ... }
-           next();
-        } catch (err) {
-           console.error("Socket auth error:", err.message);
-           next(new Error("Authentication error"));
-        }
-     } else {
-        next(); // Allow public connections (if any needed), but they won't have socket.user
-     }
+    const token = socket.handshake.auth.token;
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        socket.user = decoded; // { id, role, ... }
+        next();
+      } catch (err) {
+        console.error("Socket auth error:", err.message);
+        next(new Error("Authentication error"));
+      }
+    } else {
+      next(); // Allow public connections (if any needed), but they won't have socket.user
+    }
   });
 
   // Connection handling
   io.on("connection", (socket) => {
-    // Join User Room
+    // Join User Room & Role Room
     if (socket.user) {
-        const userId = socket.user.id || socket.user._id; // Accommodate different payload shapes
-        if (userId) {
-            socket.join(`user:${userId}`);
-            console.log(`✅ Client ${socket.id} authenticated as User ${userId}`);
-        }
+      const userId = socket.user.id || socket.user._id; // Accommodate different payload shapes
+      if (userId) {
+        socket.join(`user:${userId}`);
+        console.log(`✅ Client ${socket.id} authenticated as User ${userId}`);
+      }
+
+      // Join Role Room (admin, technician, etc.)
+      if (socket.user.role) {
+        socket.join(`role:${socket.user.role}`);
+        console.log(`✅ Client ${socket.id} joined role room: role:${socket.user.role}`);
+      }
     } else {
-        console.log(`Client ${socket.id} connected (Guest)`);
+      console.log(`Client ${socket.id} connected (Guest)`);
     }
 
     // Join repair room for live updates
@@ -142,11 +148,27 @@ export const emitOrderUpdate = (orderId, data) => {
 
 // Emit User Notification
 export const emitNotification = (userId, notification) => {
-    if (io && userId) {
-        io.to(`user:${userId}`).emit("new_notification", notification);
-        console.log(`[Socket] Emitted notification to user:${userId}`);
-    }
+  if (io && userId) {
+    io.to(`user:${userId}`).emit("new_notification", notification);
+    console.log(`[Socket] Emitted notification to user:${userId}`);
+  }
 };
+
+// Emit to specific role
+export const emitToRole = (role, event, data) => {
+  if (io) {
+    io.to(`role:${role}`).emit(event, data);
+    console.log(`[Socket] Emitted ${event} to role:${role}`);
+  }
+}
+
+// Emit to specific user
+export const emitToUser = (userId, event, data) => {
+  if (io && userId) {
+    io.to(`user:${userId}`).emit(event, data);
+    console.log(`[Socket] Emitted ${event} to user:${userId}`);
+  }
+}
 
 // Broadcast to all connected clients
 export const broadcast = (event, data) => {
@@ -161,6 +183,8 @@ export default {
   emitRepairUpdate,
   emitOrderUpdate,
   emitNotification,
+  emitToRole,
+  emitToUser,
   broadcast
 };
 

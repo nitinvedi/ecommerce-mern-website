@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Wrench, Clock, CheckCircle, AlertCircle, ArrowRight, Calendar, Search } from "lucide-react";
 import { api, API_ENDPOINTS } from "../config/api";
+import { useSocket } from "../context/SocketContext";
+import { useToast } from "../context/ToastContext";
 
 const MyRepairs = () => {
   const navigate = useNavigate();
@@ -10,9 +12,22 @@ const MyRepairs = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
+  const { on } = useSocket();
+  const toast = useToast();
+
   useEffect(() => {
     fetchRepairs();
-  }, []);
+
+    const handleUpdate = (data) => {
+      toast.info(`Repair Update: ${data.status}`);
+      fetchRepairs();
+    };
+
+    const unsubscribe = on('repair_updated', handleUpdate);
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [on]);
 
   const fetchRepairs = async () => {
     try {
@@ -47,8 +62,8 @@ const MyRepairs = () => {
     }
   };
 
-  const filteredRepairs = repairs.filter(r => 
-    r.trackingId.toLowerCase().includes(search.toLowerCase()) || 
+  const filteredRepairs = repairs.filter(r =>
+    r.trackingId.toLowerCase().includes(search.toLowerCase()) ||
     r.model.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -63,15 +78,15 @@ const MyRepairs = () => {
   return (
     <div className="min-h-screen bg-[#f5f5f7] pt-28 pb-12 font-sans">
       <div className="max-w-[1000px] mx-auto px-6">
-        
+
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
           <div>
             <h1 className="text-3xl font-bold text-[#1d1d1f]">My Repairs</h1>
             <p className="text-gray-500 mt-1">Track and manage your service requests.</p>
           </div>
-          <Link 
-            to="/repair" 
+          <Link
+            to="/repair"
             className="bg-[#0071e3] text-white px-6 py-2.5 rounded-full font-medium hover:bg-[#0077ed] transition-colors inline-flex items-center gap-2"
           >
             <Wrench size={18} /> Book New Repair
@@ -82,9 +97,9 @@ const MyRepairs = () => {
         {repairs.length > 0 && (
           <div className="bg-white rounded-2xl p-4 mb-8 shadow-sm border border-gray-200 flex items-center gap-3">
             <Search className="text-gray-400" size={20} />
-            <input 
-              type="text" 
-              placeholder="Search by Ticket ID or Device Model..." 
+            <input
+              type="text"
+              placeholder="Search by Ticket ID or Device Model..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="flex-1 outline-none text-[#1d1d1f] placeholder:text-gray-400"
@@ -104,7 +119,7 @@ const MyRepairs = () => {
                 className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-all cursor-pointer group"
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                  
+
                   {/* Left: Info */}
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 group-hover:bg-[#0071e3] group-hover:text-white transition-colors">
@@ -119,7 +134,7 @@ const MyRepairs = () => {
                       </div>
                       <p className="text-sm text-gray-500">Ticket ID: <span className="font-medium text-[#1d1d1f]">{repair.trackingId}</span></p>
                       <div className="text-xs text-gray-400 mt-2 flex items-center gap-1">
-                         <Calendar size={12} /> Booked on {new Date(repair.createdAt).toLocaleDateString()}
+                        <Calendar size={12} /> Booked on {new Date(repair.createdAt).toLocaleDateString()}
                       </div>
                     </div>
                   </div>
@@ -127,13 +142,13 @@ const MyRepairs = () => {
                   {/* Right: Action */}
                   <div className="flex items-center gap-4 self-end md:self-auto">
                     <div className="text-right hidden md:block">
-                        <p className="text-xs text-gray-400 uppercase font-bold">Est. Cost</p>
-                        <p className="font-semibold text-[#1d1d1f]">
-                            {repair.estimatedCost ? `₹${repair.estimatedCost}` : 'Pending Quote'}
-                        </p>
+                      <p className="text-xs text-gray-400 uppercase font-bold">Est. Cost</p>
+                      <p className="font-semibold text-[#1d1d1f]">
+                        {repair.estimatedCost ? `₹${repair.estimatedCost}` : 'Pending Quote'}
+                      </p>
                     </div>
                     <div className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center group-hover:border-[#0071e3] group-hover:text-[#0071e3] transition-colors">
-                        <ArrowRight size={20} />
+                      <ArrowRight size={20} />
                     </div>
                   </div>
 

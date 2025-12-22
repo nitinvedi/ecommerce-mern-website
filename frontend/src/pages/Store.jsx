@@ -180,7 +180,7 @@ export default function Store() {
     setSearchParams(params, { replace: true });
     
     const titleCat = selectedCategory === "all" ? "Store" : selectedCategory;
-    document.title = searchTerm ? `Search: ${searchTerm} | Ram Mobile` : `${titleCat} | Ram Mobile`;
+    document.title = searchTerm ? `Search: ${searchTerm} | Ram Mobiles` : `${titleCat} | Ram Mobiles`;
   }, [searchTerm, selectedCategory, sortBy, filters, setSearchParams]);
 
   useEffect(() => {

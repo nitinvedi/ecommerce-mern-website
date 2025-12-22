@@ -161,10 +161,10 @@ export default function Navbar({ openSignUp, openChat }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { cart } = useCart();
+  const { cartItems, getCartItemsCount } = useCart();
   const { unreadCount } = useNotification();
 
-  const cartCount = cart?.length || 0;
+  const cartCount = getCartItemsCount();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -205,11 +205,11 @@ export default function Navbar({ openSignUp, openChat }) {
           <Link to="/" className="relative z-50 flex items-center gap-2 group">
             <img
               src={logo}
-              alt="Ram Mobile Logo"
+              alt="Ram Mobiles Logo"
               className="w-8 h-8 rounded-lg object-contain group-hover:scale-110 transition-transform"
             />
             <span className={`text-xl font-bold tracking-tight transition-colors duration-300 ${scrolled || mobileMenuOpen ? 'text-gray-900' : 'text-gray-900'}`}>
-              Ram Mobile
+              Ram Mobiles
             </span>
           </Link>
 

@@ -15,10 +15,10 @@ export const validate = {
   
   phone: (phone) => {
     if (!phone) return "Phone number is required";
-    // Allow spaces/dashes in input, but validate sanitized
-    const clean = phone.replace(/[\s-]/g, '');
+    // Allow spaces/dashes/plus in input, but validate sanitized
+    const clean = phone.replace(/[\s\-\+]/g, '');
     if (!/^\d+$/.test(clean)) return "Phone number must contain only digits";
-    if (clean.length !== 10) return "Phone number must be 10 digits";
+    if (clean.length < 10 || clean.length > 13) return "Phone number must be 10-13 digits";
     // if (!PATTERNS.PHONE.test(clean)) return "Invalid Indian mobile number";
     return null;
   },

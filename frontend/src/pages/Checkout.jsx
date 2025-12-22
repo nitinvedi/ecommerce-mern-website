@@ -70,7 +70,7 @@ function CheckoutPage() {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: order.amount,
         currency: order.currency,
-        name: "Ram Mobile Store",
+        name: "Ram Mobiles Store",
         description: "Purchase Transaction",
         image: "/logo1.png",
         order_id: order.id,

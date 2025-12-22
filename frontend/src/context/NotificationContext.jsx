@@ -105,8 +105,8 @@ export function NotificationProvider({ children }) {
       }
 
       // E. Title update
-      document.title = `(1) New Notification | Ram Mobile`;
-      setTimeout(() => document.title = "Ram Mobile", 3000);
+      document.title = `(1) New Notification | Ram Mobiles`;
+      setTimeout(() => document.title = "Ram Mobiles", 3000);
     });
 
     return () => {

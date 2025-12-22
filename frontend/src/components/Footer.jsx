@@ -52,11 +52,17 @@ export default function Footer() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-20 border-b border-white/10 pb-16">
           <motion.div {...fadeUp(0)}>
             <h2 className="font-serif italic font-black text-5xl md:text-6xl mb-6">
-              Run Mobile.
+              Ram Mobiles.
             </h2>
             <p className="text-gray-400 text-lg max-w-md font-sans leading-relaxed">
               The premier destination for mobile restoration and commerce. We give technology a second life, and you, peace of mind.
             </p>
+            <div className="mt-6 text-sm text-gray-400 space-y-1 font-sans">
+                <p>Shop No.- 302, Model Town,</p>
+                <p>Near Shiv Chowk, Rewari (Hr.)</p>
+                <p>+91 7015313247 | +91 8684085974</p>
+                <p>Rammobiles2021@gmail.com</p>
+            </div>
           </motion.div>
 
           <motion.div {...fadeUp(0.1)} className="flex flex-col justify-center">
@@ -104,7 +110,7 @@ export default function Footer() {
           className="flex flex-col-reverse md:flex-row items-center justify-between pt-8 border-t border-white/10 gap-8"
         >
           <div className="text-gray-500 text-sm font-medium">
-            © {new Date().getFullYear()} Run Mobile Inc. All rights reserved.
+            © {new Date().getFullYear()} Ram Mobiles Inc. All rights reserved.
           </div>
 
           <div className="flex gap-6">

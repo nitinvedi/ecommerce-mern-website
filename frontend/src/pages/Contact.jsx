@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, Phone } from "lucide-react";
+import { Mail, Phone, MapPin } from "lucide-react";
 import { useToast } from "../context/ToastContext.jsx";
 import { api, API_ENDPOINTS } from "../config/api.js";
 import { validate, validateForm } from "../utils/validation.js";
@@ -73,12 +73,22 @@ export default function Contact() {
 
             <div className="mt-10 space-y-4 text-sm text-gray-600">
               <div className="flex items-center gap-3">
+                <MapPin className="w-4 h-4 text-gray-400" />
+                <div className="flex flex-col">
+                  <span>Shop No.- 302, Model Town,</span>
+                  <span>Near Shiv Chowk, Rewari (Hr.)</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-gray-400" />
-                support@marammat.com
+                Rammobiles2021@gmail.com
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-gray-400" />
-                +91 1800-123-4567
+                <div className="flex flex-col">
+                    <span>+91 7015313247</span>
+                    <span>+91 8684085974</span>
+                </div>
               </div>
             </div>
 

@@ -132,67 +132,85 @@ const ScrollSection = ({ title, highlight, products }) => {
 const BentoGrid = () => {
     const navigate = useNavigate();
     return (
-        <section className="py-12 max-w-[1400px] mx-auto px-6">
-            <h2 className="text-2xl md:text-3xl font-semibold text-[#1d1d1f] mb-8">
+        <section className="py-24 max-w-[1400px] mx-auto px-6">
+            <h2 className="text-3xl md:text-5xl font-semibold text-[#1d1d1f] mb-12 tracking-tight">
                 Featured <span className="text-[#6e6e73]">Collections.</span>
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 h-auto md:h-[500px]">
-                {/* Large Card: Repair */}
+            
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 h-auto md:h-[600px]">
+                {/* Repair Service - Large Card */}
                 <div 
                     onClick={() => navigate('/repair')}
-                    className="md:col-span-2 md:row-span-2 bg-black rounded-[24px] relative overflow-hidden group cursor-pointer text-white p-8 md:p-12 flex flex-col justify-end"
+                    className="md:col-span-2 md:row-span-2 relative overflow-hidden rounded-[30px] p-8 md:p-12 cursor-pointer group shadow-lg hover:shadow-2xl transition-all duration-500 bg-black"
                 >
-                    <div className="relative z-10 transition-transform duration-500 group-hover:-translate-y-2">
-                        <p className="text-[#2997ff] font-semibold mb-2">Service</p>
-                        <h3 className="text-3xl md:text-4xl font-semibold mb-4">Professional Repairs.</h3>
-                        <p className="text-gray-400 text-lg mb-6 max-w-sm">From cracked screens to battery replacements, we bring your device back to life.</p>
-                        <button className="bg-white text-black px-6 py-2 rounded-full font-medium hover:bg-gray-100 transition-colors inline-flex items-center gap-2">
-                            Book a Repair <ChevronRight size={16} />
-                        </button>
+                    {/* Background Gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#1c1c1e] to-black opacity-90 z-0" />
+                    <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1581092921461-eab62e97a780?q=80&w=2670&auto=format&fit=crop')] bg-cover bg-center opacity-40 group-hover:opacity-30 transition-opacity duration-700 mix-blend-overlay z-0" />
+                    
+                    <div className="relative z-10 flex flex-col justify-between h-full">
+                        <div>
+                            <span className="px-3 py-1 rounded-full border border-white/20 text-xs font-semibold text-white/50 uppercase tracking-wider backdrop-blur-md">Service Center</span>
+                            <h3 className="text-4xl md:text-5xl font-semibold text-white mt-4 leading-tight">Expert <br/><span className="text-[#2997ff]">Repairs.</span></h3>
+                            <p className="text-gray-400 mt-4 max-w-sm text-lg">Official parts. Certified technicians. Same-day service assurance.</p>
+                        </div>
+                        
+                        <div className="flex items-center justify-between mt-8">
+                             <button className="bg-white text-black px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-transform active:scale-95 flex items-center gap-2 group-hover:gap-4 duration-300">
+                                Book Appointment <ArrowRight size={18} />
+                             </button>
+                        </div>
                     </div>
-                    {/* Abstract Tech Bg */}
-                    <div className="absolute inset-0 opacity-50 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-900 via-black to-black" />
-                    <Wrench className="absolute top-8 right-8 text-gray-800 opacity-50 group-hover:opacity-100 group-hover:rotate-12 transition-all duration-500" size={120} />
                 </div>
 
-                {/* Card 2: Refurbished */}
+                {/* Refurbished Store */}
                 <div 
                      onClick={() => navigate('/store?category=Mobile')}
-                     className="bg-white border border-gray-100 rounded-[24px] p-8 relative overflow-hidden group cursor-pointer md:col-span-1"
+                     className="md:col-span-1 bg-white rounded-[30px] p-8 relative overflow-hidden cursor-pointer group shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-100 flex flex-col justify-between"
                 >
-                    <div className="relative z-10 text-center flex flex-col h-full justify-between items-center">
-                        <Smartphone size={64} className="text-[#1d1d1f] mb-4 group-hover:scale-110 transition-transform" />
-                         <div>
-                            <h3 className="text-xl font-semibold text-[#1d1d1f]">Refurbished</h3>
-                            <p className="text-gray-500 text-sm mt-1">Like new. For less.</p>
-                         </div>
+                    <div className="relative z-10">
+                        <h3 className="text-2xl font-semibold text-[#1d1d1f]">Refurbished</h3>
+                        <p className="text-gray-500 text-sm mt-1">Good as new.</p>
                     </div>
+                    {/* Abstract blurry blobs for premium feel */}
+                    <div className="absolute right-[-20px] bottom-[-20px] w-40 h-40 bg-gray-50 rounded-full blur-3xl group-hover:bg-blue-50 transition-colors duration-500" />
+                    <Smartphone size={120} className="text-[#1d1d1f] absolute bottom-4 right-4 opacity-5 translate-y-4 translate-x-4 group-hover:translate-y-0 group-hover:translate-x-0 group-hover:opacity-10 transition-all duration-500" />
+                     <div className="mt-8 flex justify-end">
+                        <div className="w-12 h-12 rounded-full bg-[#f5f5f7] flex items-center justify-center group-hover:bg-[#0071e3] group-hover:text-white transition-all duration-300">
+                             <ChevronRight size={20} />
+                        </div>
+                     </div>
                 </div>
 
-                {/* Card 3: Accessories */}
+                {/* Accessories */}
                 <div 
                     onClick={() => navigate('/store?category=Accessories')}
-                     className="bg-[#f5f5f7] rounded-[24px] p-8 relative overflow-hidden group cursor-pointer md:col-span-1"
+                     className="md:col-span-1 bg-[#f5f5f7] rounded-[30px] p-8 relative overflow-hidden cursor-pointer group shadow-sm hover:shadow-xl transition-all duration-500 flex flex-col justify-between"
                 >
-                    <div className="relative z-10 text-center flex flex-col h-full justify-between items-center">
-                        <Headphones size={64} className="text-[#1d1d1f] mb-4 group-hover:scale-110 transition-transform" />
-                         <div>
-                            <h3 className="text-xl font-semibold text-[#1d1d1f]">Accessories</h3>
-                            <p className="text-gray-500 text-sm mt-1">Sound & Power.</p>
-                         </div>
+                    <div className="relative z-10">
+                        <h3 className="text-2xl font-semibold text-[#1d1d1f]">Accessories</h3>
+                        <p className="text-gray-500 text-sm mt-1">Power & Sound.</p>
                     </div>
+                    <Headphones size={120} className="text-[#1d1d1f] absolute bottom-4 right-4 opacity-5 rotate-12 group-hover:rotate-0 group-hover:scale-110 group-hover:opacity-10 transition-all duration-500" />
+                    <div className="mt-8 flex justify-end">
+                        <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center group-hover:bg-[#0071e3] group-hover:text-white transition-all duration-300 shadow-sm">
+                             <Plus size={20} />
+                        </div>
+                     </div>
                 </div>
 
-                {/* Card 4: Sell/Trade (Wide) */}
+                {/* Trade In */}
                 <div 
                     onClick={() => navigate('/contact')}
-                    className="md:col-span-2 bg-[#1d1d1f] rounded-[24px] p-8 relative overflow-hidden group cursor-pointer text-white flex items-center justify-between"
+                    className="md:col-span-2 bg-gradient-to-r from-[#1d1d1f] to-[#3a3a3c] rounded-[30px] p-8 relative overflow-hidden cursor-pointer group shadow-lg hover:shadow-xl transition-all duration-500 flex flex-row items-center justify-between"
                 >
-                     <div className="relative z-10 max-w-xs">
-                        <h3 className="text-2xl font-semibold mb-2">Sell Your Device.</h3>
-                        <p className="text-gray-400 text-sm">Get instant cash for your old gadgets. Simple and fast.</p>
+                     <div className="relative z-10 max-w-sm">
+                         <span className="text-[#2997ff] font-bold tracking-wide uppercase text-xs">Trade-In</span>
+                        <h3 className="text-3xl font-semibold text-white mt-1">Upgrade & Save.</h3>
+                        <p className="text-gray-400 mt-2 text-sm">Get credit towards your next purchase when you trade in your eligible device.</p>
                      </div>
-                     <Package size={80} className="text-[#2997ff] opacity-80 group-hover:scale-105 transition-transform" />
+                     <div className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <ArrowRight size={24} className="text-white" />
+                     </div>
                 </div>
             </div>
         </section>
@@ -211,7 +229,7 @@ const FeaturesSection = () => {
         <section className="py-20 bg-white">
             <div className="max-w-[1400px] mx-auto px-6">
                 <div className="text-center max-w-2xl mx-auto mb-16">
-                    <h2 className="text-3xl md:text-4xl font-semibold text-[#1d1d1f] mb-4">Why Ram Mobile?</h2>
+                    <h2 className="text-3xl md:text-4xl font-semibold text-[#1d1d1f] mb-4">Why Ram Mobiles?</h2>
                     <p className="text-xl text-gray-500">More than just a store. We are your tech partners.</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -405,8 +423,14 @@ const Footer = () => {
             <div className="max-w-[1400px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
                  {/* Brand */}
                  <div className="text-center md:text-left">
-                     <h3 className="text-lg font-bold tracking-tight text-white/90">Ram Mobile.</h3>
+                     <h3 className="text-lg font-bold tracking-tight text-white/90">Ram Mobiles.</h3>
                      <p className="text-xs text-gray-500 mt-1">Premium Tech & Repair Center.</p>
+                     <div className="mt-4 text-xs text-gray-400 space-y-1">
+                        <p>Shop No.- 302, Model Town,</p>
+                        <p>Near Shiv Chowk, Rewari (Hr.)</p>
+                        <p>+91 7015313247 | +91 8684085974</p>
+                        <p>Rammobiles2021@gmail.com</p>
+                     </div>
                  </div>
 
                  {/* Minimal Nav - Only Valid Routes */}
@@ -424,7 +448,7 @@ const Footer = () => {
                           <a href="#" className="text-gray-400 hover:text-white transition-colors"><Twitter size={18} /></a>
                           <a href="#" className="text-gray-400 hover:text-white transition-colors"><Facebook size={18} /></a>
                       </div>
-                      <p className="text-[11px] text-gray-600">© {new Date().getFullYear()} Ram Mobile Inc.</p>
+                      <p className="text-[11px] text-gray-600">© {new Date().getFullYear()} Ram Mobiles Inc.</p>
                  </div>
             </div>
         </footer>
@@ -486,8 +510,8 @@ const Landing = () => {
   return (
     <div className="min-h-screen bg-[#f5f5f7] font-sans">
       <Helmet>
-        <title>Store | Ram Mobile - Best Tech Deals</title>
-        <meta name="description" content="Shop the latest smartphones, laptops, and accessories at Ram Mobile. Expert repair services and genuine parts available." />
+        <title>Store | Ram Mobiles - Best Tech Deals</title>
+        <meta name="description" content="Shop the latest smartphones, laptops, and accessories at Ram Mobiles. Expert repair services and genuine parts available." />
       </Helmet>
 
       {/* Top Promotional Banner */}
@@ -530,7 +554,7 @@ const Landing = () => {
                    <p className="text-xl md:text-2xl text-[#6e6e73] font-normal leading-normal mt-4">
                         The best way to buy the products you love.
                         <br />
-                        <span className="text-[#1d1d1f] font-medium">Only at Ram Mobile.</span>
+                        <span className="text-[#1d1d1f] font-medium">Only at Ram Mobiles.</span>
                    </p>
                 </div>
             </div>

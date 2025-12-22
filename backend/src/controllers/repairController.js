@@ -26,31 +26,39 @@ export const createRepair = asyncHandler(async (req, res) => {
   });
 
   // Notify Customer (Email)
-  const { sendEmail, emailTemplates } = await import("../utils/emailService.js");
-  const user = await (await import("../models/User.js")).default.getUserById(userId);
-  await sendEmail({
-       to: user.email,
-       ...emailTemplates.repairUpdate(
-           { ...repair, fullName: user.name }, 
-           "Repair Request Received",
-           "We have received your repair request and will review it shortly."
-       )
-  });
+  try {
+      const { sendEmail, emailTemplates } = await import("../utils/emailService.js");
+      const user = await (await import("../models/User.js")).default.getUserById(userId);
+      await sendEmail({
+           to: user.email,
+           ...emailTemplates.repairUpdate(
+               { ...repair, fullName: user.name }, 
+               "Repair Request Received",
+               "We have received your repair request and will review it shortly."
+           )
+      });
+  } catch (error) {
+      console.error("Email service failed:", error.message);
+  }
 
   // Create In-App Notification
-  const NotificationModel = (await import("../models/Notification.js")).default;
-  const { emitNotification } = await import("../config/socket.js");
-  
-  const newNotif = await NotificationModel.createNotification({
-      user: userId,
-      type: 'repair',
-      title: "Repair Request Received",
-      message: `Your repair request (${repair.trackingId}) has been received.`,
-      link: `/repair/${repair.insertedId || repair._id}` 
-  });
-  
-  if (newNotif) {
-      emitNotification(userId, newNotif);
+  try {
+      const NotificationModel = (await import("../models/Notification.js")).default;
+      const { emitNotification } = await import("../config/socket.js");
+      
+      const newNotif = await NotificationModel.createNotification({
+          user: userId,
+          type: 'repair',
+          title: "Repair Request Received",
+          message: `Your repair request (${repair.trackingId}) has been received.`,
+          link: `/repair/${repair.insertedId || repair._id}` 
+      });
+      
+      if (newNotif) {
+          emitNotification(userId, newNotif);
+      }
+  } catch (error) {
+     console.error("Notification service failed:", error.message);
   }
 
   return sendCreated(res, "Repair request created successfully", repair);
@@ -165,13 +173,17 @@ export const updateRepair = asyncHandler(async (req, res) => {
           return sendError(res, "Assigned user is not a technician", 400);
       }
       
-      const { sendEmail } = await import("../utils/emailService.js");
-           await sendEmail({
-               to: tech.email,
-               subject: `New Job Assigned: ${repair.trackingId}`,
-               html: `<p>You have been assigned a new repair job.</p><p>Device: ${repair.brand} ${repair.model}</p><p>Issue: ${repair.issue}</p>`,
-               text: `You have been assigned a new repair job: ${repair.trackingId}`
-           });
+      try {
+          const { sendEmail } = await import("../utils/emailService.js");
+               await sendEmail({
+                   to: tech.email,
+                   subject: `New Job Assigned: ${repair.trackingId}`,
+                   html: `<p>You have been assigned a new repair job.</p><p>Device: ${repair.brand} ${repair.model}</p><p>Issue: ${repair.issue}</p>`,
+                   text: `You have been assigned a new repair job: ${repair.trackingId}`
+               });
+      } catch (error) {
+          console.error("Technician assignment email failed:", error.message);
+      }
   }
 
   // --- 1. Detect Changes for Notifications ---
@@ -222,39 +234,48 @@ export const updateRepair = asyncHandler(async (req, res) => {
   const updatedRepair = await RepairModel.getRepairById(id);
 
   // --- 3. Send Notifications (Async) ---
+  // --- 3. Send Notifications (Async) ---
   // Notify Customer on Changes
-  if (changes.length > 0) {
-      console.log(`[Email Debug] Changes detected for Repair ${repair.trackingId}:`, changes);
-      const { sendEmail, emailTemplates } = await import("../utils/emailService.js");
-      
-      for (const change of changes) {
-           console.log(`[Email Debug] Sending email to ${updatedRepair.user?.email} for ${change.type}`);
-           const result = await sendEmail({
-               to: updatedRepair.user.email,
-               ...emailTemplates.repairUpdate(updatedRepair, change.title, change.message)
-           });
-           console.log(`[Email Debug] Send Result:`, result);
+  try {
+      if (changes.length > 0) {
+          console.log(`[Email Debug] Changes detected for Repair ${repair.trackingId}:`, changes);
+          const { sendEmail, emailTemplates } = await import("../utils/emailService.js");
+          
+          for (const change of changes) {
+               console.log(`[Email Debug] Sending email to ${updatedRepair.user?.email} for ${change.type}`);
+               const result = await sendEmail({
+                   to: updatedRepair.user.email,
+                   ...emailTemplates.repairUpdate(updatedRepair, change.title, change.message)
+               });
+               console.log(`[Email Debug] Send Result:`, result);
+          }
       }
+  } catch (error) {
+      console.error("Update email notification failed:", error.message);
   }
 
   // --- 4. Create In-App Notifications ---
-  if (changes.length > 0) {
-      const NotificationModel = (await import("../models/Notification.js")).default;
-      const { emitNotification } = await import("../config/socket.js");
-      
-      for (const change of changes) {
-          const newNotif = await NotificationModel.createNotification({
-              user: updatedRepair.user._id, // Ensure ObjectId
-              type: 'repair',
-              title: change.title,
-              message: change.message,
-              link: `/repair/${id}` // Or specific repair link
-          });
+  try {
+      if (changes.length > 0) {
+          const NotificationModel = (await import("../models/Notification.js")).default;
+          const { emitNotification } = await import("../config/socket.js");
           
-          if (newNotif) {
-             emitNotification(updatedRepair.user._id.toString(), newNotif);
+          for (const change of changes) {
+              const newNotif = await NotificationModel.createNotification({
+                  user: updatedRepair.user._id, // Ensure ObjectId
+                  type: 'repair',
+                  title: change.title,
+                  message: change.message,
+                  link: `/repair/${id}` // Or specific repair link
+              });
+              
+              if (newNotif) {
+                 emitNotification(updatedRepair.user._id.toString(), newNotif);
+              }
           }
       }
+  } catch (error) {
+      console.error("Update in-app notification failed:", error.message);
   }
 
   // Emit socket event
@@ -283,30 +304,38 @@ export const addStatusUpdate = asyncHandler(async (req, res) => {
   const statusUpdate = await RepairModel.addStatusUpdate(id, status, note, userId);
 
   // Notify Customer (Email)
-  const { sendEmail, emailTemplates } = await import("../utils/emailService.js");
-  await sendEmail({
-       to: repair.user.email, 
-       ...emailTemplates.repairUpdate(
-           { ...repair, status }, 
-           `Status Update: ${status}`,
-           `Your repair status is now "${status}". ${note ? `Note: ${note}` : ''}`
-       )
-  });
+  try {
+      const { sendEmail, emailTemplates } = await import("../utils/emailService.js");
+      await sendEmail({
+           to: repair.user.email, 
+           ...emailTemplates.repairUpdate(
+               { ...repair, status }, 
+               `Status Update: ${status}`,
+               `Your repair status is now "${status}". ${note ? `Note: ${note}` : ''}`
+           )
+      });
+  } catch (error) {
+      console.error("Status update email failed:", error.message);
+  }
 
   // Create In-App Notification
-  const NotificationModel = (await import("../models/Notification.js")).default;
-  const { emitNotification } = await import("../config/socket.js");
-  
-  const newNotif = await NotificationModel.createNotification({
-      user: repair.user._id,
-      type: 'repair',
-      title: `Status Update: ${status}`,
-      message: `Your repair status is now "${status}". ${note}`,
-      link: `/repair/${id}`
-  });
-  
-  if (newNotif) {
-      emitNotification(repair.user._id.toString(), newNotif);
+  try {
+      const NotificationModel = (await import("../models/Notification.js")).default;
+      const { emitNotification } = await import("../config/socket.js");
+      
+      const newNotif = await NotificationModel.createNotification({
+          user: repair.user._id,
+          type: 'repair',
+          title: `Status Update: ${status}`,
+          message: `Your repair status is now "${status}". ${note}`,
+          link: `/repair/${id}`
+      });
+      
+      if (newNotif) {
+          emitNotification(repair.user._id.toString(), newNotif);
+      }
+  } catch (error) {
+      console.error("Status update notification failed:", error.message);
   }
 
   // Emit socket event

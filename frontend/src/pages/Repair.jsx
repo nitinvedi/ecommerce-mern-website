@@ -21,6 +21,7 @@ import {
   Plus
 } from "lucide-react";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import AuthModal from "../components/AuthModal";
 import useAuth from "../hooks/useAuth";
 import { useToast } from "../context/ToastContext";
@@ -77,9 +78,9 @@ export default function Repair() {
     problemDescription: "",
     fullName: user?.name || "",
     phoneNumber: user?.phone || "",
-    pickupAddress: user?.address || "",
-    city: "",
-    pincode: "",
+    pickupAddress: user?.address?.street || user?.address || "",
+    city: user?.address?.city || "",
+    pincode: user?.address?.zip || "",
     pickupDate: "",
     pickupTimeSlot: "",
   });
@@ -101,6 +102,12 @@ export default function Repair() {
   };
 
   const submit = async () => {
+    if (!user) {
+      toast.error("Please sign in to confirm booking");
+      setAuthModal(true);
+      return;
+    }
+
     // 1. Validate Form
     const schema = {
         fullName: validate.name,
@@ -119,15 +126,11 @@ export default function Repair() {
     setErrors(newErrors);
 
     if (!isValid) {
-        toast.error("Please fix the errors in the form");
+        console.log("Validation Errors:", newErrors);
+        toast.error("Please fix the errors in the form: " + Object.keys(newErrors).join(", "));
         return;
     }
 
-    if (!user) {
-      toast.error("Please sign in to confirm booking");
-      setAuthModal(true);
-      return;
-    }
     setLoading(true);
     try {
       const fd = new FormData();
@@ -279,47 +282,62 @@ export default function Repair() {
                    
                    <div className="p-8 md:p-12">
                       {step === 0 && (
-                         <div className="space-y-6">
-                            <h3 className="text-xl font-bold mb-6">Device Details</h3>
-                            <div className="grid md:grid-cols-2 gap-6">
-                               <div className="space-y-2">
-                                  <label className="text-sm font-medium text-gray-500">Device Type</label>
-                                  <select name="deviceType" value={formData.deviceType} onChange={handleChange} className="w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-black/10">
-                                     <option>Mobile</option>
-                                     <option>Tablet</option>
-                                     <option>Laptop</option>
-                                  </select>
-                               </div>
-                               <div className="space-y-2">
-                                  <label className="text-sm font-medium text-gray-500">Brand</label>
-                                  <input name="brand" placeholder="e.g. Apple" value={formData.brand} onChange={handleChange} className="w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-black/10" />
-                               </div>
-                               <div className="space-y-2">
-                                  <label className="text-sm font-medium text-gray-500">Model</label>
-                                  <input name="model" placeholder="e.g. iPhone 14 Pro" value={formData.model} onChange={handleChange} className="w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-black/10" />
-                               </div>
-                               <div className="space-y-2">
-                                  <label className="text-sm font-medium text-gray-500">Issue Description</label>
-                                  <input name="problemDescription" placeholder="Briefly describe the issue" value={formData.problemDescription} onChange={handleChange} className="w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-black/10" />
-                               </div>
-                            </div>
-                         </div>
+                              <div className="space-y-4">
+                                  <div className="space-y-1">
+                                      <label className="text-sm font-medium text-gray-500">Device Type</label>
+                                      <select name="deviceType" value={formData.deviceType} onChange={handleChange} className={`w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 ${errors.deviceType ? 'focus:ring-red-500 border border-red-500' : 'focus:ring-black/10'}`}>
+                                         <option>Mobile</option>
+                                         <option>Tablet</option>
+                                         <option>Laptop</option>
+                                      </select>
+                                      {errors.deviceType && <p className="text-red-500 text-xs">{errors.deviceType}</p>}
+                                  </div>
+                                  <div className="space-y-1">
+                                      <label className="text-sm font-medium text-gray-500">Brand</label>
+                                      <input name="brand" placeholder="e.g. Apple" value={formData.brand} onChange={handleChange} className={`w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 ${errors.brand ? 'focus:ring-red-500 border border-red-500' : 'focus:ring-black/10'}`} />
+                                      {errors.brand && <p className="text-red-500 text-xs">{errors.brand}</p>}
+                                  </div>
+                                  <div className="space-y-1">
+                                      <label className="text-sm font-medium text-gray-500">Model</label>
+                                      <input name="model" placeholder="e.g. iPhone 14 Pro" value={formData.model} onChange={handleChange} className={`w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 ${errors.model ? 'focus:ring-red-500 border border-red-500' : 'focus:ring-black/10'}`} />
+                                      {errors.model && <p className="text-red-500 text-xs">{errors.model}</p>}
+                                  </div>
+                                  <div className="space-y-1">
+                                      <label className="text-sm font-medium text-gray-500">Issue Description</label>
+                                      <input name="problemDescription" placeholder="Briefly describe the issue" value={formData.problemDescription} onChange={handleChange} className={`w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 ${errors.problemDescription ? 'focus:ring-red-500 border border-red-500' : 'focus:ring-black/10'}`} />
+                                      {errors.problemDescription && <p className="text-red-500 text-xs">{errors.problemDescription}</p>}
+                                  </div>
+                              </div>
                       )}
 
                       {step === 1 && (
                          <div className="space-y-6">
                             <h3 className="text-xl font-bold mb-6">Pickup Details</h3>
-                            <div className="grid md:grid-cols-2 gap-6">
-                               <input name="pickupAddress" placeholder="Full Address" value={formData.pickupAddress} onChange={handleChange} className="w-full p-4 bg-gray-50 rounded-xl md:col-span-2 outline-none focus:ring-2 focus:ring-black/10" />
-                               <input name="city" placeholder="City" value={formData.city} onChange={handleChange} className="w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-black/10" />
-                               <input name="pincode" placeholder="Pincode" value={formData.pincode} onChange={handleChange} className="w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-black/10" />
-                               <input type="date" name="pickupDate" value={formData.pickupDate} onChange={handleChange} className="w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-black/10" />
-                               <select name="pickupTimeSlot" value={formData.pickupTimeSlot} onChange={handleChange} className="w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-black/10">
-                                  <option value="">Select Time Slot</option>
-                                  <option>Morning (9 AM - 12 PM)</option>
-                                  <option>Afternoon (12 PM - 4 PM)</option>
-                                  <option>Evening (4 PM - 8 PM)</option>
-                               </select>
+                            <div className="space-y-4">
+                               <div className="space-y-1">
+                                   <input name="pickupAddress" placeholder="Full Address" value={formData.pickupAddress} onChange={handleChange} className={`w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 ${errors.pickupAddress ? 'focus:ring-red-500 border border-red-500' : 'focus:ring-black/10'}`} />
+                                   {errors.pickupAddress && <p className="text-red-500 text-xs">{errors.pickupAddress}</p>}
+                               </div>
+                               <div className="grid md:grid-cols-2 gap-6">
+                                   <div className="space-y-1">
+                                       <input name="city" placeholder="City" value={formData.city} onChange={handleChange} className={`w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 ${errors.city ? 'focus:ring-red-500 border border-red-500' : 'focus:ring-black/10'}`} />
+                                       {errors.city && <p className="text-red-500 text-xs">{errors.city}</p>}
+                                   </div>
+                                   <div className="space-y-1">
+                                       <input name="pincode" placeholder="Pincode" value={formData.pincode} onChange={handleChange} className={`w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 ${errors.pincode ? 'focus:ring-red-500 border border-red-500' : 'focus:ring-black/10'}`} />
+                                       {errors.pincode && <p className="text-red-500 text-xs">{errors.pincode}</p>}
+                                   </div>
+                               </div>
+                               
+                               <div className="grid md:grid-cols-2 gap-6">
+                                   <input type="date" name="pickupDate" value={formData.pickupDate} onChange={handleChange} className="w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-black/10" />
+                                   <select name="pickupTimeSlot" value={formData.pickupTimeSlot} onChange={handleChange} className="w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-black/10">
+                                      <option value="">Select Time Slot</option>
+                                      <option>Morning (9 AM - 12 PM)</option>
+                                      <option>Afternoon (12 PM - 4 PM)</option>
+                                      <option>Evening (4 PM - 8 PM)</option>
+                                   </select>
+                               </div>
                             </div>
                          </div>
                       )}
@@ -443,6 +461,7 @@ export default function Repair() {
           }}
         />
       )}
+      <Footer />
     </div>
   );
 }

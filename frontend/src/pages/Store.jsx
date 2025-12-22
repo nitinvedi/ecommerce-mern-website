@@ -110,19 +110,22 @@ const EmptyState = ({ clearFilters }) => (
   </div>
 );
 
-const InterstitialBanner = () => (
-    <div className="col-span-full xl:col-span-2 row-span-1 bg-black rounded-[30px] p-8 md:p-10 relative overflow-hidden text-white group cursor-pointer my-0 h-full flex flex-col justify-center">
+const RefurbishedBanner = ({ onApplyFilter }) => (
+    <div 
+      onClick={onApplyFilter}
+      className="col-span-full xl:col-span-2 row-span-1 bg-black rounded-[30px] p-8 md:p-10 relative overflow-hidden text-white group cursor-pointer my-0 h-full flex flex-col justify-center"
+    >
         <div className="relative z-10 max-w-lg">
-            <span className="inline-block px-3 py-1 bg-[#DFFF00] text-black text-xs font-bold uppercase tracking-wider rounded-full mb-4 animate-pulse">Limited Time</span>
-            <h3 className="text-3xl font-bold mb-4 leading-tight">Trade-in <br/>and upgrade.</h3>
-            <p className="text-gray-400 text-sm mb-6">Get ₹2,000 - ₹45,000 credit toward a new device.</p>
-            <div className="flex items-center gap-2 text-[#DFFF00] font-bold text-sm group-hover:gap-4 transition-all">
-                Check Value <ChevronRight size={16} />
+            <span className="inline-block px-3 py-1 bg-[#28a745] text-white text-xs font-bold uppercase tracking-wider rounded-full mb-4 animate-pulse">Eco-Friendly Choice</span>
+            <h3 className="text-3xl font-bold mb-4 leading-tight">Refurbished <br/>& Reliable.</h3>
+            <p className="text-gray-400 text-sm mb-6">Premium devices. Fraction of the price. 100% Quality Checked.</p>
+            <div className="flex items-center gap-2 text-[#28a745] font-bold text-sm group-hover:gap-4 transition-all">
+                Shop Refurbished <ChevronRight size={16} />
             </div>
         </div>
         
         {/* Abstract Shapes */}
-        <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-gradient-to-bl from-blue-600/30 to-purple-600/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-gradient-to-bl from-green-600/20 to-emerald-600/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
         <RefreshCw size={150} className="absolute -bottom-8 -right-8 text-white/5 rotate-12 group-hover:rotate-0 transition-transform duration-700" />
     </div>
 );
@@ -153,8 +156,10 @@ export default function Store() {
       Number(searchParams.get("maxPrice")) || 1000000
     ],
     brands: searchParams.get("brands")?.split(",").filter(Boolean) || [],
+    brands: searchParams.get("brands")?.split(",").filter(Boolean) || [],
     rating: Number(searchParams.get("rating")) || 0,
     inStock: searchParams.get("inStock") === "true",
+    isRefurbished: searchParams.get("condition") === "refurbished",
   });
 
   const productsRef = useRef(null);
@@ -176,7 +181,9 @@ export default function Store() {
     if (filters.priceRange[1] < 1000000) params.maxPrice = filters.priceRange[1];
     if (filters.brands.length > 0) params.brands = filters.brands.join(",");
     if (filters.rating > 0) params.rating = filters.rating;
+    if (filters.rating > 0) params.rating = filters.rating;
     if (filters.inStock) params.inStock = "true";
+    if (filters.isRefurbished) params.condition = "refurbished";
     setSearchParams(params, { replace: true });
     
     const titleCat = selectedCategory === "all" ? "Store" : selectedCategory;
@@ -247,8 +254,10 @@ export default function Store() {
       const matchesPrice = p.price >= filters.priceRange[0] && p.price <= filters.priceRange[1];
       const matchesBrand = filters.brands.length === 0 || filters.brands.includes(p.brand);
       const matchesRating = filters.rating === 0 || (p.rating || 0) >= filters.rating;
+      // Removed duplicate matchesRating declaration
       const matchesStock = !filters.inStock || (p.stock > 0);
-      return matchesSearch && matchesCategory && matchesPrice && matchesBrand && matchesRating && matchesStock;
+      const matchesRefurbished = !filters.isRefurbished || (p.isRefurbished === true);
+      return matchesSearch && matchesCategory && matchesPrice && matchesBrand && matchesRating && matchesStock && matchesRefurbished;
     }).sort((a, b) => {
       switch (sortBy) {
         case "price-low": return a.price - b.price;
@@ -372,9 +381,9 @@ export default function Store() {
                          {b} <X size={12} />
                        </button>
                     ))}
-                    <button onClick={() => { setSearchTerm(""); setFilters({ priceRange: [0, 1000000], brands: [], rating: 0, inStock: false }); }} className="text-xs font-medium text-red-500 hover:text-red-700 underline">
-                        Clear All
-                    </button>
+                     <button onClick={() => { setSearchTerm(""); setFilters({ priceRange: [0, 1000000], brands: [], rating: 0, inStock: false, isRefurbished: false }); }} className="text-xs font-medium text-red-500 hover:text-red-700 underline">
+                         Clear All
+                     </button>
                   </div>
                 )}
              </div>
@@ -389,7 +398,12 @@ export default function Store() {
                          
                          return (
                             <React.Fragment key={product._id}>
-                                {showBanner && <InterstitialBanner />}
+                                {showBanner && (
+                                  <RefurbishedBanner onApplyFilter={() => {
+                                      window.scrollTo({ top: 300, behavior: 'smooth' });
+                                      setFilters(prev => ({ ...prev, isRefurbished: true }));
+                                  }} />
+                                )}
                                 <ProductCard
                                     product={product}
                                     index={index}
@@ -404,7 +418,7 @@ export default function Store() {
                     })}
                  </>
                ) : (
-                 <EmptyState clearFilters={() => { setSearchTerm(""); setFilters({ priceRange: [0, 1000000], brands: [], rating: 0, inStock: false }); }} />
+                 <EmptyState clearFilters={() => { setSearchTerm(""); setFilters({ priceRange: [0, 1000000], brands: [], rating: 0, inStock: false, isRefurbished: false }); }} />
                )}
              </div>
 

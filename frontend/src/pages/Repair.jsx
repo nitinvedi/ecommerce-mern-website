@@ -18,8 +18,11 @@ import {
   MapPin,
   Loader2,
   HelpCircle,
-  Plus
+  Plus,
+  X,
+  Check
 } from "lucide-react";
+import Breadcrumbs from "../components/Breadcrumbs";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import AuthModal from "../components/AuthModal";
@@ -131,12 +134,49 @@ export default function Repair() {
         return;
     }
 
+    // 10. SUCCESS CONFETTI
+    const triggerConfetti = () => {
+        const colors = ['#0071e3', '#34c759', '#ff3b30', '#ff9500'];
+        [...Array(50)].forEach((_, i) => {
+            const el = document.createElement('div');
+            el.style.position = 'fixed';
+            el.style.left = '50%';
+            el.style.top = '50%';
+            el.style.width = '10px';
+            el.style.height = '10px';
+            el.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            el.style.borderRadius = '50%';
+            el.style.pointerEvents = 'none';
+            el.style.zIndex = '9999';
+            document.body.appendChild(el);
+
+            const angle = Math.random() * Math.PI * 2;
+            const velocity = 5 + Math.random() * 10;
+            const dx = Math.cos(angle) * velocity;
+            const dy = Math.sin(angle) * velocity;
+
+            el.animate([
+                { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+                { transform: `translate(${dx * 50}px, ${dy * 50}px) scale(0)`, opacity: 0 }
+            ], {
+                duration: 1000 + Math.random() * 1000,
+                easing: 'cubic-bezier(0, .9, .57, 1)',
+            }).onfinish = () => el.remove();
+        });
+    };
+
     setLoading(true);
     try {
       const fd = new FormData();
       Object.entries(formData).forEach(([k, v]) => fd.append(k, v));
       await uploadFile(API_ENDPOINTS.REPAIRS.BASE, fd);
+      triggerConfetti();
       toast.success("Booking confirmed! Tracking ID sent to your email.");
+      // Keep form open but show success state or just step 2
+      // Actually step 2 is "Ready to submit", maybe we need a success step?
+      // Let's just close for now as per original logic but trigger confetti first
+      // Or better, let's have a success modal state?
+      // Original logic just closed it. Let's keep it simple but add confetti.
       setBookingForm(false);
       setStep(0);
       navigate("/dashboard");
@@ -148,120 +188,214 @@ export default function Repair() {
     }
   };
 
+  // 4. POPULAR MODELS
+  const POPULAR_MODELS = ["iPhone 14", "iPhone 13", "iPhone 11", "Samsung S23", "OnePlus 11"];
+
+  // 6. LIVE PRICE ESTIMATE
+  const currentService = SERVICE_TYPES.find(s => s.value === formData.issue);
+  const estimatedPrice = currentService ? currentService.price : "---";
+
+  // 7. REAL-TIME VALIDATION HELPER
+  const ValidIcon = ({ field }) => {
+      // Very basic check: if field has value and no error
+      if (formData[field] && formData[field].length > 2 && !errors[field]) {
+          return <CheckCircle2 size={16} className="text-green-500 absolute right-4 top-1/2 -translate-y-1/2" />;
+      }
+      return null;
+  };
+
   return (
-    <div className="bg-[#F5F5F7] min-h-screen text-gray-900 font-sans selection:bg-black selection:text-white">
+    <div className="bg-[#F5F5F7] min-h-screen text-gray-900 font-sans selection:bg-black selection:text-white pb-24 md:pb-0">
       
+      {/* 1. BREADCRUMBS */}
+      <Breadcrumbs />
+
       {/* 1. HERO SECTION */}
-      <section className="relative h-[80vh] flex items-center justify-center overflow-hidden">
+      <section className="relative pt-32 pb-20 px-6 max-w-[1400px] mx-auto overflow-hidden">
         <GrainOverlay />
-        <div className="absolute inset-0 bg-gradient-to-b from-white/50 to-[#F5F5F7] z-0" />
         
-        <motion.div style={{ y: heroY }} className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 border border-black/5 bg-white/60 backdrop-blur-md rounded-full mb-8 shadow-sm"
-          >
-            <Wrench size={14} className="text-black" />
-            <span className="text-xs font-bold uppercase tracking-widest">Certified Repair Center</span>
-          </motion.div>
-          
-          <motion.h1 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-6xl md:text-8xl font-bold tracking-tighter leading-[0.9] mb-8"
-          >
-            Revive Your <br /> Device.
-          </motion.h1>
-          
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed mb-10"
-          >
-            Expert technicians, genuine parts, and door-to-door service. 
-            The premium care your tech deserves.
-          </motion.p>
-          
-          <motion.button
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3 }}
-            onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}
-            className="px-8 py-4 bg-black text-white rounded-full font-bold text-sm tracking-widest hover:scale-105 transition-transform shadow-xl"
-          >
-             Start a Repair
-          </motion.button>
-        </motion.div>
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-12 relative z-10">
+            <div className="flex-1 text-center lg:text-left">
+                <motion.h1 
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-6xl md:text-[80px] font-semibold text-[#1d1d1f] tracking-tight leading-[1.05] mb-6"
+                >
+                    Repair. <br/>
+                    <span className="text-[#6e6e73]">Revive.</span> <span className="text-[#0071e3]">Reuse.</span>
+                </motion.h1>
+                <motion.p 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="text-xl md:text-2xl text-[#6e6e73] font-medium max-w-2xl leading-relaxed mb-10 mx-auto lg:mx-0"
+                >
+                    Professional care for your favorite devices. <br className="hidden md:block" />
+                     Genuine parts. Expert technicians. 6-Month Warranty.
+                </motion.p>
+
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.2 }}
+                    className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
+                >
+                    <button 
+                        onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}
+                        className="px-8 py-4 bg-[#0071e3] text-white rounded-full font-medium text-lg hover:bg-[#0077ed] transition-all shadow-lg hover:shadow-blue-500/30 active:scale-95"
+                    >
+                        Book a Repair
+                    </button>
+                    <button 
+                         onClick={() => navigate('/status/check')}
+                         className="px-8 py-4 bg-white text-[#1d1d1f] border border-gray-200 rounded-full font-medium text-lg hover:bg-gray-50 transition-all active:scale-95"
+                    >
+                         Check Status
+                    </button>
+                </motion.div>
+            </div>
+
+            {/* Hero Visual */}
+            <motion.div 
+                 initial={{ opacity: 0, x: 50 }}
+                 animate={{ opacity: 1, x: 0 }}
+                 transition={{ delay: 0.3 }}
+                 className="flex-1 w-full lg:max-w-[600px] h-[400px] md:h-[500px] bg-[#fbfbfd] rounded-[40px] relative overflow-hidden flex items-center justify-center shadow-2xl border border-white"
+            >
+                <div className="absolute inset-0 bg-gradient-to-tr from-blue-50 to-indigo-50/50" />
+                <div className="relative z-10 grid grid-cols-2 gap-4 p-8 w-full h-full">
+                    <div className="space-y-4 pt-12">
+                        <div className="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 animate-float-slow">
+                             <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mb-3 text-green-600"><CheckCircle2 size={20} /></div>
+                             <p className="font-bold text-sm">Genuine Parts</p>
+                             <p className="text-xs text-gray-500">100% Authentic</p>
+                        </div>
+                        <div className="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 animate-float-delayed">
+                             <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mb-3 text-blue-600"><Clock size={20} /></div>
+                             <p className="font-bold text-sm">Fast Service</p>
+                             <p className="text-xs text-gray-500">Same Day Fix</p>
+                        </div>
+                    </div>
+                    <div className="space-y-4">
+                         <div className="bg-[#1d1d1f] text-white p-4 rounded-3xl shadow-lg shadow-black/20 animate-float">
+                             <Wrench size={24} className="mb-3 text-[#2997ff]" />
+                             <p className="font-bold text-lg">Expert<br/>Service</p>
+                        </div>
+                        <img src="https://images.unsplash.com/photo-1597504879054-084090bc1f9b?auto=format&fit=crop&q=80&w=400" className="w-full h-32 object-cover rounded-3xl shadow-sm border border-white" alt="Repair" />
+                    </div>
+                </div>
+            </motion.div>
+        </div>
       </section>
 
       {/* 2. PROCESS TIMELINE */}
-      <section className="py-20 px-6 bg-white border-y border-gray-100">
-         <div className="max-w-6xl mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-12 relative">
-               {/* Connecting Line (Desktop) */}
-               <div className="hidden md:block absolute top-1/2 left-0 w-full h-[1px] bg-gray-200 -z-10 -translate-y-1/2" />
-               
+      <section className="py-20 bg-white border-y border-gray-100">
+         <div className="max-w-[1400px] mx-auto px-6">
+            <div className="text-center mb-16">
+                 <h2 className="text-3xl font-semibold text-[#1d1d1f]">How it works.</h2>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                {[
-                 { icon: Calendar, title: "Book Online", desc: "Choose service & slot" },
-                 { icon: Truck, title: "We Pickup", desc: "Safe doorstep collection" },
-                 { icon: Wrench, title: "Expert Repair", desc: "Diagnosis & fix" },
-                 { icon: CheckCircle2, title: "Delivered", desc: "Back to you in 24h" },
+                 { icon: Calendar, title: "Book Online", desc: "Select service & time." },
+                 { icon: Truck, title: "We Pickup", desc: "Secure doorstep collection." },
+                 { icon: Wrench, title: "Expert Fix", desc: "Repaired in 24-48 hrs." },
+                 { icon: CheckCircle2, title: "Delivery", desc: "Delivered back to you." },
                ].map((step, i) => (
-                 <motion.div 
-                   key={i}
-                   initial={{ opacity: 0, y: 20 }}
-                   whileInView={{ opacity: 1, y: 0 }}
-                   viewport={{ once: true }}
-                   transition={{ delay: i * 0.1 }}
-                   className="flex flex-col items-center text-center bg-white p-4"
-                 >
-                    <div className="w-16 h-16 rounded-2xl bg-black text-white flex items-center justify-center mb-4 shadow-lg shadow-black/20">
+                 <div key={i} className="flex flex-col items-center text-center group">
+                    <div className="w-16 h-16 rounded-3xl bg-[#f5f5f7] flex items-center justify-center text-[#1d1d1f] mb-6 group-hover:bg-[#0071e3] group-hover:text-white transition-all duration-300 shadow-sm group-hover:shadow-blue-500/30">
                        <step.icon size={28} />
                     </div>
-                    <h3 className="font-bold text-lg mb-1">{step.title}</h3>
+                    <h3 className="font-semibold text-lg text-[#1d1d1f] mb-2">{step.title}</h3>
                     <p className="text-sm text-gray-500">{step.desc}</p>
-                 </motion.div>
+                 </div>
                ))}
             </div>
          </div>
       </section>
 
-      {/* 3. SERVICE GRID */}
-      <section id="services" className="py-32 px-6 max-w-7xl mx-auto">
-         <div className="text-center mb-20">
-            <h2 className="text-4xl font-bold tracking-tight mb-4">Select Service</h2>
-            <div className="w-12 h-1 bg-black mx-auto rounded-full" />
-         </div>
+      {/* 3. BENTO GRID SERVICES */}
+      <section id="services" className="py-24 px-6 max-w-[1400px] mx-auto">
+          <div className="flex flex-col md:flex-row items-end justify-between mb-12">
+            <div>
+                 <h2 className="text-4xl md:text-5xl font-semibold text-[#1d1d1f] mb-4">Select Service.</h2>
+                 <p className="text-xl text-[#6e6e73]">Choose what you need fixed.</p>
+            </div>
+          </div>
 
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {SERVICE_TYPES.map((service, i) => (
-               <motion.div
-                  key={service.id}
-                  whileHover={{ y: -10 }}
-                  className="bg-white p-8 rounded-[30px] border border-gray-100 shadow-sm hover:shadow-xl transition-all cursor-pointer group"
-                  onClick={() => handleServiceSelect(service)}
-               >
-                  <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-black group-hover:text-white transition-colors">
-                     <service.icon size={28} />
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">{service.title}</h3>
-                  <p className="text-gray-500 text-sm mb-6 h-10">{service.desc}</p>
-                  
-                  <div className="flex items-center justify-between pt-6 border-t border-gray-100">
-                     <div>
-                        <span className="text-xs text-gray-400 uppercase font-bold">Starts at</span>
-                        <div className="text-lg font-bold">₹{service.price}</div>
-                     </div>
-                     <button className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center group-hover:bg-black group-hover:border-black group-hover:text-white transition-all">
-                        <Plus size={18} />
-                     </button>
-                  </div>
-               </motion.div>
-            ))}
-         </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 h-auto md:h-[500px]">
+             
+             {/* 2. 3D TILT EFFECT CARDS using motion */}
+             {/* 1. Screen Repair (Large) */}
+             <motion.div 
+               onClick={() => handleServiceSelect(SERVICE_TYPES[0])}
+               whileHover={{ scale: 1.02, rotateX: 2, rotateY: 2 }}
+               className="md:col-span-2 md:row-span-2 bg-white rounded-[30px] p-10 relative overflow-hidden group cursor-pointer shadow-sm hover:shadow-2xl transition-all duration-500 border border-gray-100 flex flex-col justify-between"
+             >
+                <div className="relative z-10">
+                    <span className="inline-block px-3 py-1 bg-blue-50 text-[#0071e3] text-xs font-bold uppercase tracking-wider rounded-full mb-4">Most Popular</span>
+                    <h3 className="text-3xl font-semibold text-[#1d1d1f] mb-2">{SERVICE_TYPES[0].title}</h3>
+                    <p className="text-gray-500 max-w-sm">{SERVICE_TYPES[0].desc}</p>
+                </div>
+                <div className="relative z-10 flex items-center justify-between mt-8">
+                    <div>
+                         <p className="text-xs text-gray-400 uppercase font-bold">From</p>
+                         <p className="text-2xl font-bold text-[#1d1d1f]">₹{SERVICE_TYPES[0].price}</p>
+                    </div>
+                    <button className="w-12 h-12 rounded-full bg-[#1d1d1f] text-white flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Plus size={24} />
+                    </button>
+                </div>
+                
+                {/* Visuals */}
+                <Smartphone className="absolute top-1/2 -right-12 w-64 h-64 text-gray-50 -translate-y-1/2 group-hover:-translate-x-4 transition-transform duration-700" strokeWidth={1} />
+             </motion.div>
+
+             {/* 2. Battery */}
+             <motion.div 
+               onClick={() => handleServiceSelect(SERVICE_TYPES[1])}
+               whileHover={{ scale: 1.02, rotateX: 2 }}
+               className="md:col-span-1 md:row-span-2 bg-black text-white rounded-[30px] p-8 relative overflow-hidden group cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 flex flex-col justify-between"
+             >
+                 <div className="relative z-10">
+                    <ZapIcon className="w-12 h-12 text-[#2997ff] mb-4" />
+                    <h3 className="text-2xl font-semibold mb-2">{SERVICE_TYPES[1].title}</h3>
+                    <p className="text-gray-400 text-sm">{SERVICE_TYPES[1].desc}</p>
+                 </div>
+                 <div className="relative z-10 pt-8 border-t border-white/10">
+                     <p className="text-2xl font-bold">₹{SERVICE_TYPES[1].price}</p>
+                 </div>
+                 <div className="absolute inset-0 bg-gradient-to-br from-gray-900 to-black z-0" />
+             </motion.div>
+
+             {/* 3. Water Damage */}
+             <motion.div 
+               onClick={() => handleServiceSelect(SERVICE_TYPES[2])}
+               whileHover={{ scale: 1.02, rotateY: 2 }}
+               className="md:col-span-1 bg-blue-50 rounded-[30px] p-8 relative overflow-hidden group cursor-pointer hover:shadow-xl transition-all duration-500 border border-blue-100"
+             >
+                 <div className="flex justify-between items-start mb-4">
+                    <DropletsIcon className="w-10 h-10 text-blue-500" />
+                    <span className="font-bold text-blue-900">₹{SERVICE_TYPES[2].price}</span>
+                 </div>
+                 <h3 className="font-semibold text-blue-900 mb-1">{SERVICE_TYPES[2].title}</h3>
+                 <p className="text-blue-700/60 text-xs">Liquid exposure fix.</p>
+             </motion.div>
+
+             {/* 4. General Diag */}
+             <motion.div 
+               onClick={() => handleServiceSelect(SERVICE_TYPES[3])}
+               whileHover={{ scale: 1.02 }}
+               className="md:col-span-1 bg-white rounded-[30px] p-8 relative overflow-hidden group cursor-pointer hover:shadow-xl transition-all duration-500 border border-gray-100"
+             >
+                 <div className="flex justify-between items-start mb-4">
+                    <Cpu className="w-10 h-10 text-gray-400 group-hover:text-[#1d1d1f] transition-colors" />
+                    <span className="font-bold text-[#1d1d1f]">₹{SERVICE_TYPES[3].price}</span>
+                 </div>
+                 <h3 className="font-semibold text-[#1d1d1f] mb-1">{SERVICE_TYPES[3].title}</h3>
+                 <p className="text-gray-400 text-xs">Software & Hardware check.</p>
+             </motion.div>
+
+          </div>
       </section>
 
       {/* 4. BOOKING SECTION */}
@@ -275,84 +409,131 @@ export default function Repair() {
                    exit={{ opacity: 0, height: 0 }}
                    className="bg-white rounded-[40px] shadow-2xl border border-gray-100 overflow-hidden"
                 >
-                   <div className="p-8 md:p-12 bg-black text-white text-center">
-                      <h2 className="text-3xl font-bold mb-2">Book Your Repair</h2>
-                      <p className="text-gray-400">Step {step + 1} of 3</p>
-                   </div>
-                   
-                   <div className="p-8 md:p-12">
-                      {step === 0 && (
-                              <div className="space-y-4">
-                                  <div className="space-y-1">
-                                      <label className="text-sm font-medium text-gray-500">Device Type</label>
-                                      <select name="deviceType" value={formData.deviceType} onChange={handleChange} className={`w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 ${errors.deviceType ? 'focus:ring-red-500 border border-red-500' : 'focus:ring-black/10'}`}>
-                                         <option>Mobile</option>
-                                         <option>Tablet</option>
-                                         <option>Laptop</option>
-                                      </select>
-                                      {errors.deviceType && <p className="text-red-500 text-xs">{errors.deviceType}</p>}
-                                  </div>
-                                  <div className="space-y-1">
-                                      <label className="text-sm font-medium text-gray-500">Brand</label>
-                                      <input name="brand" placeholder="e.g. Apple" value={formData.brand} onChange={handleChange} className={`w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 ${errors.brand ? 'focus:ring-red-500 border border-red-500' : 'focus:ring-black/10'}`} />
-                                      {errors.brand && <p className="text-red-500 text-xs">{errors.brand}</p>}
-                                  </div>
-                                  <div className="space-y-1">
-                                      <label className="text-sm font-medium text-gray-500">Model</label>
-                                      <input name="model" placeholder="e.g. iPhone 14 Pro" value={formData.model} onChange={handleChange} className={`w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 ${errors.model ? 'focus:ring-red-500 border border-red-500' : 'focus:ring-black/10'}`} />
-                                      {errors.model && <p className="text-red-500 text-xs">{errors.model}</p>}
-                                  </div>
-                                  <div className="space-y-1">
-                                      <label className="text-sm font-medium text-gray-500">Issue Description</label>
-                                      <input name="problemDescription" placeholder="Briefly describe the issue" value={formData.problemDescription} onChange={handleChange} className={`w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 ${errors.problemDescription ? 'focus:ring-red-500 border border-red-500' : 'focus:ring-black/10'}`} />
-                                      {errors.problemDescription && <p className="text-red-500 text-xs">{errors.problemDescription}</p>}
-                                  </div>
-                              </div>
-                      )}
+                     {/* 3. PROGRESS BAR */}
+                     <div className="absolute top-0 left-0 w-full h-1 bg-gray-100">
+                         <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${((step + 1) / 3) * 100}%` }}
+                            className="h-full bg-[#0071e3]"
+                         />
+                     </div>
+                     <button onClick={() => setBookingForm(false)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-gray-100 transition-colors z-20">
+                         <X size={20} className="text-gray-500" />
+                     </button>
 
-                      {step === 1 && (
-                         <div className="space-y-6">
-                            <h3 className="text-xl font-bold mb-6">Pickup Details</h3>
-                            <div className="space-y-4">
-                               <div className="space-y-1">
-                                   <input name="pickupAddress" placeholder="Full Address" value={formData.pickupAddress} onChange={handleChange} className={`w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 ${errors.pickupAddress ? 'focus:ring-red-500 border border-red-500' : 'focus:ring-black/10'}`} />
-                                   {errors.pickupAddress && <p className="text-red-500 text-xs">{errors.pickupAddress}</p>}
-                               </div>
-                               <div className="grid md:grid-cols-2 gap-6">
-                                   <div className="space-y-1">
-                                       <input name="city" placeholder="City" value={formData.city} onChange={handleChange} className={`w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 ${errors.city ? 'focus:ring-red-500 border border-red-500' : 'focus:ring-black/10'}`} />
-                                       {errors.city && <p className="text-red-500 text-xs">{errors.city}</p>}
+                    <div className="p-8 md:p-12 bg-white text-[#1d1d1f] border-b border-gray-100 flex justify-between items-center">
+                       <div>
+                           <h2 className="text-2xl font-bold">Book Your Repair</h2>
+                           <p className="text-gray-500 text-sm">Step {step + 1} of 3</p>
+                       </div>
+                       <div className="text-right hidden sm:block">
+                           <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Estimated Total</p>
+                           <p className="text-xl font-bold">₹{estimatedPrice}</p>
+                       </div>
+                    </div>
+                    
+                    <div className="p-8 md:p-12 max-h-[70vh] overflow-y-auto">
+                       {step === 0 && (
+                               <div className="space-y-4">
+                                   <div className="space-y-1 relative">
+                                       <label className="text-sm font-medium text-gray-500">Device Type</label>
+                                       <select name="deviceType" value={formData.deviceType} onChange={handleChange} className={`w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 ${errors.deviceType ? 'focus:ring-red-500 border border-red-500' : 'focus:ring-[#0071e3]/20 border border-gray-200'}`}>
+                                          <option>Mobile</option>
+                                          <option>Tablet</option>
+                                          <option>Laptop</option>
+                                       </select>
                                    </div>
-                                   <div className="space-y-1">
-                                       <input name="pincode" placeholder="Pincode" value={formData.pincode} onChange={handleChange} className={`w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 ${errors.pincode ? 'focus:ring-red-500 border border-red-500' : 'focus:ring-black/10'}`} />
-                                       {errors.pincode && <p className="text-red-500 text-xs">{errors.pincode}</p>}
+                                   <div className="space-y-1 relative">
+                                       <label className="text-sm font-medium text-gray-500">Brand</label>
+                                       <input name="brand" placeholder="e.g. Apple" value={formData.brand} onChange={handleChange} className={`w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 ${errors.brand ? 'focus:ring-red-500 border border-red-500' : 'focus:ring-[#0071e3]/20 border border-gray-200'}`} />
+                                       <ValidIcon field="brand" />
+                                       {errors.brand && <p className="text-red-500 text-xs">{errors.brand}</p>}
+                                   </div>
+                                   <div className="space-y-1 relative">
+                                       <label className="text-sm font-medium text-gray-500">Model</label>
+                                       <input name="model" placeholder="e.g. iPhone 14 Pro" value={formData.model} onChange={handleChange} className={`w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 ${errors.model ? 'focus:ring-red-500 border border-red-500' : 'focus:ring-[#0071e3]/20 border border-gray-200'}`} />
+                                       <ValidIcon field="model" />
+                                       {errors.model && <p className="text-red-500 text-xs">{errors.model}</p>}
+                                       
+                                       {/* 5. POPULAR MODELS CHIPS */}
+                                       <div className="flex flex-wrap gap-2 mt-2">
+                                           {POPULAR_MODELS.map(model => (
+                                               <button 
+                                                   key={model}
+                                                   onClick={() => setFormData({...formData, model, brand: model.split(" ")[0]})} 
+                                                   className="px-3 py-1 bg-gray-100 hover:bg-[#0071e3] hover:text-white text-xs rounded-full transition-colors text-gray-600"
+                                               >
+                                                   {model}
+                                               </button>
+                                           ))}
+                                       </div>
+                                   </div>
+                                   <div className="space-y-1 relative">
+                                       <label className="text-sm font-medium text-gray-500">Issue Description</label>
+                                       <input name="problemDescription" placeholder="Briefly describe the issue" value={formData.problemDescription} onChange={handleChange} className={`w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 ${errors.problemDescription ? 'focus:ring-red-500 border border-red-500' : 'focus:ring-[#0071e3]/20 border border-gray-200'}`} />
+                                       <ValidIcon field="problemDescription" />
+                                       {errors.problemDescription && <p className="text-red-500 text-xs">{errors.problemDescription}</p>}
                                    </div>
                                </div>
-                               
-                               <div className="grid md:grid-cols-2 gap-6">
-                                   <input type="date" name="pickupDate" value={formData.pickupDate} onChange={handleChange} className="w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-black/10" />
-                                   <select name="pickupTimeSlot" value={formData.pickupTimeSlot} onChange={handleChange} className="w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-black/10">
-                                      <option value="">Select Time Slot</option>
-                                      <option>Morning (9 AM - 12 PM)</option>
-                                      <option>Afternoon (12 PM - 4 PM)</option>
-                                      <option>Evening (4 PM - 8 PM)</option>
-                                   </select>
-                               </div>
-                            </div>
-                         </div>
-                      )}
+                       )}
 
-                      {step === 2 && (
-                         <div className="space-y-6 text-center">
-                            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                               <CheckCircle2 size={40} className="text-green-600" />
-                            </div>
-                            <h3 className="text-2xl font-bold">Ready to submit?</h3>
-                            <p className="text-gray-500 max-w-sm mx-auto">
-                               We'll pick up your {formData.brand} {formData.model} from {formData.city} on {formData.pickupDate}.
-                            </p>
-                         </div>
-                      )}
+                       {step === 1 && (
+                          <div className="space-y-6">
+                             <h3 className="text-xl font-bold mb-6">Pickup Details</h3>
+                             <div className="space-y-4">
+                                <div className="space-y-1 relative">
+                                    <input name="pickupAddress" placeholder="Full Address" value={formData.pickupAddress} onChange={handleChange} className={`w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 ${errors.pickupAddress ? 'focus:ring-red-500 border border-red-500' : 'focus:ring-[#0071e3]/20 border border-gray-200'}`} />
+                                    <ValidIcon field="pickupAddress" />
+                                    {errors.pickupAddress && <p className="text-red-500 text-xs">{errors.pickupAddress}</p>}
+                                </div>
+                                <div className="grid md:grid-cols-2 gap-6">
+                                    <div className="space-y-1 relative">
+                                        <input name="city" placeholder="City" value={formData.city} onChange={handleChange} className={`w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 ${errors.city ? 'focus:ring-red-500 border border-red-500' : 'focus:ring-[#0071e3]/20 border border-gray-200'}`} />
+                                        <ValidIcon field="city" />
+                                        {errors.city && <p className="text-red-500 text-xs">{errors.city}</p>}
+                                    </div>
+                                    <div className="space-y-1 relative">
+                                        <input name="pincode" placeholder="Pincode" value={formData.pincode} onChange={handleChange} className={`w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 ${errors.pincode ? 'focus:ring-red-500 border border-red-500' : 'focus:ring-[#0071e3]/20 border border-gray-200'}`} />
+                                        <ValidIcon field="pincode" />
+                                        {errors.pincode && <p className="text-red-500 text-xs">{errors.pincode}</p>}
+                                    </div>
+                                </div>
+                                
+                                <div className="grid md:grid-cols-2 gap-6">
+                                    <input type="date" name="pickupDate" value={formData.pickupDate} onChange={handleChange} className="w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-[#0071e3]/20 border border-gray-200" />
+                                    
+                                    {/* 8. VISUAL TIME SLOTS */}
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-500">Prefered Time</label>
+                                        <div className="grid grid-cols-1 gap-2">
+                                            {["Morning (9-12)", "Afternoon (12-4)", "Evening (4-8)"].map(slot => (
+                                                <button
+                                                    key={slot}
+                                                    onClick={() => setFormData({...formData, pickupTimeSlot: slot})}
+                                                    className={`p-3 rounded-lg text-sm font-medium transition-all text-left flex justify-between ${formData.pickupTimeSlot === slot ? 'bg-black text-white' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'}`}
+                                                >
+                                                    {slot}
+                                                    {formData.pickupTimeSlot === slot && <Check size={16} />}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                             </div>
+                          </div>
+                       )}
+
+                       {step === 2 && (
+                          <div className="space-y-6 text-center">
+                             <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <CheckCircle2 size={40} className="text-green-600" />
+                             </div>
+                             <h3 className="text-2xl font-bold">Ready to submit?</h3>
+                             <p className="text-gray-500 max-w-sm mx-auto">
+                                We'll pick up your {formData.brand} {formData.model} from {formData.city} on {formData.pickupDate}.
+                             </p>
+                          </div>
+                       )}
 
                       <div className="flex justify-between mt-12 pt-8 border-t border-gray-100 gap-4">
                          {step > 0 ? (
@@ -461,6 +642,16 @@ export default function Repair() {
           }}
         />
       )}
+      {/* 3. STICKY MOBILE CTA */}
+      <div className="md:hidden fixed bottom-16 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-gray-200 z-40">
+           <button 
+                onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}
+                className="w-full py-4 bg-[#0071e3] text-white rounded-xl font-bold shadow-lg"
+           >
+                Book Repair Now
+           </button>
+      </div>
+
       <Footer />
     </div>
   );

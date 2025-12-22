@@ -210,12 +210,26 @@ export const googleLogin = async (req, res) => {
 
         // Prefer model helpers to keep validation consistent
         let user = await getUserByEmail(payload.email, true);
+        const db = getDB();
+        const usersCollection = db.collection("users");
 
-        if (!user) {
+        if (user) {
+            // User exists: Update googleId and picture if missing or changed (Sync Profile)
+            const updates = {};
+            if (!user.googleId) updates.googleId = payload.sub; // Link account
+            if (user.picture !== payload.picture) updates.picture = payload.picture; // Sync Avatar
+
+            if (Object.keys(updates).length > 0) {
+               await usersCollection.updateOne(
+                   { _id: user._id },
+                   { $set: { ...updates, updatedAt: new Date() } }
+               );
+               // Update local user object to reflect changes immediately
+               if (updates.googleId) user.googleId = updates.googleId;
+               if (updates.picture) user.picture = updates.picture;
+            }
+        } else {
             // Create a lightweight user record for Google sign-in
-            const db = getDB();
-            const usersCollection = db.collection("users");
-
             const result = await usersCollection.insertOne({
                 name: payload.name,
                 email: payload.email.toLowerCase().trim(),

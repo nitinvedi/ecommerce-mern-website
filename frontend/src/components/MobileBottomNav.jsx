@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ShoppingBag, Wrench, MessageSquare, User, LogIn, LayoutDashboard } from "lucide-react";
+import { Home, Wrench, MessageSquare, User, LogIn, LayoutDashboard } from "lucide-react";
 import useAuth from "../hooks/useAuth";
 
 export default function MobileBottomNav({ openSignUp }) {
@@ -9,7 +9,7 @@ export default function MobileBottomNav({ openSignUp }) {
   const { pathname } = location;
 
   const navItems = [
-    { path: "/", icon: ShoppingBag, label: "Store" },
+    { path: "/", icon: Home, label: "Home" },
     { path: "/repair", icon: Wrench, label: "Repair" },
     ...(user?.role === 'admin' ? [{ path: "/admin", icon: LayoutDashboard, label: "Admin" }] : [{ path: "/contact", icon: MessageSquare, label: "Support" }]),
     { 

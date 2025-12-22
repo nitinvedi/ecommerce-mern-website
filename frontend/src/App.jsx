@@ -8,6 +8,7 @@ import AuthModal from "./components/AuthModal";
 import ChatWidget from "./components/ChatWidget";
 import Breadcrumbs from "./components/Breadcrumbs";
 import MobileBottomNav from "./components/MobileBottomNav";
+import GoogleOneTap from "./components/GoogleOneTap";
 import { NotificationProvider } from "./context/NotificationContext";
 
 // PAGES
@@ -71,6 +72,9 @@ export default function App() {
 
       {/* ✅ GLOBAL AUTH MODAL */}
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+      
+      {/* ⚡ ONE TAP LOGIN */}
+      <GoogleOneTap />
 
       {/* ROUTES */}
       <Routes>

@@ -160,7 +160,7 @@ export default function Navbar({ openSignUp, openChat }) {
   const [searchFocused, setSearchFocused] = useState(false);
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { cartItems, getCartItemsCount } = useCart();
   const { unreadCount } = useNotification();
 
@@ -445,6 +445,12 @@ export default function Navbar({ openSignUp, openChat }) {
                       className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-700 text-sm font-medium"
                     >
                       <Settings size={18} /> Settings
+                    </button>
+                    <button
+                      onClick={() => { logout(); setMobileMenuOpen(false); navigate('/'); }}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-red-50 text-red-600 text-sm font-medium"
+                    >
+                      <LogOut size={18} /> Log Out
                     </button>
                   </div>
                 ) : (

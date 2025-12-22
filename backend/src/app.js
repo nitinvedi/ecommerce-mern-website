@@ -101,22 +101,13 @@ app.use(`${apiPrefix}/payment`, paymentRoutes);
 
 
 // Serve frontend in production
+// Serve frontend in production
 if (appConfig.nodeEnv === "production") {
-  const frontendPath = path.join(__dirname, "../../frontend/dist");
-  app.use(express.static(frontendPath));
+  const rootPath = path.resolve(); // Use rootPath to avoid conflict/confusion with top-level __dirname
+  app.use(express.static(path.join(rootPath, "frontend/dist")));
 
-  // Serve frontend for all non-API routes (SPA Fallback)
-  app.get(/(.*)/, (req, res, next) => {
-    // Don't serve frontend for API routes - pass to 404 handler
-    if (req.path.startsWith("/api")) {
-       return next();
-    }
-    
-    res.sendFile(path.join(frontendPath, "index.html"), (err) => {
-       if (err) {
-          next(err); // Pass error if file sending fails
-       }
-    });
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(rootPath, "frontend", "dist", "index.html"));
   });
 } else {
   // Development: API root endpoint

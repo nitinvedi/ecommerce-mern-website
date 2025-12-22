@@ -304,7 +304,7 @@ export default function ChatWidget({ isOpen, onClose }) {
                     </button>
                   </div>
                   <div className="text-center mt-2">
-                       <p className="text-[10px] text-gray-300 font-medium tracking-wide">Powered by <span className="font-bold text-gray-400">TechFix</span></p>
+                       <p className="text-[10px] text-gray-300 font-medium tracking-wide">Powered by <span className="font-bold text-gray-400">Ram Mobiles</span></p>
                   </div>
                 </form>
               </>

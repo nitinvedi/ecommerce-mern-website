@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { X, Mail, Lock, User, ArrowRight, Chrome, KeyRound, ArrowLeft } from "lucide-react";
 import useAuth from "../hooks/useAuth";
@@ -187,30 +187,41 @@ export default function AuthModal({ open, onClose, onAuthSuccess }) {
   };
 
   /* ---------- GOOGLE ---------- */
-  const handleGoogleLogin = () => {
-    setError("");
-    if (!window.google) return setError("Google auth not loaded");
-    
-    window.google.accounts.id.initialize({
-      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-      callback: async (response) => {
-        console.log("Google Auth Callback Received", response);
-        try {
-          const data = await api.post(API_ENDPOINTS.AUTH.GOOGLE_LOGIN, {
-            credential: response.credential
-          });
-          console.log("Google Login API Success", data);
-          setAuthToken(data.token || data.data?.token);
-          await refreshProfile();
+  useEffect(() => {
+    // Render button only when modal is open and in signin/signup mode
+    if (open && (mode === "signin" || mode === "signup")) {
+       if (window.google?.accounts?.id) {
+           window.google.accounts.id.renderButton(
+               document.getElementById("google-signin-button"),
+               { 
+                   theme: "outline", 
+                   size: "large", 
+                   width: '100%', // Attempt to fill, though Google caps it
+                   text: mode === "signup" ? "signup_with" : "signin_with",
+                   shape: "pill"
+               }
+           );
+       }
+    }
+  }, [open, mode]);
+
+  // Keep this handler for reference, but button uses internal callback defined in index.html (if configured) OR we need to pass it?
+  // Actually, we initialized it in `GoogleOneTap`. But `renderButton` might need it re-initialized if we want a specific callback here?
+  // Wait, `GoogleOneTap` initializes the client globally with a callback.
+  // The global callback handles the response. We just need to render the button. 
+  // If we want specific logic (like closing modal), we might need to listen to the global event or rely on `refreshProfile` triggering context update which closes modal?
+  // Ah, `GoogleOneTap` handles login. But `AuthModal` needs to close.
+  // We should probably define the callback here too or rely on `user` change effect to close modal?
+  // Let's rely on AuthContext user change?
+  // AuthModal doesn't listen to user change to close... let's add that.
+
+  // Effect to close modal on successful login
+  const { user } = useAuth();
+  useEffect(() => {
+      if (user && open) {
           handleAuthSuccess();
-        } catch (error) {
-          console.error("Google Login API Failed", error);
-          setError(error.response?.data?.debug || "Google login failed");
-        }
       }
-    });
-    window.google.accounts.id.prompt();
-  };
+  }, [user]);
 
   /* ---------- SUCCESS HANDLER ---------- */
   const handleAuthSuccess = () => {
@@ -569,13 +580,7 @@ export default function AuthModal({ open, onClose, onAuthSuccess }) {
                               </div>
                            </div>
 
-                           <button
-                              onClick={handleGoogleLogin}
-                              className="w-full bg-white border border-gray-200 text-gray-700 py-3 rounded-xl font-medium hover:bg-gray-50 transition-all flex items-center justify-center gap-3"
-                           >
-                              <Chrome size={20} className="text-blue-600" />
-                              Google
-                           </button>
+                           <div id="google-signin-button" className="flex justify-center h-[50px]"></div>
                        </>
                    )}
                 </div>

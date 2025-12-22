@@ -195,7 +195,7 @@ export const updateOrderStatus = async (req, res) => {
     if (statusMessages[status] || statusMessages[msgStatus]) {
       const msg = statusMessages[status] || statusMessages[msgStatus];
       const notification = await Notification.createNotification({
-        user: updatedOrder.user,
+        user: order.user,
         type: "order",
         title: msg.title,
         message: msg.message,
@@ -204,7 +204,7 @@ export const updateOrderStatus = async (req, res) => {
 
       // Emit real-time notification via Socket.IO
       const { emitNotification } = await import("../socket/socketHandler.js");
-      emitNotification(updatedOrder.user.toString(), notification);
+      emitNotification(order.user.toString(), notification);
     }
 
     res.json(updatedOrder);

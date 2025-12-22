@@ -110,6 +110,12 @@ export const API_ENDPOINTS = {
     BY_ID: (id) => `${API_BASE_URL}/parts/${id}`,
     STOCK: (id) => `${API_BASE_URL}/parts/${id}/stock`,
   },
+
+  // Payment
+  PAYMENT: {
+    CREATE_ORDER: `${API_BASE_URL}/payment/create-order`,
+    VERIFY: `${API_BASE_URL}/payment/verify`,
+  },
 };
 
 // Auth token helpers

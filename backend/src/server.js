@@ -79,6 +79,7 @@ process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 
 // Handle uncaught exceptions
 process.on("uncaughtException", (error) => {
+  console.error("UNCAUGHT EXCEPTION RAW:", error); // Force print to console
   logger.error("Uncaught Exception", error);
   process.exit(1);
 });

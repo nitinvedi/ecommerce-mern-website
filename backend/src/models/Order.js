@@ -41,7 +41,7 @@ export const validateOrder = (orderData) => {
     if (!phone) errors.push("Shipping address: Phone is required");
   }
 
-  const validPaymentMethods = ['Cash on Delivery', 'Credit Card', 'Debit Card', 'UPI', 'Net Banking'];
+  const validPaymentMethods = ['Cash on Delivery', 'Credit Card', 'Debit Card', 'UPI', 'Net Banking', 'Razorpay'];
   if (!orderData.paymentMethod || !validPaymentMethods.includes(orderData.paymentMethod)) {
     errors.push("Valid payment method is required");
   }
@@ -153,7 +153,7 @@ export const updateOrderStatus = async (orderId, status) => {
   }
 
   const updateData = { status, updatedAt: new Date() };
-  
+
   if (status === 'Delivered') {
     updateData.isDelivered = true;
     updateData.deliveredAt = new Date();

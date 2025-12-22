@@ -27,7 +27,14 @@ import addressRoutes from "./routes/addressRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import partsRoutes from "./routes/partsRoutes.js";
+// <<<<<<< Updated upstream
+// import cartRoutes from "./routes/cartRoutes.js";
+// =======
+// import paymentRoutes from "./routes/paymentRoutes.js";
+// >>>>>>> Stashed changes
 import cartRoutes from "./routes/cartRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -84,7 +91,14 @@ app.use(`${apiPrefix}/addresses`, addressRoutes);
 app.use(`${apiPrefix}/dashboard`, dashboardRoutes);
 app.use(`${apiPrefix}/chat`, chatRoutes);
 app.use(`${apiPrefix}/parts`, partsRoutes);
+// <<<<<<< Updated upstream
+// app.use(`${apiPrefix}/cart`, cartRoutes);
+// =======
+// app.use(`${apiPrefix}/payment`, paymentRoutes);
+// >>>>>>> Stashed changes
 app.use(`${apiPrefix}/cart`, cartRoutes);
+app.use(`${apiPrefix}/payment`, paymentRoutes);
+
 
 // Serve frontend in production
 if (appConfig.nodeEnv === "production") {

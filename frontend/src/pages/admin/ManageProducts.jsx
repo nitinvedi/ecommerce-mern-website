@@ -24,6 +24,9 @@ const inputClass =
   "w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 outline-none focus:ring-2 focus:ring-black/20";
 const labelClass = "text-xs font-medium text-gray-500 mb-1 block";
 
+// MATCHING BACKEND VALIDATION
+const CATEGORIES = ['Mobile', 'Tablet', 'Laptop', 'Accessories', 'Parts', 'Other'];
+
 export default function ManageProducts() {
   const { user } = useAuth();
   const [products, setProducts] = useState([]);
@@ -153,7 +156,7 @@ export default function ManageProducts() {
       fetchProducts();
     } catch (err) {
       console.error("Save failed", err);
-      alert("Failed to save product");
+      alert(err.message || "Failed to save product");
     }
   };
 
@@ -193,8 +196,6 @@ export default function ManageProducts() {
   };
 
   /* ---------------- Derived ---------------- */
-  const categories = useMemo(() => [...new Set(products.map((p) => p.category))], [products]);
-  
   const filtered = useMemo(() => {
     return products.filter((p) => {
       const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
@@ -227,7 +228,7 @@ export default function ManageProducts() {
                 <button
                   onClick={() => {
                     setEditing(null);
-                    setForm({ name: "", brand: "", description: "", price: "", stock: "", category: "", isActive: true, images: [] });
+                    setForm({ name: "", brand: "", description: "", price: "", stock: "", category: CATEGORIES[0], isActive: true, images: [] });
                     setFiles([]);
                     setShowModal(true);
                   }}
@@ -256,7 +257,7 @@ export default function ManageProducts() {
               className="px-4 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-black"
            >
               <option value="all">All Categories</option>
-              {categories.map(c => <option key={c} value={c}>{c}</option>)}
+              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
            </select>
         </div>
 
@@ -378,10 +379,15 @@ export default function ManageProducts() {
 
                      <div>
                         <label className={labelClass}>Category</label>
-                        <input className={inputClass} value={form.category} onChange={e => setForm({...form, category: e.target.value})} required list="cat-suggestions" />
-                        <datalist id="cat-suggestions">
-                           {categories.map(c => <option key={c} value={c} />)}
-                        </datalist>
+                        <select 
+                           className={inputClass} 
+                           value={form.category} 
+                           onChange={e => setForm({...form, category: e.target.value})} 
+                           required
+                        >
+                           <option value="" disabled>Select Category</option>
+                           {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
                      </div>
 
                      <div>

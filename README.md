@@ -1,9 +1,8 @@
+# Live Website: https://ecommerce-mern-website-1.com
+
 # Frontend-Backend Connection Setup Guide
 
 This guide explains how the frontend and backend are connected and how to run them together.
-
-## Project Live Link
-https://ecommerce-mern-website-1.onrender.com/
 
 ## Architecture
 

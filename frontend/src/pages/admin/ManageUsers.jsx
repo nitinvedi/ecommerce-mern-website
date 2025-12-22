@@ -19,6 +19,8 @@ import { api, API_ENDPOINTS } from "../../config/api";
 import useAuth from "../../hooks/useAuth";
 import { useToast } from "../../context/ToastContext";
 import AdminLayout from "../../layouts/AdminLayout";
+import { getErrorMessage } from "../../utils/errorHandler.js";
+
 
 /* ---------------- UI helpers ---------------- */
 const input =
@@ -70,7 +72,7 @@ export default function ManageUsers() {
       setUsers(items);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to load users");
+      toast.error(getErrorMessage(err, "Failed to load users"));
       setUsers([]);
     } finally {
       setLoading(false);
@@ -85,7 +87,7 @@ export default function ManageUsers() {
       toast.success("User deleted");
       fetchUsers();
     } catch (err) {
-      toast.error("Delete failed");
+      toast.error(getErrorMessage(err, "Delete failed"));
     }
   };
 
@@ -98,7 +100,7 @@ export default function ManageUsers() {
       setSelectedIds(new Set());
       fetchUsers();
     } catch (err) {
-      toast.error("Some deletes failed");
+      toast.error(getErrorMessage(err, "Some deletes failed"));
     }
   };
 
@@ -150,7 +152,7 @@ export default function ManageUsers() {
       setEditing(null);
       fetchUsers();
     } catch (err) {
-      toast.error("Update failed");
+      toast.error(getErrorMessage(err, "Update failed"));
     }
   };
 

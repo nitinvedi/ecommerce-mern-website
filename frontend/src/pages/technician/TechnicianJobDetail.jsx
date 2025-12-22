@@ -4,6 +4,8 @@ import { ArrowLeft, User, Calendar, Save, DollarSign, PenTool, CheckCircle } fro
 import { api, API_ENDPOINTS, SOCKET_URL } from "../../config/api";
 import { useToast } from "../../context/ToastContext";
 import useAuth from "../../hooks/useAuth";
+import { getErrorMessage } from "../../utils/errorHandler.js";
+
 
 export default function TechnicianJobDetail() {
   const { id } = useParams();
@@ -34,7 +36,7 @@ export default function TechnicianJobDetail() {
       setStatus(data.status);
       setFinalCost(data.finalRepairCost || "");
     } catch (error) {
-      toast.error("Failed to load job details");
+      toast.error(getErrorMessage(error, "Failed to load job details"));
       navigate("/technician/jobs");
     } finally {
       setLoading(false);
@@ -79,7 +81,7 @@ export default function TechnicianJobDetail() {
 
     } catch (error) {
         console.error(error);
-        toast.error(error.message || "Failed to update job");
+        toast.error(getErrorMessage(error, "Failed to update job"));
     } finally {
         setSaving(false);
     }

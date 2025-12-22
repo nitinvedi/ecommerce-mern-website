@@ -6,6 +6,8 @@ import { api, API_ENDPOINTS, SOCKET_URL } from "../config/api.js";
 import { useCart } from "../context/CartContext.jsx";
 import useAuth from "../hooks/useAuth.js";
 import { useToast } from "../context/ToastContext.jsx";
+import { getErrorMessage } from "../utils/errorHandler.js";
+
 
 const GrainOverlay = () => (
     <div className="absolute inset-0 opacity-[0.03] pointer-events-none z-0" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}></div>
@@ -34,7 +36,7 @@ export default function Wishlist() {
       }
     } catch (error) {
     //   if (error.message && !error.message.includes("401")) {
-    //     toast.error(error.message || "Failed to load wishlist");
+        toast.error(getErrorMessage(error, "Failed to load wishlist"));
     //   }
       setWishlist([]);
     } finally {
@@ -48,7 +50,7 @@ export default function Wishlist() {
       setWishlist(wishlist.filter(item => item._id !== productId));
       toast.success("Removed from wishlist");
     } catch (error) {
-      toast.error("Failed to remove item");
+      toast.error(getErrorMessage(error, "Failed to remove item"));
     }
   };
 

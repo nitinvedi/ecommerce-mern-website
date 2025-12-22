@@ -28,6 +28,8 @@ import {
 import { api, API_ENDPOINTS, SOCKET_URL } from "../config/api.js";
 import { useCart } from "../context/CartContext.jsx";
 import { useToast } from "../context/ToastContext.jsx";
+import { getErrorMessage } from "../utils/errorHandler.js";
+
 import useAuth from "../hooks/useAuth.js";
 import ProductFilters from "../components/ProductFilters.jsx";
 import ProductSort from "../components/ProductSort.jsx";
@@ -201,7 +203,7 @@ export default function Store() {
       let items = res?.data?.items || res?.items || (Array.isArray(res?.data) ? res.data : []) || (Array.isArray(res) ? res : []);
       setProducts(items);
     } catch (error) {
-      toast.error("Failed to load products");
+      toast.error(getErrorMessage(error, "Failed to load products"));
     } finally {
       setLoading(false);
     }
@@ -236,7 +238,7 @@ export default function Store() {
       }
     } catch (error) {
       setWishlistItems(prev => isInWishlist ? [...prev, productId] : prev.filter(id => id !== productId));
-      toast.error("Failed to update wishlist");
+      toast.error(getErrorMessage(error, "Failed to update wishlist"));
     }
   };
 

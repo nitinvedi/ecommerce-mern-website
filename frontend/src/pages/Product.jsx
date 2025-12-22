@@ -18,6 +18,8 @@ import { api, API_ENDPOINTS, SOCKET_URL } from "../config/api.js";
 import { useCart } from "../context/CartContext.jsx";
 import useAuth from "../hooks/useAuth.js";
 import { useToast } from "../context/ToastContext.jsx";
+import { getErrorMessage } from "../utils/errorHandler.js";
+
 import AuthModal from "../components/AuthModal";
  // Assuming Navbar is globally available
 import { addToRecentlyViewed, getRelatedProducts } from "../utils/recommendations.js";
@@ -59,8 +61,8 @@ export default function Product() {
     try {
       const res = await api.get(API_ENDPOINTS.PRODUCTS.BY_ID(id));
       setProduct(res.data);
-    } catch {
-      toast.error("Failed to load product");
+      toast.error(getErrorMessage(error, "Failed to load product"));
+
     } finally {
       setLoading(false);
     }
@@ -105,8 +107,9 @@ export default function Product() {
       toast.success("Review submitted");
       setReview({ rating: 5, comment: "" });
       fetchProduct();
-    } catch {
-      toast.error("Failed to submit review");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Failed to submit review"));
+
     } finally {
       setSubmittingReview(false);
     }

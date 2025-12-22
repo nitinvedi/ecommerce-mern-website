@@ -3,6 +3,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/signup.css";
 import useAuth from "../hooks/useAuth.js";
+import { getErrorMessage } from "../utils/errorHandler.js";
+
 
 export default function SignUp({ onClose, onSwitchToSignIn }) {
 
@@ -49,7 +51,7 @@ export default function SignUp({ onClose, onSwitchToSignIn }) {
                 setError("Registration failed. Please try again.");
             }
         } catch (err) {
-            setError(err.message || "Registration failed");
+            setError(getErrorMessage(err, "Registration failed"));
         } finally {
             setLoading(false);
         }

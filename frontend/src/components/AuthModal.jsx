@@ -5,6 +5,8 @@ import { X, Mail, Lock, User, ArrowRight, Chrome, KeyRound, ArrowLeft } from "lu
 import useAuth from "../hooks/useAuth";
 import { api, API_ENDPOINTS, setAuthToken } from "../config/api";
 import { validate, validateForm } from "../utils/validation";
+import { getErrorMessage } from "../utils/errorHandler.js";
+
 
 const variants = {
   initial: { opacity: 0, x: 20 },
@@ -76,7 +78,7 @@ export default function AuthModal({ open, onClose, onAuthSuccess }) {
         setError("Invalid email or password");
       }
     } catch (e) {
-      setError(e.message || "Login failed");
+      setError(getErrorMessage(e, "Login failed"));
     } finally {
       setLoading(false);
     }
@@ -115,7 +117,7 @@ export default function AuthModal({ open, onClose, onAuthSuccess }) {
         setError("Registration failed");
       }
     } catch (e) {
-      setError(e.message || "Registration failed");
+      setError(getErrorMessage(e, "Registration failed"));
     } finally {
       setLoading(false);
     }
@@ -151,7 +153,7 @@ export default function AuthModal({ open, onClose, onAuthSuccess }) {
           }
       } catch (e) {
           console.error(e);
-          setError(e.response?.data?.message || "Failed to process request");
+          setError(getErrorMessage(e, "Failed to process request"));
       } finally {
           setLoading(false);
       }
@@ -180,7 +182,7 @@ export default function AuthModal({ open, onClose, onAuthSuccess }) {
               setForm(f => ({ ...f, password: "", confirmPassword: "", resetToken: "" }));
           }, 2000);
       } catch (e) {
-          setError(e.response?.data?.message || "Failed to reset password");
+          setError(getErrorMessage(e, "Failed to reset password"));
       } finally {
           setLoading(false);
       }

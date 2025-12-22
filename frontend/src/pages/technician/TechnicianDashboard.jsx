@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import { api, API_ENDPOINTS } from "../../config/api";
 import { useToast } from "../../context/ToastContext";
+import { getErrorMessage } from "../../utils/errorHandler.js";
+
 
 export default function TechnicianDashboard() {
   const { user } = useAuth();
@@ -49,7 +51,7 @@ export default function TechnicianDashboard() {
 
     } catch (err) {
       console.error("Failed to load dashboard data", err);
-      toast.error("Failed to refresh dashboard");
+      toast.error(getErrorMessage(err, "Failed to refresh dashboard"));
     } finally {
       setLoading(false);
     }

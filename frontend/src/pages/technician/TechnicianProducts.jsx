@@ -12,6 +12,8 @@ import {
 import { api, API_ENDPOINTS } from "../../config/api";
 import useAuth from "../../hooks/useAuth";
 import { useToast } from "../../context/ToastContext";
+import { getErrorMessage } from "../../utils/errorHandler.js";
+
 
 const input =
   "w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 outline-none focus:ring-2 focus:ring-black/20";
@@ -53,8 +55,9 @@ export default function TechnicianProducts() {
       setParts(Array.isArray(items) ? items : []);
     } catch (err) {
       console.error("Fetch parts failed", err);
-      toast.error("Failed to load inventory");
+      toast.error(getErrorMessage(err, "Failed to load inventory"));
       setParts([]);
+
     } finally {
       setLoading(false);
     }
@@ -119,7 +122,7 @@ export default function TechnicianProducts() {
       fetchParts();
     } catch (err) {
       console.error("Save failed", err);
-      toast.error(err.message || "Failed to save part");
+      toast.error(getErrorMessage(err, "Failed to save part"));
     }
   };
 
@@ -130,7 +133,7 @@ export default function TechnicianProducts() {
         toast.success("Part removed");
         fetchParts();
     } catch (err) {
-        toast.error("Failed to delete part");
+        toast.error(getErrorMessage(err, "Failed to delete part"));
     }
   };
 

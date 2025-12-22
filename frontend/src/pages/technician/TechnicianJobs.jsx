@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import { api, API_ENDPOINTS } from "../../config/api";
 import { useToast } from "../../context/ToastContext";
+import { getErrorMessage } from "../../utils/errorHandler.js";
+
 
 export default function TechnicianJobs() {
   const navigate = useNavigate();
@@ -45,8 +47,9 @@ export default function TechnicianJobs() {
       setRepairs(Array.isArray(items) ? items : []);
     } catch (err) {
       console.error("Failed to load technician repairs", err);
-      toast.error("Failed to load jobs");
+      toast.error(getErrorMessage(err, "Failed to load jobs"));
       setRepairs([]);
+
     } finally {
       setLoading(false);
     }
@@ -62,7 +65,7 @@ export default function TechnicianJobs() {
           fetchRepairs(); // Refresh
       } catch (err) {
           console.error(err);
-          toast.error("Failed to take job");
+          toast.error(getErrorMessage(err, "Failed to take job"));
       }
   };
 

@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, Phone, MapPin } from "lucide-react";
 import { useToast } from "../context/ToastContext.jsx";
+import { getErrorMessage } from "../utils/errorHandler.js";
+
 import { api, API_ENDPOINTS } from "../config/api.js";
 import { validate, validateForm } from "../utils/validation.js";
 
@@ -45,7 +47,7 @@ export default function Contact() {
       toast.success("Message sent. We’ll reply shortly.");
       setForm({ name: "", email: "", message: "" });
     } catch (error) {
-      toast.error(error.message || "Failed to send message");
+      toast.error(getErrorMessage(error, "Failed to send message"));
     } finally {
       setLoading(false);
     }

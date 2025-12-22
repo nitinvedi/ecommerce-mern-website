@@ -16,6 +16,8 @@ import { validate, validateForm } from "../utils/validation.js";
 import { useCart } from "../context/CartContext.jsx";
 import useAuth from "../hooks/useAuth.js";
 import { useToast } from "../context/ToastContext.jsx";
+import { getErrorMessage } from "../utils/errorHandler.js";
+
 
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
 import CheckoutProgress from "../components/CheckoutProgress.jsx";
@@ -113,8 +115,8 @@ function CheckoutPage() {
 
           } catch (err) {
             console.error("Order Creation Error Full:", err);
-            const msg = err.response?.data?.message || err.message || "Order creation failed";
-            toast.error(`Order Failed: ${msg}`);
+            toast.error(getErrorMessage(err, "Order Failed"));
+
           } finally {
             setLoading(false);
           }
@@ -139,7 +141,7 @@ function CheckoutPage() {
     } catch (err) {
       console.error("Payment initiation error:", err);
       console.error("Error response:", err.response);
-      toast.error(err.response?.data?.message || err.message || "Failed to initiate payment");
+      toast.error(getErrorMessage(err, "Failed to initiate payment"));
       setLoading(false);
     }
   };
@@ -193,7 +195,7 @@ function CheckoutPage() {
         clearCart();
         navigate(`/orders/${res.data.data._id}`);
       } catch (err) {
-        toast.error(err.response?.data?.message || "Failed to place order");
+        toast.error(getErrorMessage(err, "Failed to place order"));
       } finally {
         setLoading(false);
       }

@@ -28,6 +28,8 @@ import Footer from "../components/Footer";
 import AuthModal from "../components/AuthModal";
 import useAuth from "../hooks/useAuth";
 import { useToast } from "../context/ToastContext";
+import { getErrorMessage } from "../utils/errorHandler.js";
+
 import { API_ENDPOINTS, uploadFile } from "../config/api";
 import { validate, validateForm } from "../utils/validation";
 
@@ -182,7 +184,7 @@ export default function Repair() {
       navigate("/dashboard");
     } catch (error) {
       console.error("Booking Error:", error);
-      toast.error(error.message || "Booking failed. Please try again.");
+      toast.error(getErrorMessage(error, "Booking failed. Please try again."));
     } finally {
       setLoading(false);
     }

@@ -6,6 +6,8 @@ import useAuth from "../hooks/useAuth.js";
 import { useToast } from "../context/ToastContext.jsx";
 import { useChatSocket } from "../hooks/useChatSocket.js";
 import { formatTime, groupMessagesByDate, playNotificationSound } from "../utils/chatUtils.js";
+import { getErrorMessage } from "../utils/errorHandler.js";
+
 
 export default function ChatWidget({ isOpen, onClose }) {
   const { user } = useAuth();
@@ -108,7 +110,7 @@ export default function ChatWidget({ isOpen, onClose }) {
       sendStopTyping(supportAdmin._id);
     } catch (error) {
       console.error("Failed to save message");
-      toast.error("Failed to send message");
+      toast.error(getErrorMessage(error, "Failed to send message"));
     }
   };
 

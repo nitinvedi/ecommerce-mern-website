@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { MapPin, Plus, Edit2, Trash2, Check, X, ArrowLeft } from "lucide-react";
 import { api, API_ENDPOINTS } from "../config/api.js";
 import { validate, validateForm } from "../utils/validation.js";
+import { getErrorMessage } from "../utils/errorHandler.js";
+
 import useAuth from "../hooks/useAuth.js";
 import { useToast } from "../context/ToastContext.jsx";
 import Navbar from "../components/Navbar.jsx";
@@ -41,7 +43,7 @@ function AddressesPage() {
       const res = await api.get(API_ENDPOINTS.ADDRESSES.BASE);
       setAddresses(res.data || []);
     } catch (error) {
-      toast.error("Failed to load addresses");
+      toast.error(getErrorMessage(error, "Failed to load addresses"));
     } finally {
       setLoading(false);
     }
@@ -80,7 +82,7 @@ function AddressesPage() {
       fetchAddresses();
       closeModal();
     } catch (error) {
-      toast.error(error.message || "Failed to save address");
+      toast.error(getErrorMessage(error, "Failed to save address"));
     }
   };
 
@@ -92,7 +94,7 @@ function AddressesPage() {
       setAddresses(addresses.filter(addr => addr._id !== id));
       toast.success("Address deleted");
     } catch (error) {
-      toast.error("Failed to delete address");
+      toast.error(getErrorMessage(error, "Failed to delete address"));
     }
   };
 
@@ -102,7 +104,7 @@ function AddressesPage() {
       fetchAddresses();
       toast.success("Default address updated");
     } catch (error) {
-      toast.error("Failed to set default address");
+      toast.error(getErrorMessage(error, "Failed to set default address"));
     }
   };
 

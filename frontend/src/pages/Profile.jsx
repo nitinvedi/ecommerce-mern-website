@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import { api, API_ENDPOINTS } from "../config/api";
 import { useToast } from "../context/ToastContext";
+import { getErrorMessage } from "../utils/errorHandler.js";
+
 
 import DashboardSidebar from "../components/DashboardSidebar.jsx";
 
@@ -54,8 +56,8 @@ export default function Profile() {
             zip: data.address?.zip || ""
           }
         });
-      } catch {
-        toast.error("Failed to load profile");
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Failed to load profile"));
       }
     })();
   }, [user, navigate, toast]);
@@ -91,8 +93,8 @@ export default function Profile() {
       await refreshProfile();
       setEditing(false);
       toast.success("Profile updated successfully");
-    } catch {
-      toast.error("Failed to update profile");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Failed to update profile"));
     } finally {
       setLoading(false);
     }
@@ -116,7 +118,7 @@ export default function Profile() {
       toast.success("Password updated");
       setPwdForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
     } catch (err) {
-      toast.error(err.message || "Failed to update password");
+      toast.error(getErrorMessage(err, "Failed to update password"));
     } finally {
       setChangingPwd(false);
     }

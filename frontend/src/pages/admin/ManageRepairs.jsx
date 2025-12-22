@@ -18,6 +18,8 @@ import { api, API_ENDPOINTS } from "../../config/api";
 import useAuth from "../../hooks/useAuth";
 import { useToast } from "../../context/ToastContext";
 import AdminLayout from "../../layouts/AdminLayout";
+import { getErrorMessage } from "../../utils/errorHandler.js";
+
 
 export default function ManageRepairs() {
   const { user } = useAuth();
@@ -93,7 +95,7 @@ export default function ManageRepairs() {
       fetchRepairs();
     } catch (err) {
       console.error(err);
-      toast.error("Failed to update repair");
+      toast.error(getErrorMessage(err, "Failed to update repair"));
     }
   };
 

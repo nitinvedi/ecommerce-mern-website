@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { api, API_ENDPOINTS } from "../config/api.js";
 import { useToast } from "../context/ToastContext.jsx";
+import { getErrorMessage } from "../utils/errorHandler.js";
+
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
 
 function OrderDetailPage() {
@@ -22,7 +24,7 @@ function OrderDetailPage() {
       setOrder(res.data);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to load order");
+      toast.error(getErrorMessage(err, "Failed to load order"));
       navigate("/orders");
     } finally {
       setLoading(false);

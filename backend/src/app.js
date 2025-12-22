@@ -120,3 +120,5 @@ app.use(errorLogger);
 app.use(errorHandler);
 
 export default app;
+
+// Deployment trigger: Fix Express 5 wildcard route

@@ -181,10 +181,10 @@ export default function Navbar({ openSignUp, openChat }) {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/?search=${encodeURIComponent(searchQuery)}`);
+      navigate(`/store?search=${encodeURIComponent(searchQuery)}`);
       setSearchFocused(false);
     } else {
-      navigate('/');
+      navigate('/store');
     }
   };
 

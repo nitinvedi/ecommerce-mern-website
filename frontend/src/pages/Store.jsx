@@ -291,25 +291,43 @@ export default function Store() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[150] bg-white/95 backdrop-blur-2xl flex items-center justify-center p-6"
+            className="fixed inset-0 z-[150] bg-black/40 backdrop-blur-sm flex items-start justify-center pt-32 px-4"
+            onClick={() => setShowSearch(false)}
           >
-            <button onClick={() => setShowSearch(false)} className="absolute top-8 right-8 p-4 hover:bg-gray-100 rounded-full transition-colors">
-              <X size={32} />
-            </button>
-            <div className="w-full max-w-4xl text-center">
-              <input
-                autoFocus
-                type="text"
-                placeholder="Search products..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') setShowSearch(false); }}
-                className="w-full text-5xl md:text-7xl font-bold bg-transparent border-b-2 border-gray-200 focus:border-black py-8 outline-none text-center placeholder:text-gray-200 transition-colors"
-                style={{ fontFamily: 'Inter, sans-serif' }}
-              />
-              
-              {!searchTerm && <p className="mt-6 text-gray-400">Press Enter to see all results</p>}
-            </div>
+            <motion.div 
+               initial={{ scale: 0.95, opacity: 0, y: -20 }}
+               animate={{ scale: 1, opacity: 1, y: 0 }}
+               exit={{ scale: 0.95, opacity: 0, y: -20 }}
+               onClick={(e) => e.stopPropagation()}
+               className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-white/20 ring-1 ring-black/5"
+            >
+                <div className="relative">
+                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400" size={24} />
+                    <input
+                        autoFocus
+                        type="text"
+                        placeholder="Search products..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') setShowSearch(false); }}
+                        className="w-full pl-16 pr-16 py-6 text-xl bg-transparent outline-none placeholder:text-gray-400 text-gray-900"
+                    />
+                     <button 
+                        onClick={() => setShowSearch(false)}
+                        className="absolute right-6 top-1/2 -translate-y-1/2 p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600 transition-colors"
+                     >
+                        <X size={20} />
+                    </button>
+                </div>
+                {!searchTerm && (
+                   <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100">
+                      <div className="flex items-center justify-between text-xs text-gray-400">
+                          <span>Enter to search</span>
+                          <span>Esc to close</span>
+                      </div>
+                   </div>
+                )}
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

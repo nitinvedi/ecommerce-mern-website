@@ -35,14 +35,14 @@ export const createRepair = asyncHandler(async (req, res) => {
   try {
     const { sendEmail, emailTemplates } = await import("../utils/emailService.js");
     const user = await (await import("../models/User.js")).default.getUserById(userId);
-    await sendEmail({
+    sendEmail({
       to: user.email,
       ...emailTemplates.repairUpdate(
         { ...repair, fullName: user.name },
         "Repair Request Received",
         "We have received your repair request and will review it shortly."
       )
-    });
+    }).catch(err => console.error("Background email failed:", err.message));
   } catch (error) {
     console.error("Email service failed:", error.message);
   }
@@ -181,12 +181,12 @@ export const updateRepair = asyncHandler(async (req, res) => {
 
     try {
       const { sendEmail } = await import("../utils/emailService.js");
-      await sendEmail({
+      sendEmail({
         to: tech.email,
         subject: `New Job Assigned: ${repair.trackingId}`,
         html: `<p>You have been assigned a new repair job.</p><p>Device: ${repair.brand} ${repair.model}</p><p>Issue: ${repair.issue}</p>`,
         text: `You have been assigned a new repair job: ${repair.trackingId}`
-      });
+      }).catch(err => console.error("Technician email failed:", err.message));
     } catch (error) {
       console.error("Technician assignment email failed:", error.message);
     }
@@ -252,11 +252,12 @@ export const updateRepair = asyncHandler(async (req, res) => {
 
       for (const change of changes) {
         console.log(`[Email Debug] Sending email to ${updatedRepair.user?.email} for ${change.type}`);
-        const result = await sendEmail({
+        console.log(`[Email Debug] Sending email to ${updatedRepair.user?.email} for ${change.type}`);
+        sendEmail({
           to: updatedRepair.user.email,
           ...emailTemplates.repairUpdate(updatedRepair, change.title, change.message)
-        });
-        console.log(`[Email Debug] Send Result:`, result);
+        }).then(result => console.log(`[Email Debug] Background Send Result:`, result))
+          .catch(err => console.error("Update email failed:", err.message));
       }
     }
   } catch (error) {
@@ -315,14 +316,14 @@ export const addStatusUpdate = asyncHandler(async (req, res) => {
   // Notify Customer (Email)
   try {
     const { sendEmail, emailTemplates } = await import("../utils/emailService.js");
-    await sendEmail({
+    sendEmail({
       to: repair.user.email,
       ...emailTemplates.repairUpdate(
         { ...repair, status },
         `Status Update: ${status}`,
         `Your repair status is now "${status}". ${note ? `Note: ${note}` : ''}`
       )
-    });
+    }).catch(err => console.error("Status email failed:", err.message));
   } catch (error) {
     console.error("Status update email failed:", error.message);
   }

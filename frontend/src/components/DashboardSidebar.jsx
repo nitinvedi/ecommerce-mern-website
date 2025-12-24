@@ -4,11 +4,10 @@ import {
   LayoutDashboard, 
   ShoppingBag, 
   User, 
-  MapPin, 
   Heart, 
   Bell,
   Wrench,
-  LogOut 
+  LogOut  
 } from "lucide-react";
 import useAuth from "../hooks/useAuth";
 
@@ -17,7 +16,6 @@ const menuItems = [
   { icon: ShoppingBag, label: "My Orders", path: "/orders" },
   { icon: Wrench, label: "My Repairs", path: "/my-repairs" },
   { icon: User, label: "Profile Settings", path: "/profile" },
-  { icon: MapPin, label: "Addresses", path: "/addresses" },
   { icon: Heart, label: "Wishlist", path: "/wishlist" },
   { icon: Bell, label: "Notifications", path: "/notifications" },
 ];

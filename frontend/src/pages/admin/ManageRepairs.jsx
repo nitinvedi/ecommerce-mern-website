@@ -77,8 +77,9 @@ export default function ManageRepairs() {
       try {
          const res = await api.get(`${API_ENDPOINTS.ADMIN.USERS}`);
          const allUsers = Array.isArray(res.data) ? res.data : [];
-         // Show all users to allow auto-promotion usage
-         setTechnicians(allUsers);
+         // Filter for technicians only
+         const techs = allUsers.filter(u => u.role === 'technician'); 
+         setTechnicians(techs);
       } catch (err) {
          console.error(err);
       }
@@ -339,7 +340,7 @@ export default function ManageRepairs() {
                                        <option value="unassigned">Unassigned</option>
                                        {technicians.map(t => (
                                           <option key={t._id} value={t._id}>
-                                             {t.name} {t.role !== 'technician' ? `(${t.role} - Will Promote)` : '(Technician)'}
+                                             {t.name} ({t.email})
                                           </option>
                                        ))}
                                     </select>

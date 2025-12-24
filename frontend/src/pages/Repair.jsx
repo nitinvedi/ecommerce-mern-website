@@ -132,7 +132,7 @@ export default function Repair() {
 
       if (!isValid) {
          console.log("Validation Errors:", newErrors);
-         toast.error("Please fix the errors in the form: " + Object.keys(newErrors).join(", "));
+         toast.error("Please fix the errors in the form: " + Object.values(newErrors).join(", "));
          return;
       }
 
@@ -401,6 +401,20 @@ export default function Repair() {
                               <div className="space-y-6">
                                  <h3 className="text-xl font-bold mb-6">Pickup Details</h3>
                                  <div className="space-y-4">
+                                    <div className="grid md:grid-cols-2 gap-6">
+                                       <div className="space-y-1 relative">
+                                          <label className="text-sm font-medium text-gray-500">Full Name</label>
+                                          <input name="fullName" placeholder="Your Name" value={formData.fullName} onChange={handleChange} className={`w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 ${errors.fullName ? 'focus:ring-red-500 border border-red-500' : 'focus:ring-[#0071e3]/20 border border-gray-200'}`} />
+                                          <ValidIcon field="fullName" />
+                                          {errors.fullName && <p className="text-red-500 text-xs">{errors.fullName}</p>}
+                                       </div>
+                                       <div className="space-y-1 relative">
+                                          <label className="text-sm font-medium text-gray-500">Phone Number</label>
+                                          <input name="phoneNumber" placeholder="9876543210" value={formData.phoneNumber} onChange={handleChange} className={`w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 ${errors.phoneNumber ? 'focus:ring-red-500 border border-red-500' : 'focus:ring-[#0071e3]/20 border border-gray-200'}`} />
+                                          <ValidIcon field="phoneNumber" />
+                                          {errors.phoneNumber && <p className="text-red-500 text-xs">{errors.phoneNumber}</p>}
+                                       </div>
+                                    </div>
                                     <div className="space-y-1 relative">
                                        <input name="pickupAddress" placeholder="Full Address" value={formData.pickupAddress} onChange={handleChange} className={`w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 ${errors.pickupAddress ? 'focus:ring-red-500 border border-red-500' : 'focus:ring-[#0071e3]/20 border border-gray-200'}`} />
                                        <ValidIcon field="pickupAddress" />

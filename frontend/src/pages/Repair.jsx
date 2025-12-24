@@ -34,7 +34,7 @@ import { API_ENDPOINTS, uploadFile } from "../config/api";
 import { validate, validateForm } from "../utils/validation";
 
 const GrainOverlay = () => (
-  <div className="absolute inset-0 opacity-[0.03] pointer-events-none z-0" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}></div>
+    <div className="absolute inset-0 opacity-[0.03] pointer-events-none z-0 mix-blend-multiply" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}></div>
 );
 
 // Icon fixes
@@ -132,7 +132,7 @@ export default function Repair() {
 
     if (!isValid) {
         console.log("Validation Errors:", newErrors);
-        toast.error("Please fix the errors in the form: " + Object.keys(newErrors).join(", "));
+        toast.error("Please fix errors: " + Object.values(newErrors).join(", "));
         return;
     }
 
@@ -207,85 +207,54 @@ export default function Repair() {
   };
 
   return (
-    <div className="bg-[#F5F5F7] min-h-screen text-gray-900 font-sans selection:bg-black selection:text-white pb-24 md:pb-0">
+    <div className="bg-white min-h-screen text-slate-900 font-sans selection:bg-[#0071e3] selection:text-white pb-24 md:pb-0 overflow-x-hidden">
       
       {/* 1. BREADCRUMBS */}
-      <Breadcrumbs />
+      {/* 1. BREADCRUMBS REMOVED */}
 
       {/* 1. HERO SECTION */}
-      <section className="relative pt-32 pb-20 px-6 max-w-[1400px] mx-auto overflow-hidden">
+      <section className="relative pt-40 pb-32 px-6 max-w-[1400px] mx-auto overflow-hidden">
         <GrainOverlay />
         
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-12 relative z-10">
-            <div className="flex-1 text-center lg:text-left">
-                <motion.h1 
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-6xl md:text-[80px] font-semibold text-[#1d1d1f] tracking-tight leading-[1.05] mb-6"
-                >
-                    Repair. <br/>
-                    <span className="text-[#6e6e73]">Revive.</span> <span className="text-[#0071e3]">Reuse.</span>
-                </motion.h1>
-                <motion.p 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="text-xl md:text-2xl text-[#6e6e73] font-medium max-w-2xl leading-relaxed mb-10 mx-auto lg:mx-0"
-                >
-                    Professional care for your favorite devices. <br className="hidden md:block" />
-                     Genuine parts. Expert technicians. 6-Month Warranty.
-                </motion.p>
+        {/* Abstract Background Blurs */}
+        {/* Abstract Background Blurs REMOVED */}
 
-                <motion.div 
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.2 }}
-                    className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
-                >
-                    <button 
-                        onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}
-                        className="px-8 py-4 bg-[#0071e3] text-white rounded-full font-medium text-lg hover:bg-[#0077ed] transition-all shadow-lg hover:shadow-blue-500/30 active:scale-95"
-                    >
-                        Book a Repair
-                    </button>
-                    <button 
-                         onClick={() => navigate('/status/check')}
-                         className="px-8 py-4 bg-white text-[#1d1d1f] border border-gray-200 rounded-full font-medium text-lg hover:bg-gray-50 transition-all active:scale-95"
-                    >
-                         Check Status
-                    </button>
-                </motion.div>
-            </div>
-
-            {/* Hero Visual */}
-            <motion.div 
-                 initial={{ opacity: 0, x: 50 }}
-                 animate={{ opacity: 1, x: 0 }}
-                 transition={{ delay: 0.3 }}
-                 className="flex-1 w-full lg:max-w-[600px] h-[400px] md:h-[500px] bg-[#fbfbfd] rounded-[40px] relative overflow-hidden flex items-center justify-center shadow-2xl border border-white"
+        <div className="flex flex-col items-center text-center relative z-10 max-w-4xl mx-auto">
+            <motion.h1 
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-7xl md:text-[100px] font-bold text-slate-900 tracking-tighter leading-[0.9] mb-8"
             >
-                <div className="absolute inset-0 bg-gradient-to-tr from-blue-50 to-indigo-50/50" />
-                <div className="relative z-10 grid grid-cols-2 gap-4 p-8 w-full h-full">
-                    <div className="space-y-4 pt-12">
-                        <div className="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 animate-float-slow">
-                             <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mb-3 text-green-600"><CheckCircle2 size={20} /></div>
-                             <p className="font-bold text-sm">Genuine Parts</p>
-                             <p className="text-xs text-gray-500">100% Authentic</p>
-                        </div>
-                        <div className="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 animate-float-delayed">
-                             <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mb-3 text-blue-600"><Clock size={20} /></div>
-                             <p className="font-bold text-sm">Fast Service</p>
-                             <p className="text-xs text-gray-500">Same Day Fix</p>
-                        </div>
-                    </div>
-                    <div className="space-y-4">
-                         <div className="bg-[#1d1d1f] text-white p-4 rounded-3xl shadow-lg shadow-black/20 animate-float">
-                             <Wrench size={24} className="mb-3 text-[#2997ff]" />
-                             <p className="font-bold text-lg">Expert<br/>Service</p>
-                        </div>
-                        <img src="https://images.unsplash.com/photo-1597504879054-084090bc1f9b?auto=format&fit=crop&q=80&w=400" className="w-full h-32 object-cover rounded-3xl shadow-sm border border-white" alt="Repair" />
-                    </div>
-                </div>
+                Repair. <br/>
+                <span className="text-slate-300">Revive.</span> <span className="text-[#0071e3]">Reuse.</span>
+            </motion.h1>
+            <motion.p 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="text-xl md:text-2xl text-slate-500 font-medium max-w-2xl leading-relaxed mb-12"
+            >
+                Premium care for your devices. Expertly restored with genuine parts and guaranteed quality.
+            </motion.p>
+
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 }}
+                className="flex flex-col sm:flex-row gap-4"
+            >
+                <button 
+                    onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}
+                    className="px-10 py-4 bg-[#0071e3] text-white rounded-full font-bold text-lg hover:bg-[#0077ed] transition-all shadow-xl shadow-blue-500/20 active:scale-95"
+                >
+                    Start Repair
+                </button>
+                <button 
+                        onClick={() => navigate('/status/check')}
+                        className="px-10 py-4 bg-white text-slate-900 border border-slate-200 rounded-full font-bold text-lg hover:bg-slate-50 transition-all active:scale-95"
+                >
+                        Tracking
+                </button>
             </motion.div>
         </div>
       </section>
@@ -315,88 +284,37 @@ export default function Repair() {
          </div>
       </section>
 
-      {/* 3. BENTO GRID SERVICES */}
-      <section id="services" className="py-24 px-6 max-w-[1400px] mx-auto">
-          <div className="flex flex-col md:flex-row items-end justify-between mb-12">
-            <div>
-                 <h2 className="text-4xl md:text-5xl font-semibold text-[#1d1d1f] mb-4">Select Service.</h2>
-                 <p className="text-xl text-[#6e6e73]">Choose what you need fixed.</p>
-            </div>
+      {/* 3. LIGHT SERVICES GRID */}
+      <section id="services" className="py-24 px-6 max-w-[1400px] mx-auto bg-slate-50/50 rounded-[40px] my-12">
+          <div className="text-center mb-20">
+               <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">Expert Solutions.</h2>
+               <p className="text-xl text-slate-500">Select the service your device needs.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 h-auto md:h-[500px]">
-             
-             {/* 2. 3D TILT EFFECT CARDS using motion */}
-             {/* 1. Screen Repair (Large) */}
-             <motion.div 
-               onClick={() => handleServiceSelect(SERVICE_TYPES[0])}
-               whileHover={{ scale: 1.02, rotateX: 2, rotateY: 2 }}
-               className="md:col-span-2 md:row-span-2 bg-white rounded-[30px] p-10 relative overflow-hidden group cursor-pointer shadow-sm hover:shadow-2xl transition-all duration-500 border border-gray-100 flex flex-col justify-between"
-             >
-                <div className="relative z-10">
-                    <span className="inline-block px-3 py-1 bg-blue-50 text-[#0071e3] text-xs font-bold uppercase tracking-wider rounded-full mb-4">Most Popular</span>
-                    <h3 className="text-3xl font-semibold text-[#1d1d1f] mb-2">{SERVICE_TYPES[0].title}</h3>
-                    <p className="text-gray-500 max-w-sm">{SERVICE_TYPES[0].desc}</p>
-                </div>
-                <div className="relative z-10 flex items-center justify-between mt-8">
-                    <div>
-                         <p className="text-xs text-gray-400 uppercase font-bold">From</p>
-                         <p className="text-2xl font-bold text-[#1d1d1f]">₹{SERVICE_TYPES[0].price}</p>
-                    </div>
-                    <button className="w-12 h-12 rounded-full bg-[#1d1d1f] text-white flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Plus size={24} />
-                    </button>
-                </div>
-                
-                {/* Visuals */}
-                <Smartphone className="absolute top-1/2 -right-12 w-64 h-64 text-gray-50 -translate-y-1/2 group-hover:-translate-x-4 transition-transform duration-700" strokeWidth={1} />
-             </motion.div>
-
-             {/* 2. Battery */}
-             <motion.div 
-               onClick={() => handleServiceSelect(SERVICE_TYPES[1])}
-               whileHover={{ scale: 1.02, rotateX: 2 }}
-               className="md:col-span-1 md:row-span-2 bg-black text-white rounded-[30px] p-8 relative overflow-hidden group cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 flex flex-col justify-between"
-             >
-                 <div className="relative z-10">
-                    <ZapIcon className="w-12 h-12 text-[#2997ff] mb-4" />
-                    <h3 className="text-2xl font-semibold mb-2">{SERVICE_TYPES[1].title}</h3>
-                    <p className="text-gray-400 text-sm">{SERVICE_TYPES[1].desc}</p>
-                 </div>
-                 <div className="relative z-10 pt-8 border-t border-white/10">
-                     <p className="text-2xl font-bold">₹{SERVICE_TYPES[1].price}</p>
-                 </div>
-                 <div className="absolute inset-0 bg-gradient-to-br from-gray-900 to-black z-0" />
-             </motion.div>
-
-             {/* 3. Water Damage */}
-             <motion.div 
-               onClick={() => handleServiceSelect(SERVICE_TYPES[2])}
-               whileHover={{ scale: 1.02, rotateY: 2 }}
-               className="md:col-span-1 bg-blue-50 rounded-[30px] p-8 relative overflow-hidden group cursor-pointer hover:shadow-xl transition-all duration-500 border border-blue-100"
-             >
-                 <div className="flex justify-between items-start mb-4">
-                    <DropletsIcon className="w-10 h-10 text-blue-500" />
-                    <span className="font-bold text-blue-900">₹{SERVICE_TYPES[2].price}</span>
-                 </div>
-                 <h3 className="font-semibold text-blue-900 mb-1">{SERVICE_TYPES[2].title}</h3>
-                 <p className="text-blue-700/60 text-xs">Liquid exposure fix.</p>
-             </motion.div>
-
-             {/* 4. General Diag */}
-             <motion.div 
-               onClick={() => handleServiceSelect(SERVICE_TYPES[3])}
-               whileHover={{ scale: 1.02 }}
-               className="md:col-span-1 bg-white rounded-[30px] p-8 relative overflow-hidden group cursor-pointer hover:shadow-xl transition-all duration-500 border border-gray-100"
-             >
-                 <div className="flex justify-between items-start mb-4">
-                    <Cpu className="w-10 h-10 text-gray-400 group-hover:text-[#1d1d1f] transition-colors" />
-                    <span className="font-bold text-[#1d1d1f]">₹{SERVICE_TYPES[3].price}</span>
-                 </div>
-                 <h3 className="font-semibold text-[#1d1d1f] mb-1">{SERVICE_TYPES[3].title}</h3>
-                 <p className="text-gray-400 text-xs">Software & Hardware check.</p>
-             </motion.div>
-
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+             {SERVICE_TYPES.map((service, index) => (
+                 <motion.div 
+                    key={service.id}
+                    onClick={() => handleServiceSelect(service)}
+                    whileHover={{ y: -10 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                    className="bg-white rounded-[24px] p-8 relative overflow-hidden group cursor-pointer border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-blue-900/10 transition-all duration-300"
+                 >
+                     <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-[#0071e3] transition-colors duration-300">
+                         <service.icon size={28} className="text-slate-900 group-hover:text-white transition-colors duration-300" />
+                     </div>
+                     
+                     <h3 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-[#0071e3] transition-colors">{service.title}</h3>
+                     <p className="text-slate-500 text-sm mb-8 leading-relaxed mb-12">{service.desc}</p>
+                     
+                     <div className="flex justify-between items-center border-t border-slate-100 pt-6">
+                        <span className="text-lg font-bold text-slate-900">₹{service.price}</span>
+                        <div className="flex items-center gap-2 text-sm font-bold text-[#0071e3] group-hover:gap-3 transition-all">
+                             Book Now <ChevronRight size={16} />
+                        </div>
+                     </div>
+                 </motion.div>
+             ))}
           </div>
       </section>
 
@@ -481,9 +399,25 @@ export default function Repair() {
 
                        {step === 1 && (
                           <div className="space-y-6">
-                             <h3 className="text-xl font-bold mb-6">Pickup Details</h3>
+                             <h3 className="text-xl font-bold mb-6">Contact & Pickup Details</h3>
                              <div className="space-y-4">
+                                <div className="grid md:grid-cols-2 gap-6">
+                                    <div className="space-y-1 relative">
+                                        <label className="text-sm font-medium text-gray-500">Full Name</label>
+                                        <input name="fullName" placeholder="Your Name" value={formData.fullName} onChange={handleChange} className={`w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 ${errors.fullName ? 'focus:ring-red-500 border border-red-500' : 'focus:ring-[#0071e3]/20 border border-gray-200'}`} />
+                                        <ValidIcon field="fullName" />
+                                        {errors.fullName && <p className="text-red-500 text-xs">{errors.fullName}</p>}
+                                    </div>
+                                    <div className="space-y-1 relative">
+                                        <label className="text-sm font-medium text-gray-500">Phone Number</label>
+                                        <input name="phoneNumber" placeholder="e.g. 9876543210" value={formData.phoneNumber} onChange={handleChange} className={`w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 ${errors.phoneNumber ? 'focus:ring-red-500 border border-red-500' : 'focus:ring-[#0071e3]/20 border border-gray-200'}`} />
+                                        <ValidIcon field="phoneNumber" />
+                                        {errors.phoneNumber && <p className="text-red-500 text-xs">{errors.phoneNumber}</p>}
+                                    </div>
+                                </div>
+
                                 <div className="space-y-1 relative">
+                                    <label className="text-sm font-medium text-gray-500">Pickup Address</label>
                                     <input name="pickupAddress" placeholder="Full Address" value={formData.pickupAddress} onChange={handleChange} className={`w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 ${errors.pickupAddress ? 'focus:ring-red-500 border border-red-500' : 'focus:ring-[#0071e3]/20 border border-gray-200'}`} />
                                     <ValidIcon field="pickupAddress" />
                                     {errors.pickupAddress && <p className="text-red-500 text-xs">{errors.pickupAddress}</p>}
@@ -564,47 +498,47 @@ export default function Repair() {
         )}
       </AnimatePresence>
 
-      {/* 5. TRUST & TESTIMONIALS */}
-      <section className="py-32 px-6 bg-black text-white">
+      {/* 5. LIGHT TRUST & TESTIMONIALS */}
+      <section className="py-32 px-6 bg-slate-50 border-t border-slate-200">
          <div className="max-w-7xl mx-auto">
             <div className="grid md:grid-cols-2 gap-20 items-center">
                <div>
-                  <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">Trusted by 10,000+ <br /> Happy Customers</h2>
-                  <p className="text-gray-400 text-lg mb-10">We don't just fix devices; we restore peace of mind. Rated 4.8/5 on Google Reviews.</p>
+                  <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6 leading-tight">Trusted by 10,000+ <br /> Happy Customers</h2>
+                  <p className="text-slate-500 text-lg mb-10">We don't just fix devices; we restore peace of mind. Rated 4.8/5 on Google Reviews.</p>
                   
                   <div className="space-y-6">
                      {TESTIMONIALS.map((t, i) => (
-                        <div key={i} className="bg-white/10 backdrop-blur p-6 rounded-2xl border border-white/10">
-                           <div className="flex gap-1 text-yellow-400 mb-3">
+                        <div key={i} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                           <div className="flex gap-1 text-amber-400 mb-3">
                               {[...Array(5)].map((_, idx) => <Star key={idx} size={14} fill={idx < Math.floor(t.rating) ? "currentColor" : "none"} />)}
                            </div>
-                           <p className="mb-4 font-medium">"{t.text}"</p>
-                           <p className="text-xs text-gray-400 uppercase font-bold tracking-widest">— {t.name}</p>
+                           <p className="mb-4 font-medium text-slate-700">"{t.text}"</p>
+                           <p className="text-xs text-slate-400 uppercase font-bold tracking-widest">— {t.name}</p>
                         </div>
                      ))}
                   </div>
                </div>
                
                <div className="grid grid-cols-2 gap-6">
-                  <div className="bg-white/5 p-8 rounded-3xl text-center border border-white/10 hover:bg-white/10 transition">
-                     <ShieldCheck size={40} className="mx-auto mb-4 text-green-400" />
-                     <h3 className="font-bold text-xl mb-2">6 Months</h3>
-                     <p className="text-sm text-gray-400">Warrenty on all repairs</p>
+                  <div className="bg-white p-8 rounded-3xl text-center border border-slate-100 shadow-sm hover:shadow-lg transition">
+                     <ShieldCheck size={40} className="mx-auto mb-4 text-green-500" />
+                     <h3 className="font-bold text-xl text-slate-900 mb-2">6 Months</h3>
+                     <p className="text-sm text-slate-400">Warranty on all repairs</p>
                   </div>
-                  <div className="bg-white/5 p-8 rounded-3xl text-center border border-white/10 hover:bg-white/10 transition mt-12">
-                     <Cpu size={40} className="mx-auto mb-4 text-blue-400" />
-                     <h3 className="font-bold text-xl mb-2">OEM Parts</h3>
-                     <p className="text-sm text-gray-400">100% Genuine Components</p>
+                  <div className="bg-white p-8 rounded-3xl text-center border border-slate-100 shadow-sm hover:shadow-lg transition mt-12">
+                     <Cpu size={40} className="mx-auto mb-4 text-blue-500" />
+                     <h3 className="font-bold text-xl text-slate-900 mb-2">OEM Parts</h3>
+                     <p className="text-sm text-slate-400">100% Genuine Components</p>
                   </div>
-                  <div className="bg-white/5 p-8 rounded-3xl text-center border border-white/10 hover:bg-white/10 transition">
-                     <Truck size={40} className="mx-auto mb-4 text-purple-400" />
-                     <h3 className="font-bold text-xl mb-2">Free Pickup</h3>
-                     <p className="text-sm text-gray-400">Doorstep service included</p>
+                  <div className="bg-white p-8 rounded-3xl text-center border border-slate-100 shadow-sm hover:shadow-lg transition">
+                     <Truck size={40} className="mx-auto mb-4 text-purple-500" />
+                     <h3 className="font-bold text-xl text-slate-900 mb-2">Free Pickup</h3>
+                     <p className="text-sm text-slate-400">Doorstep service included</p>
                   </div>
-                  <div className="bg-white/5 p-8 rounded-3xl text-center border border-white/10 hover:bg-white/10 transition mt-12">
-                     <Clock size={40} className="mx-auto mb-4 text-yellow-400" />
-                     <h3 className="font-bold text-xl mb-2">24h Delivery</h3>
-                     <p className="text-sm text-gray-400">Fast turnaround time</p>
+                  <div className="bg-white p-8 rounded-3xl text-center border border-slate-100 shadow-sm hover:shadow-lg transition mt-12">
+                     <Clock size={40} className="mx-auto mb-4 text-amber-500" />
+                     <h3 className="font-bold text-xl text-slate-900 mb-2">24h Delivery</h3>
+                     <p className="text-sm text-slate-400">Fast turnaround time</p>
                   </div>
                </div>
             </div>

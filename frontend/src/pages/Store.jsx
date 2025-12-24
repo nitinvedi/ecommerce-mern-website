@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { motion, useScroll, useTransform, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
+
+// Remove 3D imports
+import { motion, useScroll, AnimatePresence } from "framer-motion";
+
 import {
   Search,
   Heart,
@@ -63,8 +66,8 @@ const CategoryPills = ({ selected, onSelect, products }) => {
             className={`
               flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 border backdrop-blur-md
               ${isActive 
-                ? "bg-black text-white border-black shadow-lg shadow-black/20" 
-                : "bg-white/80 text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-white"}
+                ? "bg-[#0071e3] text-white border-[#0071e3] shadow-lg shadow-blue-500/30" 
+                : "bg-white/60 text-slate-600 border-white/40 hover:border-blue-200 hover:bg-white hover:text-[#0071e3]"}
             `}
           >
             <cat.icon size={16} className={isActive ? "text-white" : "text-gray-400"} />
@@ -115,20 +118,20 @@ const EmptyState = ({ clearFilters }) => (
 const RefurbishedBanner = ({ onApplyFilter }) => (
     <div 
       onClick={onApplyFilter}
-      className="col-span-full xl:col-span-2 row-span-1 bg-black rounded-[30px] p-8 md:p-10 relative overflow-hidden text-white group cursor-pointer my-0 h-full flex flex-col justify-center"
+      className="col-span-full xl:col-span-2 row-span-1 bg-gradient-to-br from-[#0071e3] to-[#00c6ff] rounded-[32px] p-8 md:p-10 relative overflow-hidden text-white group cursor-pointer my-0 h-full flex flex-col justify-center shadow-lg shadow-blue-500/20"
     >
         <div className="relative z-10 max-w-lg">
-            <span className="inline-block px-3 py-1 bg-[#28a745] text-white text-xs font-bold uppercase tracking-wider rounded-full mb-4 animate-pulse">Eco-Friendly Choice</span>
+            <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-bold uppercase tracking-wider rounded-full mb-4">Eco-Friendly Choice</span>
             <h3 className="text-3xl font-bold mb-4 leading-tight">Refurbished <br/>& Reliable.</h3>
-            <p className="text-gray-400 text-sm mb-6">Premium devices. Fraction of the price. 100% Quality Checked.</p>
-            <div className="flex items-center gap-2 text-[#28a745] font-bold text-sm group-hover:gap-4 transition-all">
+            <p className="text-blue-50 text-sm mb-6">Premium devices. Fraction of the price. 100% Quality Checked.</p>
+            <div className="flex items-center gap-2 text-white font-bold text-sm group-hover:gap-4 transition-all">
                 Shop Refurbished <ChevronRight size={16} />
             </div>
         </div>
         
         {/* Abstract Shapes */}
-        <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-gradient-to-bl from-green-600/20 to-emerald-600/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-        <RefreshCw size={150} className="absolute -bottom-8 -right-8 text-white/5 rotate-12 group-hover:rotate-0 transition-transform duration-700" />
+        <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+        <RefreshCw size={150} className="absolute -bottom-8 -right-8 text-white/10 rotate-12 group-hover:rotate-0 transition-transform duration-700" />
     </div>
 );
 
@@ -282,7 +285,8 @@ export default function Store() {
   };
 
   return (
-    <div className="bg-[#fcfcfc] min-h-screen font-sans text-gray-900 selection:bg-black selection:text-white pb-20 md:pb-0 overflow-x-hidden">
+    <div className="bg-[#f5f7fa] min-h-screen font-sans text-slate-900 selection:bg-[#0071e3] selection:text-white pb-20 md:pb-0 overflow-x-hidden relative">
+      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_left,_var(--tw-gradient-stops))] from-blue-50/50 via-transparent to-transparent z-0" />
       
       {/* Search Overlay */}
       <AnimatePresence>
@@ -349,7 +353,7 @@ export default function Store() {
       <div className="max-w-[1800px] mx-auto px-6 py-24 md:py-32" ref={productsRef}>
         <div className="flex flex-col lg:flex-row gap-8">
           <aside className="hidden lg:block w-64 flex-shrink-0">
-             <div className="sticky top-28 bg-white/50 backdrop-blur-xl rounded-[32px] border border-white/50 shadow-sm p-6">
+             <div className="sticky top-28">
                <ProductFilters onFilterChange={setFilters} products={products} />
              </div>
           </aside>
@@ -366,10 +370,10 @@ export default function Store() {
                     <div className="flex items-center justify-between md:justify-end gap-3 flex-1 md:flex-none">
                         <button 
                             onClick={() => setShowSearch(true)} 
-                            className="hidden md:flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 rounded-full text-sm font-medium transition-all group hover:border-gray-400"
+                            className="hidden md:flex items-center gap-2 px-5 py-2.5 bg-white/70 backdrop-blur-md border border-white/50 shadow-sm rounded-full text-sm font-medium transition-all group hover:border-blue-200 hover:shadow-md"
                         >
-                           <Search size={18} className="text-gray-500 group-hover:text-black transition-colors" />
-                           <span className="text-gray-600 group-hover:text-black">Search</span>
+                           <Search size={18} className="text-slate-500 group-hover:text-[#0071e3] transition-colors" />
+                           <span className="text-slate-600 group-hover:text-[#0071e3]">Search</span>
                         </button>
 
                         <button onClick={() => setShowMobileFilters(true)} className="lg:hidden flex items-center gap-2 px-4 py-2.5 bg-black text-white rounded-full text-sm font-medium shadow-lg">
@@ -509,37 +513,19 @@ function ProductCard({ product, index, wishlistItems, toggleWishlist, handleAddT
   
   const colors = ["#1d1d1f", "#f5f5f7", "#2997ff"];
   
-  // 3D Motion Logic
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const rotateX = useTransform(y, [-100, 100], [5, -5]);
-  const rotateY = useTransform(x, [-100, 100], [-5, 5]);
+  // 3D Motion Logic Removed
 
-  const handleMouseMove = (event) => {
-      const rect = event.currentTarget.getBoundingClientRect();
-      x.set(event.clientX - rect.left - rect.width / 2);
-      y.set(event.clientY - rect.top - rect.height / 2);
-  };
-
-  const handleMouseLeave = () => {
-      x.set(0);
-      y.set(0);
-  };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "100px" }}
-      transition={{ duration: 0.5, delay: index * 0.05 }}
-      style={{ perspective: 1000 }}
+      initial={{ opacity: 0, scale: 0.95 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true, margin: "50px" }}
+      transition={{ duration: 0.4, delay: index * 0.05 }}
       className={`group relative z-0 hover:z-10 w-full min-w-0 ${isOutOfStock ? "opacity-75 grayscale-[0.5]" : ""}`}
     >
-      <motion.div
-        style={{ rotateX, rotateY }}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        className="relative aspect-[4/5] bg-white rounded-[20px] overflow-hidden mb-3 cursor-pointer shadow-sm border border-gray-100 hover:shadow-2xl hover:border-transparent transition-all duration-500 ease-out"
+      <div
+        className="relative aspect-[4/5] bg-white rounded-[24px] overflow-hidden mb-4 cursor-pointer shadow-sm border border-slate-100 group-hover:shadow-2xl group-hover:shadow-blue-900/10 group-hover:border-blue-100 transition-all duration-500 ease-out transform group-hover:-translate-y-1"
         onClick={() => navigate(`/product/${product._id}`)}
       >
          
@@ -594,13 +580,13 @@ function ProductCard({ product, index, wishlistItems, toggleWishlist, handleAddT
                 <div className="flex gap-2 pointer-events-auto">
                     <button 
                         onClick={(e) => { e.stopPropagation(); openQuickView(); }}
-                        className="flex-1 py-3 bg-white/90 backdrop-blur text-black text-xs font-bold uppercase tracking-widest rounded-xl shadow-lg border border-gray-100 hover:bg-black hover:text-white transition-colors flex items-center justify-center gap-2"
+                        className="flex-1 py-3 bg-white/90 backdrop-blur text-slate-900 text-xs font-bold uppercase tracking-widest rounded-xl shadow-lg border border-white hover:bg-[#0071e3] hover:text-white hover:border-[#0071e3] transition-colors flex items-center justify-center gap-2"
                     >
                         <Eye size={14} /> View
                     </button>
                     <button 
                         onClick={(e) => handleAddToCart(product, e)}
-                        className="py-3 px-4 bg-black/90 backdrop-blur text-white rounded-xl shadow-lg hover:bg-black transition-colors"
+                        className="py-3 px-4 bg-slate-900/90 backdrop-blur text-white rounded-xl shadow-lg hover:bg-[#0071e3] transition-colors"
                     >
                         <Plus size={18} />
                     </button>
@@ -608,21 +594,21 @@ function ProductCard({ product, index, wishlistItems, toggleWishlist, handleAddT
              )}
          </div>
 
-      </motion.div>
+      </div>
 
-      <div className="space-y-2 px-1">
+      <div className="space-y-2 px-2">
          <div className="flex justify-between items-start">
-            <h3 className="font-semibold text-base text-gray-900 leading-snug cursor-pointer group-hover:text-[#0071e3] transition-colors" onClick={() => navigate(`/product/${product._id}`)}>
+            <h3 className="font-semibold text-base text-slate-900 leading-snug cursor-pointer group-hover:text-[#0071e3] transition-colors line-clamp-2" onClick={() => navigate(`/product/${product._id}`)}>
               {product.name}
             </h3>
-            <div className="flex items-center gap-1 text-[10px] font-bold bg-white border border-gray-100 px-1.5 py-0.5 rounded ml-2 text-gray-600 shadow-sm">
-               <Star size={10} className="fill-black stroke-black" /> {product.rating?.toFixed(1) || "New"}
+            <div className="flex-shrink-0 flex items-center gap-1 text-[10px] font-bold bg-white border border-slate-100 px-1.5 py-0.5 rounded text-slate-600 shadow-sm">
+               <Star size={10} className="fill-amber-400 stroke-amber-400" /> {product.rating?.toFixed(1) || "New"}
             </div>
          </div>
          
          <div className="flex items-baseline gap-2 pt-1">
-            <span className="font-bold text-gray-900">₹{product.price?.toLocaleString()}</span>
-            {product.discountPercent > 0 && <span className="text-sm text-gray-400 line-through decoration-gray-300">₹{Math.round(product.price / (1 - product.discountPercent / 100)).toLocaleString()}</span>}
+            <span className="font-bold text-slate-900 text-lg">₹{product.price?.toLocaleString()}</span>
+            {product.discountPercent > 0 && <span className="text-sm text-slate-400 line-through decoration-slate-300">₹{Math.round(product.price / (1 - product.discountPercent / 100)).toLocaleString()}</span>}
          </div>
       </div>
     </motion.div>

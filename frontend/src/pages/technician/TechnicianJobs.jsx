@@ -7,12 +7,14 @@ import useAuth from "../../hooks/useAuth";
 import { api, API_ENDPOINTS } from "../../config/api";
 import { useToast } from "../../context/ToastContext";
 import { getErrorMessage } from "../../utils/errorHandler.js";
+import { useSocket } from "../../context/SocketContext";
 
 
 export default function TechnicianJobs() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const toast = useToast();
+  const { on } = useSocket();
 
   /* ---------------- Tabs ---------------- */
   const [activeTab, setActiveTab] = useState("my-jobs"); // my-jobs | available
@@ -26,6 +28,23 @@ export default function TechnicianJobs() {
       fetchRepairs();
     }
   }, [user, activeTab]);
+
+  // Real-time notifications for new jobs
+  useEffect(() => {
+    const handleNewJob = (data) => {
+      toast.info(`New Job Available: ${data.brand} ${data.model}`);
+      // Only refresh if looking at available jobs (pool)
+      if (activeTab === 'available') {
+        fetchRepairs();
+      }
+    };
+
+    // Subscribe
+    const unsubscribe = on('new_repair', handleNewJob);
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [on, activeTab]);
 
   const fetchRepairs = async () => {
     setLoading(true);
@@ -56,17 +75,17 @@ export default function TechnicianJobs() {
   };
 
   const handleTakeJob = async (jobId) => {
-      if (!window.confirm("Are you sure you want to take this job?")) return;
-      try {
-          await api.put(API_ENDPOINTS.REPAIRS.BY_ID(jobId), {
-              technician: user._id
-          });
-          toast.success("Job assigned to you");
-          fetchRepairs(); // Refresh
-      } catch (err) {
-          console.error(err);
-          toast.error(getErrorMessage(err, "Failed to take job"));
-      }
+    if (!window.confirm("Are you sure you want to take this job?")) return;
+    try {
+      await api.put(API_ENDPOINTS.REPAIRS.BY_ID(jobId), {
+        technician: user._id
+      });
+      toast.success("Job assigned to you");
+      fetchRepairs(); // Refresh
+    } catch (err) {
+      console.error(err);
+      toast.error(getErrorMessage(err, "Failed to take job"));
+    }
   };
 
   const filtered = useMemo(() => {
@@ -88,52 +107,52 @@ export default function TechnicianJobs() {
           <h1 className="text-2xl font-semibold text-gray-900">
             {activeTab === 'my-jobs' ? 'My Assignments' : 'Available Jobs'}
           </h1>
-          
+
           <div className="flex items-center gap-2 bg-white p-1 rounded-lg border border-gray-200">
-             <button 
-                onClick={() => setActiveTab("my-jobs")}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition ${activeTab === 'my-jobs' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50'}`}
-             >
-                My Jobs
-             </button>
-             <button 
-                onClick={() => setActiveTab("available")}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition ${activeTab === 'available' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50'}`}
-             >
-                Available Pool
-             </button>
+            <button
+              onClick={() => setActiveTab("my-jobs")}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition ${activeTab === 'my-jobs' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50'}`}
+            >
+              My Jobs
+            </button>
+            <button
+              onClick={() => setActiveTab("available")}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition ${activeTab === 'available' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50'}`}
+            >
+              Available Pool
+            </button>
           </div>
         </div>
 
         <div className="flex gap-3 mb-6">
-            <div className="relative flex-1">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by tracking/brand/model"
-                className="w-full rounded-lg border border-black/10 pl-9 pr-3 py-2 text-sm"
-              />
-            </div>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="rounded-lg border border-black/10 px-3 py-2 text-sm"
-            >
-              <option value="all">All status</option>
-              {activeTab === 'available' ? (
-                  <option>Pending</option>
-              ) : (
-                  <>
-                    <option>Confirmed</option>
-                    <option>In Progress</option>
-                    <option>Diagnosed</option>
-                    <option>Repairing</option>
-                    <option>Quality Check</option>
-                    <option>Completed</option>
-                  </>
-              )}
-            </select>
+          <div className="relative flex-1">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by tracking/brand/model"
+              className="w-full rounded-lg border border-black/10 pl-9 pr-3 py-2 text-sm"
+            />
+          </div>
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className="rounded-lg border border-black/10 px-3 py-2 text-sm"
+          >
+            <option value="all">All status</option>
+            {activeTab === 'available' ? (
+              <option>Pending</option>
+            ) : (
+              <>
+                <option>Confirmed</option>
+                <option>In Progress</option>
+                <option>Diagnosed</option>
+                <option>Repairing</option>
+                <option>Quality Check</option>
+                <option>Completed</option>
+              </>
+            )}
+          </select>
         </div>
 
         {loading ? (
@@ -166,21 +185,21 @@ export default function TechnicianJobs() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    {activeTab === 'available' ? (
-                        <button 
-                            onClick={() => handleTakeJob(job._id)}
-                            className="text-xs bg-black text-white px-3 py-2 rounded-lg hover:bg-gray-800 transition"
-                        >
-                            Take Job
-                        </button>
-                    ) : (
-                        <button
-                          onClick={() => navigate(`/technician/job/${job._id}`)}
-                          className="text-sm text-gray-700 hover:text-black flex items-center gap-1"
-                        >
-                          Open <ArrowRight size={14} />
-                        </button>
-                    )}
+                  {activeTab === 'available' ? (
+                    <button
+                      onClick={() => handleTakeJob(job._id)}
+                      className="text-xs bg-black text-white px-3 py-2 rounded-lg hover:bg-gray-800 transition"
+                    >
+                      Take Job
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => navigate(`/technician/job/${job._id}`)}
+                      className="text-sm text-gray-700 hover:text-black flex items-center gap-1"
+                    >
+                      Open <ArrowRight size={14} />
+                    </button>
+                  )}
                 </div>
               </motion.div>
             ))}

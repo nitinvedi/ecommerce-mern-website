@@ -1,7 +1,7 @@
 import { asyncHandler } from "../middleware/errorMiddleware.js";
 import { sendSuccess, sendError, sendNotFound, sendCreated, sendPaginated } from "../utils/response.js";
 import * as RepairModel from "../models/Repair.js";
-import { emitRepairUpdate } from "../config/socket.js";
+import { emitRepairUpdate, emitToRole, emitToUser } from "../config/socket.js";
 import logger from "../utils/logger.js";
 
 // Create repair request
@@ -25,40 +25,46 @@ export const createRepair = asyncHandler(async (req, res) => {
     note: "Repair request created"
   });
 
+  // Notify Admins
+  emitToRole('admin', 'new_repair', repair);
+
+  // Notify Technicians (Available Pool)
+  emitToRole('technician', 'new_repair', repair);
+
   // Notify Customer (Email)
   try {
-      const { sendEmail, emailTemplates } = await import("../utils/emailService.js");
-      const user = await (await import("../models/User.js")).default.getUserById(userId);
-      await sendEmail({
-           to: user.email,
-           ...emailTemplates.repairUpdate(
-               { ...repair, fullName: user.name }, 
-               "Repair Request Received",
-               "We have received your repair request and will review it shortly."
-           )
-      });
+    const { sendEmail, emailTemplates } = await import("../utils/emailService.js");
+    const user = await (await import("../models/User.js")).default.getUserById(userId);
+    await sendEmail({
+      to: user.email,
+      ...emailTemplates.repairUpdate(
+        { ...repair, fullName: user.name },
+        "Repair Request Received",
+        "We have received your repair request and will review it shortly."
+      )
+    });
   } catch (error) {
-      console.error("Email service failed:", error.message);
+    console.error("Email service failed:", error.message);
   }
 
   // Create In-App Notification
   try {
-      const NotificationModel = (await import("../models/Notification.js")).default;
-      const { emitNotification } = await import("../config/socket.js");
-      
-      const newNotif = await NotificationModel.createNotification({
-          user: userId,
-          type: 'repair',
-          title: "Repair Request Received",
-          message: `Your repair request (${repair.trackingId}) has been received.`,
-          link: `/repair/${repair.insertedId || repair._id}` 
-      });
-      
-      if (newNotif) {
-          emitNotification(userId, newNotif);
-      }
+    const NotificationModel = (await import("../models/Notification.js")).default;
+    const { emitNotification } = await import("../config/socket.js");
+
+    const newNotif = await NotificationModel.createNotification({
+      user: userId,
+      type: 'repair',
+      title: "Repair Request Received",
+      message: `Your repair request (${repair.trackingId}) has been received.`,
+      link: `/repair/${repair.insertedId || repair._id}`
+    });
+
+    if (newNotif) {
+      emitNotification(userId, newNotif);
+    }
   } catch (error) {
-     console.error("Notification service failed:", error.message);
+    console.error("Notification service failed:", error.message);
   }
 
   return sendCreated(res, "Repair request created successfully", repair);
@@ -78,13 +84,13 @@ export const getAllRepairs = asyncHandler(async (req, res) => {
 
   // Security: If technician, force filter to assigned repairs only, UNLESS explicitly asking for unassigned
   if (role === "technician") {
-     if (req.query.technician === "null") {
-        // Allow seeing unassigned jobs
-        filter.technician = null;
-     } else {
-        // Default to own jobs
-        filter.technician = _id.toString();
-     }
+    if (req.query.technician === "null") {
+      // Allow seeing unassigned jobs
+      filter.technician = null;
+    } else {
+      // Default to own jobs
+      filter.technician = _id.toString();
+    }
   }
 
   // Filter by status
@@ -164,64 +170,67 @@ export const updateRepair = asyncHandler(async (req, res) => {
 
   // Email Notification & Validation for Assignment
   if (req.body.technician && req.body.technician !== repair.technician?.toString()) {
-      const User = (await import("../models/User.js")).default;
-      const tech = await User.getUserById(req.body.technician);
-      if (!tech) {
-          return sendError(res, "Technician not found", 404);
-      }
-      if (tech.role !== "technician") {
-          return sendError(res, "Assigned user is not a technician", 400);
-      }
-      
-      try {
-          const { sendEmail } = await import("../utils/emailService.js");
-               await sendEmail({
-                   to: tech.email,
-                   subject: `New Job Assigned: ${repair.trackingId}`,
-                   html: `<p>You have been assigned a new repair job.</p><p>Device: ${repair.brand} ${repair.model}</p><p>Issue: ${repair.issue}</p>`,
-                   text: `You have been assigned a new repair job: ${repair.trackingId}`
-               });
-      } catch (error) {
-          console.error("Technician assignment email failed:", error.message);
-      }
+    const User = (await import("../models/User.js")).default;
+    const tech = await User.getUserById(req.body.technician);
+    if (!tech) {
+      return sendError(res, "Technician not found", 404);
+    }
+    if (tech.role !== "technician") {
+      return sendError(res, "Assigned user is not a technician", 400);
+    }
+
+    try {
+      const { sendEmail } = await import("../utils/emailService.js");
+      await sendEmail({
+        to: tech.email,
+        subject: `New Job Assigned: ${repair.trackingId}`,
+        html: `<p>You have been assigned a new repair job.</p><p>Device: ${repair.brand} ${repair.model}</p><p>Issue: ${repair.issue}</p>`,
+        text: `You have been assigned a new repair job: ${repair.trackingId}`
+      });
+    } catch (error) {
+      console.error("Technician assignment email failed:", error.message);
+    }
+
+    // Socket Notification for Technician
+    emitToUser(req.body.technician, 'new_repair', repair); // Re-use event to refresh TechnicianJobs list
   }
 
   // --- 1. Detect Changes for Notifications ---
   const changes = [];
-  
+
   // Status Change
   if (req.body.status && req.body.status !== repair.status) {
-      changes.push({
-          type: 'STATUS',
-          title: `Status Updated: ${req.body.status}`,
-          message: `Your repair status has changed to "${req.body.status}". ${req.body.note ? `Note: ${req.body.note}` : ''}`
-      });
+    changes.push({
+      type: 'STATUS',
+      title: `Status Updated: ${req.body.status}`,
+      message: `Your repair status has changed to "${req.body.status}". ${req.body.note ? `Note: ${req.body.note}` : ''}`
+    });
   }
 
   // Technician Assignment
   if (req.body.technician && req.body.technician !== repair.technician?.toString()) {
-      changes.push({
-          type: 'ASSIGNMENT',
-          title: 'Technician Assigned',
-          message: 'A technician has been assigned to your repair job and will begin working correctly.'
-      });
+    changes.push({
+      type: 'ASSIGNMENT',
+      title: 'Technician Assigned',
+      message: 'A technician has been assigned to your repair job and will begin working correctly.'
+    });
   }
 
   // Cost Updates
   if (req.body.estimatedRepairCost && req.body.estimatedRepairCost !== repair.estimatedRepairCost) {
-      changes.push({
-          type: 'COST',
-          title: 'Estimated Cost Updated',
-          message: `The estimated cost for your repair has been updated to ₹${req.body.estimatedRepairCost}.`
-      });
+    changes.push({
+      type: 'COST',
+      title: 'Estimated Cost Updated',
+      message: `The estimated cost for your repair has been updated to ₹${req.body.estimatedRepairCost}.`
+    });
   }
-  
+
   if (req.body.finalRepairCost && req.body.finalRepairCost !== repair.finalRepairCost) {
-      changes.push({
-          type: 'COST',
-          title: 'Final Repair Cost',
-          message: `The final repair cost has been set to ₹${req.body.finalRepairCost}.`
-      });
+    changes.push({
+      type: 'COST',
+      title: 'Final Repair Cost',
+      message: `The final repair cost has been set to ₹${req.body.finalRepairCost}.`
+    });
   }
 
   // --- 2. Perform Update ---
@@ -237,45 +246,45 @@ export const updateRepair = asyncHandler(async (req, res) => {
   // --- 3. Send Notifications (Async) ---
   // Notify Customer on Changes
   try {
-      if (changes.length > 0) {
-          console.log(`[Email Debug] Changes detected for Repair ${repair.trackingId}:`, changes);
-          const { sendEmail, emailTemplates } = await import("../utils/emailService.js");
-          
-          for (const change of changes) {
-               console.log(`[Email Debug] Sending email to ${updatedRepair.user?.email} for ${change.type}`);
-               const result = await sendEmail({
-                   to: updatedRepair.user.email,
-                   ...emailTemplates.repairUpdate(updatedRepair, change.title, change.message)
-               });
-               console.log(`[Email Debug] Send Result:`, result);
-          }
+    if (changes.length > 0) {
+      console.log(`[Email Debug] Changes detected for Repair ${repair.trackingId}:`, changes);
+      const { sendEmail, emailTemplates } = await import("../utils/emailService.js");
+
+      for (const change of changes) {
+        console.log(`[Email Debug] Sending email to ${updatedRepair.user?.email} for ${change.type}`);
+        const result = await sendEmail({
+          to: updatedRepair.user.email,
+          ...emailTemplates.repairUpdate(updatedRepair, change.title, change.message)
+        });
+        console.log(`[Email Debug] Send Result:`, result);
       }
+    }
   } catch (error) {
-      console.error("Update email notification failed:", error.message);
+    console.error("Update email notification failed:", error.message);
   }
 
   // --- 4. Create In-App Notifications ---
   try {
-      if (changes.length > 0) {
-          const NotificationModel = (await import("../models/Notification.js")).default;
-          const { emitNotification } = await import("../config/socket.js");
-          
-          for (const change of changes) {
-              const newNotif = await NotificationModel.createNotification({
-                  user: updatedRepair.user._id, // Ensure ObjectId
-                  type: 'repair',
-                  title: change.title,
-                  message: change.message,
-                  link: `/repair/${id}` // Or specific repair link
-              });
-              
-              if (newNotif) {
-                 emitNotification(updatedRepair.user._id.toString(), newNotif);
-              }
-          }
+    if (changes.length > 0) {
+      const NotificationModel = (await import("../models/Notification.js")).default;
+      const { emitNotification } = await import("../config/socket.js");
+
+      for (const change of changes) {
+        const newNotif = await NotificationModel.createNotification({
+          user: updatedRepair.user._id, // Ensure ObjectId
+          type: 'repair',
+          title: change.title,
+          message: change.message,
+          link: `/repair/${id}` // Or specific repair link
+        });
+
+        if (newNotif) {
+          emitNotification(updatedRepair.user._id.toString(), newNotif);
+        }
       }
+    }
   } catch (error) {
-      console.error("Update in-app notification failed:", error.message);
+    console.error("Update in-app notification failed:", error.message);
   }
 
   // Emit socket event
@@ -305,38 +314,41 @@ export const addStatusUpdate = asyncHandler(async (req, res) => {
 
   // Notify Customer (Email)
   try {
-      const { sendEmail, emailTemplates } = await import("../utils/emailService.js");
-      await sendEmail({
-           to: repair.user.email, 
-           ...emailTemplates.repairUpdate(
-               { ...repair, status }, 
-               `Status Update: ${status}`,
-               `Your repair status is now "${status}". ${note ? `Note: ${note}` : ''}`
-           )
-      });
+    const { sendEmail, emailTemplates } = await import("../utils/emailService.js");
+    await sendEmail({
+      to: repair.user.email,
+      ...emailTemplates.repairUpdate(
+        { ...repair, status },
+        `Status Update: ${status}`,
+        `Your repair status is now "${status}". ${note ? `Note: ${note}` : ''}`
+      )
+    });
   } catch (error) {
-      console.error("Status update email failed:", error.message);
+    console.error("Status update email failed:", error.message);
   }
 
   // Create In-App Notification
   try {
-      const NotificationModel = (await import("../models/Notification.js")).default;
-      const { emitNotification } = await import("../config/socket.js");
-      
-      const newNotif = await NotificationModel.createNotification({
-          user: repair.user._id,
-          type: 'repair',
-          title: `Status Update: ${status}`,
-          message: `Your repair status is now "${status}". ${note}`,
-          link: `/repair/${id}`
-      });
-      
-      if (newNotif) {
-          emitNotification(repair.user._id.toString(), newNotif);
-      }
+    const NotificationModel = (await import("../models/Notification.js")).default;
+    const { emitNotification } = await import("../config/socket.js");
+
+    const newNotif = await NotificationModel.createNotification({
+      user: repair.user._id,
+      type: 'repair',
+      title: `Status Update: ${status}`,
+      message: `Your repair status is now "${status}". ${note}`,
+      link: `/repair/${id}`
+    });
+
+    if (newNotif) {
+      emitNotification(repair.user._id.toString(), newNotif);
+    }
   } catch (error) {
-      console.error("Status update notification failed:", error.message);
+    console.error("Status update notification failed:", error.message);
   }
+
+  // Socket Direct Update
+  emitToUser(repair.user._id.toString(), 'repair_updated', { ...repair, status, statusUpdates: [...(repair.statusUpdates || []), statusUpdate] });
 
   // Emit socket event
   emitRepairUpdate(id, {

@@ -1,0 +1,28 @@
+1. Coupon & Discount System — Status: Planned
+I noticed that there is currently no dedicated coupon or promo code 
+mechanism (for example, SUMMER20) at checkout. While products support a 
+basic discountPercent, the system lacks a flexible cart-level discount 
+engine. I plan to introduce a proper coupon module with validation rules,
+ expiry handling, and usage limits to make pricing more dynamic.
+
+
+2. Caching Layer (Redis) — Status: Planned
+Right now, all requests hit the primary database directly. To improve performance at scale, I plan to integrate Redis for caching frequently accessed data such as product listings and possibly session data. This should significantly reduce database load and improve response times.
+
+3. Advanced Search & Filtering — Status: Improvement Needed
+The current search uses basic regex matching. I plan to enhance it by adding typo tolerance, multi-faceted filtering (such as brand, price range, and specifications), and proper indexing. In the future, integrating a dedicated search engine like Elasticsearch or Meilisearch would further improve search quality.
+
+4. Automated Returns & Refunds — Status: Planned Enhancement
+At present, the system supports order cancellation before fulfillment, which correctly restores stock. However, I want to extend this by adding a user-facing return request flow for delivered orders, admin-side RMA management, and automated refund triggers through the Razorpay API to make the returns pipeline fully automated.
+
+5. Analytics Dashboard — Status: Planned Enhancement
+The dashboard currently shows only basic counters like Total Orders and Total Spent. I plan to expand this with visual analytics such as sales trends over time, user growth, best-selling products, and cart abandonment metrics to provide better business insights.
+
+6. Audit Logging — Status: Planned
+There is currently no audit trail for critical admin actions. I intend to implement structured audit logging to track sensitive operations (for example, price changes), which will improve accountability, debugging, and security.
+
+7. Wishlist-to-Cart Workflow — Status: Improvement Planned
+Users can add items to the wishlist, but there is no atomic “Move to Cart” feature. I plan to implement a transactional workflow that checks stock, moves the item to the cart, and removes it from the wishlist in a single safe operation.
+
+8. Two-Factor Authentication (2FA) — Status: Planned
+Authentication currently relies only on password or social login. To strengthen security—especially for admin accounts—I plan to add optional 2FA using SMS OTP or authenticator apps.

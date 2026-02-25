@@ -1,0 +1,509 @@
+E-Commerce MERN Website — Complete Technical Overview
+📦 Project Structure
+This is a monorepo (npm workspaces) containing two separate packages:
+
+ecommerce-mern-website/
+├── backend/          ← Node.js + Express API
+├── frontend/         ← React + Vite SPA
+├── package.json      ← Root workspace manager
+└── main.bat          ← Dev startup script
+Root 
+package.json
+ uses concurrently to run both servers simultaneously (npm run dev).
+
+🏗️ Architecture Overview
+[Browser] ←──── React SPA (Vite, port 3000)
+                        │
+                        │ HTTP REST + WebSocket
+                        ▼
+            [Express.js API (port 5000)]
+                        │
+              ┌─────────┴─────────┐
+              │                   │
+         [MongoDB]          [Cloudinary]
+         (primary DB)       (image storage)
+In production, the Express server also statically serves the built React frontend (frontend/dist), making it a single unified deployment.
+
+⚙️ Backend (Node.js + Express 5)
+Tech Stack
+Package	Version	Purpose
+express	^5.1.0	Web framework (latest major version)
+mongoose	^8.19.3	MongoDB ODM
+mongodb	^7.0.0	Native MongoDB driver
+socket.io	^4.8.1	Real-time WebSocket communication
+jsonwebtoken	^9.0.2	JWT-based authentication
+bcryptjs	^3.0.3	Password hashing
+cloudinary	^1.41.3	Image upload & CDN
+multer	^2.0.2	File upload handling
+nodemailer	^7.0.11	Email service (SMTP)
+razorpay	^2.9.6	Payment gateway
+google-auth-library	^10.5.0	Google OAuth
+dotenv	^17.2.3	Environment configuration
+Note: Uses ES Modules ("type": "module") throughout — all imports use import/export syntax.
+
+Server Startup Flow (server.js)
+1. dotenv.config()          ← Load .env
+2. validateEnv()            ← Fail fast if required vars missing
+3. http.createServer(app)   ← Wrap Express in raw HTTP
+4. initializeSocket(server) ← Attach Socket.IO to HTTP server
+5. connectDB()              ← Connect to MongoDB
+6. server.listen(PORT)      ← Start listening
+Graceful shutdown handles SIGTERM/SIGINT — closes HTTP server first, then DB connection, with a forced 10s timeout kill.
+
+app.js — Middleware Pipeline
+Applied in order:
+
+CORS — configured via config/cors.js with allowed origins
+Body Parser — JSON + URL-encoded, 10MB limit
+Request Logger — conditional on enableRequestLogging flag
+Rate Limiter — custom in-memory implementation (100 req/15 min per IP)
+Static Files — /uploads folder served for legacy support
+API Routes — all under /api/v1/ prefix
+Production SPA — serves frontend/dist + catch-all for React Router
+404 Handler → Error Handler (always last)
+API Routes (15 route files)
+Route Prefix	Controller	Purpose
+/api/v1/auth	authController.js	Login, signup, Google OAuth, password reset
+/api/v1/products	productController.js	Product CRUD, search, filtering
+/api/v1/orders	orderController.js	Place/track/manage orders
+/api/v1/repairs	repairController.js	Device repair booking & tracking
+/api/v1/cart	cartController.js	Cart management (server-side)
+/api/v1/wishlist	wishlistController.js	Wishlist CRUD
+/api/v1/payment	paymentController.js	Razorpay payment initiation/verification
+/api/v1/users	userController.js	User profile management
+/api/v1/admin	adminController.js	Admin-only operations
+/api/v1/dashboard	dashboardController.js	Stats aggregations
+/api/v1/notifications	notificationController.js	In-app notifications
+/api/v1/chat	chatController.js	Customer ↔ Admin messaging
+/api/v1/addresses	addressController.js	Multiple address management
+/api/v1/parts	partsController.js	Spare parts inventory
+/api/v1/notifications	—	Real-time notification fetch
+Database Models (15 MongoDB Collections)
+Model	Key Fields
+User	name, email, password (bcrypt), role (user/technician/admin), profilePicture, preferences, recentlyViewed
+Product	name, description, price, images (Cloudinary URLs), category, stock, ratings
+Order	user (ref), orderItems[], shippingAddress, paymentMethod, status (Pending→Delivered), isPaid, paymentResult
+Repair	user (ref), deviceType, brand, model, issue, trackingId (REP000001), technician (ref), statusUpdates[], pickupDate
+Cart	user (ref), items[]
+Wishlist	user (ref), products[]
+Notification	user (ref), type, message, isRead
+ChatMessage	sender (ref), receiver (ref), message, senderRole
+Address	user (ref), label, fullAddress, city, state, pincode
+Technician	user (ref), specializations, availability, rating
+TechnicianReview	technician (ref), user (ref), rating, comment
+PartsInventory	name, sku, quantity, price, supplier
+Invoice	order/repair (ref), amount, GST, PDF
+Warranty	product (ref), user (ref), duration, expiryDate
+Appointment	user (ref), technician (ref), scheduledAt, type
+Important: The project uses the native MongoDB driver (mongodb package) for data access functions (like getUserById), while Mongoose is also listed. Models are essentially plain JS modules with manual CRUD functions — not Mongoose Schemas.
+
+Middleware (9 files)
+Middleware	Description
+authMiddleware.js	protect — validates Bearer JWT, attaches req.user; optionalAuth — non-blocking variant
+adminMiddleware.js	Checks req.user.role === 'admin'
+technicianMiddleware.js	Checks req.user.role === 'technician'
+rateLimitMiddleware.js	Custom in-memory rate limiter; auth routes: 5 req/15m; general: 100 req/15m
+uploadMiddleware.js	Multer + Cloudinary Storage for image uploads
+errorMiddleware.js	Global error handler → structured JSON error responses
+loggerMiddleware.js	Request/response access logging
+validationMiddleware.js	Input validation helpers
+repairValidationMiddleware.js	Specific validation for repair form fields
+Real-Time Layer (Socket.IO)
+socketHandler.js — attached to the raw HTTP server:
+
+JWT Authentication Middleware on every socket connection
+Room Strategy:
+Every user joins user:<userId> (personal room)
+Admins additionally join admins (broadcast room)
+Events emitted:
+receive_message — chat messages
+new_customer_message — admin alert for new customer msgs
+user_typing / user_stop_typing — typing indicators
+new_notification — push notifications to specific user or all admins
+Utilities (7 files)
+Utility	Purpose
+emailService.js	Nodemailer SMTP wrapper — order confirmations, repair updates, password reset
+fileUpload.js	Cloudinary upload helpers
+helpers.js	General utility functions
+validation.js	Reusable input validators
+response.js	Standardized API response formatter
+logger.js	Winston/custom logging setup
+dateTime.js	Date/time formatting helpers
+Environment Variables Required
+# Required (crashes on missing)
+MONGO_URI
+JWT_SECRET
+CLOUDINARY_CLOUD_NAME
+CLOUDINARY_API_KEY
+CLOUDINARY_API_SECRET
+# Recommended
+GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET
+SMTP_USER
+SMTP_PASS
+🎨 Frontend (React 19 + Vite 7)
+Tech Stack
+Package	Version	Purpose
+react	^19.1.1	UI framework
+vite	^7.1.7	Build tool + dev server
+react-router-dom	^7.9.5	Client-side routing
+tailwindcss	^4.1.17	Utility-first CSS (v4 via Vite plugin)
+framer-motion	^12.23.24	Declarative animations
+gsap	^3.14.2	Advanced scroll/timeline animations
+socket.io-client	^4.8.1	Real-time connection to backend
+recharts	^3.6.0	Charts for admin dashboard
+lucide-react	^0.553.0	Icon library
+react-helmet-async	^2.0.5	SEO meta tags
+split-type	^0.3.4	Text splitting for animations
+Vite Dev Proxy
+Vite proxies all API traffic to avoid CORS issues in development:
+
+/api        → http://localhost:5000
+/socket.io  → http://localhost:5000 (WebSocket enabled)
+/uploads    → http://localhost:5000
+Routing Architecture (App.jsx)
+Three tiers of route protection:
+
+Public Routes          → No authentication needed
+ProtectedRoute         → Must be logged in (any role)
+AdminRoute             → Must have role: 'admin'
+TechnicianRoute        → Must have role: 'technician'
+All routes:
+
+Path	Page	Access
+/	Landing	Public
+/store	Store	Public
+/product/:id	Product Detail	Public
+/repair	Repair Booking	Public
+/contact	Contact	Public
+/cart	Cart	Public
+/checkout	Checkout	Public
+/orders/:id	Order Detail	Public
+/status/:id	Live Repair Updates	Public
+/orders	My Orders	Protected
+/dashboard	User Dashboard	Protected
+/profile	Profile	Protected
+/wishlist	Wishlist	Protected
+/my-repairs	My Repairs	Protected
+/addresses	Addresses	Protected
+/notifications	Notifications	Protected
+/admin	Admin Dashboard	Admin
+/admin/products	Manage Products	Admin
+/admin/orders	Manage Orders	Admin
+/admin/users	Manage Users	Admin
+/admin/repairs	Manage Repairs	Admin
+/admin/chat	Admin Chat	Admin
+/technician	Tech Dashboard	Technician
+/technician/jobs	Tech Jobs List	Technician
+/technician/job/:id	Job Detail	Technician
+/technician/profile	Tech Profile	Technician
+/technician/products	Products Reference	Technician
+React Context Providers
+Context	Purpose
+AuthContext	User auth state, login/register/logout functions, token management in localStorage
+CartContext	Cart items, add/remove/update, persisted server-side
+NotificationContext	Notification state, Socket.IO new_notification listener, unread count
+SocketContext	Socket.IO connection instance, shared across app
+ToastContext	Global toast notification queue (success/error/info)
+Key Components
+Component	Description
+Navbar.jsx (19KB)	Main navigation with auth state, notification bell, mobile responsive
+AuthModal.jsx (30KB)	Combined Login + Signup modal with Google One Tap
+ChatWidget.jsx (15KB)	Floating customer chat UI with Socket.IO
+ProductFilters.jsx	Category/price/rating filter sidebar for Store
+QuickViewModal.jsx	Product quick-view popup
+NotificationBell.jsx	Real-time notification badge + dropdown
+DashboardSidebar.jsx	Sidebar nav for user dashboard
+MobileBottomNav.jsx	Fixed bottom nav for mobile
+ErrorBoundary.jsx	React error boundaries
+Skeleton.jsx	Loading skeleton placeholders
+GoogleOneTap.jsx	Google One Tap sign-in integration
+Frontend Folder Structure
+frontend/src/
+├── pages/
+│   ├── Landing.jsx      (32KB) ← Hero, features, animations
+│   ├── Store.jsx        (30KB) ← Product grid, filters, search
+│   ├── Repair.jsx       (35KB) ← Multi-step repair booking form
+│   ├── Product.jsx      (22KB) ← Product detail, reviews, cart
+│   ├── Checkout.jsx     (18KB) ← Multi-step checkout
+│   ├── admin/           ← 6 admin management pages
+│   └── technician/      ← 5 technician portal pages
+├── components/          ← 25+ reusable UI components
+├── context/             ← 5 React context providers
+├── config/api.js        ← Axios instance + endpoint definitions
+├── hooks/               ← Custom React hooks
+├── utils/               ← Helper functions
+├── styles/              ← Additional CSS modules
+└── Fonts/               ← 72 custom font files (local)
+💳 Payment Flow (Razorpay)
+1. Frontend: POST /api/v1/payment/create-order → Backend creates Razorpay order
+2. Frontend: Opens Razorpay checkout modal (client-side JS)
+3. User pays → Razorpay returns payment_id, order_id, signature
+4. Frontend: POST /api/v1/payment/verify → Backend verifies HMAC signature
+5. Backend: Marks order as isPaid = true, fires notification
+🔑 Authentication Flow
+Register/Login → JWT issued → stored in localStorage
+→ All API requests: Authorization: Bearer <token>
+→ Backend: protect() middleware verifies JWT, fetches user from DB
+→ Socket.IO: JWT passed via handshake.auth.token
+→ Google OAuth: google-auth-library verifies ID token server-side
+→ Password Reset: token stored in DB with expiry, email sent via Nodemailer
+🔔 Real-Time Notification Flow
+Backend action (e.g., order status change)
+    → emitNotification(userId, data)  ← via socketHandler utility
+    → Socket.IO → user:<userId> room → 'new_notification' event
+    → Frontend NotificationContext listener updates state
+    → NotificationBell badge count increments
+🛠️ Repair Tracking System
+Tracking ID: Auto-generated as REP000001, REP000002, etc.
+Status Pipeline: Pending → Confirmed → In Progress → Diagnosed → Repairing → Quality Check → Completed → Delivered
+Each status change appends to statusUpdates[] array (full audit trail)
+Technician assignment: Admin assigns a technician user; technician portal shows their assigned jobs
+Live Updates page (/status/:id) — public page for tracking without login
+🚀 Deployment Strategy
+Development: npm run dev → runs both servers concurrently (Vite on :3000, Express on :5000)
+Production:
+npm run build → Vite builds frontend/dist/
+npm start → Express serves static frontend + handles all API calls
+Single server deployment (no separate frontend hosting needed)
+Frontend entrypoint: index.html served for all non-API routes (SPA catch-all)
+🧩 User Roles Summary
+Role	Portal	Capabilities
+user	Customer Dashboard, Store, Repair	Shop, order, repair booking, chat, wishlist
+technician	Technician Portal	View/update assigned repair jobs, parts lookup
+admin	Admin Panel	Full CRUD on products, orders, repairs, users, chat all customers
+
+
+
+What's Already Done Well
+Before improvements — here's what's already industry-grade:
+
+RBAC (3 roles + middleware guards) ✅
+JWT Auth + Google OAuth ✅
+Server-side price verification (ignores frontend prices) ✅
+Atomic stock reduction via findOneAndUpdate with $gte filter ✅
+Manual rollback on stock deduction failure ✅
+Graceful shutdown (SIGTERM/SIGINT handling) ✅
+Real-time Socket.IO with JWT auth ✅
+Repair audit trail (statusUpdates[] array) ✅
+
+
+
+
+
+
+----------------------------------------------------------------------------------------------------
+
+
+Thought for 1s
+
+Here are more DSA-focused improvements specifically tailored to this project:
+
+🧠 More DSA-Based Backend Improvements
+12. Priority Queue — Repair Job Scheduling
+Right now technicians pick jobs manually. A priority queue can auto-rank repair jobs:
+
+js
+// Min-Heap based priority queue
+// Priority score = f(waitTime, deviceType, issue severity)
+const SEVERITY = { 'Not Turning On': 5, 'Screen Damage': 4, 'Battery': 3, 'Camera': 2, 'Mic': 1, 'Other': 1 };
+const calcPriority = (repair) => {
+  const waitHrs = (Date.now() - new Date(repair.createdAt)) / 3600000;
+  return SEVERITY[repair.issue] * 10 + Math.min(waitHrs, 48); // cap at 48h
+};
+// GET /repairs?sort=priority → sort by computed score
+repairs.sort((a, b) => calcPriority(b) - calcPriority(a)); // descending
+Technician dashboard shows most urgent jobs at top — classic heap/priority queue use case.
+
+13. Sliding Window — Advanced Rate Limiting
+Current rate limiter uses a fixed window (resets at t+15min, allows burst at boundary). Sliding window is smoother:
+
+js
+// DSA: Sliding Window with Queue (Deque)
+const windowMs = 15 * 60 * 1000;
+const reqMap = new Map(); // ip → [timestamps]
+const slidingWindowLimit = (max) => (req, res, next) => {
+  const ip = req.ip;
+  const now = Date.now();
+  const timestamps = (reqMap.get(ip) || []).filter(t => now - t < windowMs); // evict old
+  
+  if (timestamps.length >= max) {
+    return res.status(429).json({ message: "Rate limit exceeded" });
+  }
+  
+  timestamps.push(now);
+  reqMap.set(ip, timestamps);
+  next();
+};
+Prevents the "double burst" exploit that fixed windows have at window boundaries.
+
+14. Trie — Product Search Autocomplete
+Current search uses $regex which is O(n) full scan. A Trie built in memory at startup gives O(m) prefix lookups (m = query length):
+
+js
+class TrieNode { constructor() { this.children = {}; this.productIds = []; } }
+class ProductTrie {
+  insert(name, id) {
+    let node = this.root;
+    for (const ch of name.toLowerCase()) {
+      if (!node.children[ch]) node.children[ch] = new TrieNode();
+      node = node.children[ch];
+      node.productIds.push(id); // store IDs at each prefix node
+    }
+  }
+  search(prefix) { /* traverse and return ids */ }
+}
+// Build at server start after DB connect
+const trie = new ProductTrie();
+const products = await db.collection("products").find({}).toArray();
+products.forEach(p => trie.insert(p.name, p._id));
+Use for a /products/autocomplete?q=sam endpoint — returns results in O(m) not O(n).
+
+15. LRU Cache — Recently Viewed Products
+The 
+User
+ model already has a recentlyViewed: [] field, but there's no controller using it. An LRU Cache is the perfect DS:
+
+js
+// DSA: Doubly Linked List + HashMap = O(1) get/put
+class LRUCache {
+  constructor(capacity) { this.cap = capacity; this.map = new Map(); }
+  
+  get(key) {
+    if (!this.map.has(key)) return -1;
+    const val = this.map.get(key);
+    this.map.delete(key); this.map.set(key, val); // move to end (most recent)
+    return val;
+  }
+  
+  put(key, val) {
+    if (this.map.has(key)) this.map.delete(key);
+    if (this.map.size >= this.cap) this.map.delete(this.map.keys().next().value); // evict LRU
+    this.map.set(key, val);
+  }
+  
+  toArray() { return [...this.map.keys()].reverse(); } // most recent first
+}
+// In productController → getProductById:
+const userLRU = getUserLRU(userId); // per-user LRU of size 10
+userLRU.put(productId, product.name);
+await updateUser(userId, { recentlyViewed: userLRU.toArray() });
+16. Two-Pointer / Binary Search — Price Range Filtering
+If products are cached/sorted in memory, binary search is O(log n) vs current O(n) MongoDB range scan without an index:
+
+js
+// If products array is price-sorted in memory cache:
+const binarySearchLeft = (arr, minPrice) => {
+  let lo = 0, hi = arr.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (arr[mid].price < minPrice) lo = mid + 1; else hi = mid;
+  }
+  return lo;
+};
+const binarySearchRight = (arr, maxPrice) => { /* similar */ };
+// O(log n) slice instead of O(n) filter
+const filtered = sortedByPrice.slice(
+  binarySearchLeft(sortedByPrice, minPrice),
+  binarySearchRight(sortedByPrice, maxPrice)
+);
+17. Graph — Product Recommendation Engine
+Build a co-purchase graph: when users buy product A and B together, add an edge A→B:
+
+js
+// DSA: Adjacency List (Weighted Graph)
+// On order creation, update co-purchase graph
+const coPurchaseGraph = new Map(); // productId → Map<productId, weight>
+const updateGraph = (orderItems) => {
+  for (let i = 0; i < orderItems.length; i++) {
+    for (let j = i + 1; j < orderItems.length; j++) {
+      const a = orderItems[i].product, b = orderItems[j].product;
+      const weight = coPurchaseGraph.get(a)?.get(b) || 0;
+      coPurchaseGraph.get(a)?.set(b, weight + 1); // increment edge weight
+    }
+  }
+};
+// GET /products/:id/recommendations → top 5 neighbours by edge weight
+const getRecommendations = (productId, topK = 5) => {
+  const neighbours = [...(coPurchaseGraph.get(productId) || new Map()).entries()];
+  return neighbours.sort((a, b) => b[1] - a[1]).slice(0, topK).map(([id]) => id);
+};
+18. Bloom Filter — Duplicate Review Prevention
+Before checking the DB if a user already reviewed a product (a DB query), use a Bloom Filter for a fast probabilistic check:
+
+js
+// DSA: Bit array + multiple hash functions
+class BloomFilter {
+  constructor(size = 1000) { this.bits = new Uint8Array(size); this.size = size; }
+  
+  _hashes(str) {
+    // Two hash functions → two bit positions
+    const h1 = [...str].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % this.size, 0);
+    const h2 = [...str].reduce((a, c) => (a * 37 + c.charCodeAt(0)) % this.size, 0);
+    return [h1, h2];
+  }
+  
+  add(key) { this._hashes(key).forEach(i => this.bits[i] = 1); }
+  mightContain(key) { return this._hashes(key).every(i => this.bits[i] === 1); }
+}
+const reviewBloom = new BloomFilter(10000);
+// key = `${userId}:${productId}`
+// In addProductReview:
+if (reviewBloom.mightContain(`${userId}:${productId}`)) {
+  // only THEN do the expensive DB check
+  const alreadyReviewed = product.reviews.some(r => r.user.toString() === userId);
+  if (alreadyReviewed) return sendError(res, "Already reviewed", 400);
+}
+reviewBloom.add(`${userId}:${productId}`);
+Eliminates ~95% of unnecessary DB lookups for duplicate review checks.
+
+19. Exponential Backoff — Email/Notification Retry
+Currently fire-and-forget .catch(err => console.error(...)) — emails just silently fail. Add retry with exponential backoff:
+
+js
+// DSA: Recursive backoff with binary exponential delay
+const retryWithBackoff = async (fn, retries = 3, delay = 500) => {
+  try {
+    return await fn();
+  } catch (err) {
+    if (retries === 0) throw err;
+    await new Promise(r => setTimeout(r, delay));
+    return retryWithBackoff(fn, retries - 1, delay * 2); // 500 → 1000 → 2000ms
+  }
+};
+// Usage:
+await retryWithBackoff(() => sendEmail({ to: user.email, ...template }));
+20. Job Queue — Async Processing (Bull/BullMQ pattern)
+Heavy tasks (email, notification, stock updates) run synchronously in the request lifecycle right now. A simple in-memory queue decouples them:
+
+js
+// DSA: FIFO Queue
+class JobQueue {
+  constructor() { this.queue = []; this.running = false; }
+  
+  enqueue(job) { this.queue.push(job); if (!this.running) this.process(); }
+  
+  async process() {
+    this.running = true;
+    while (this.queue.length > 0) {
+      const job = this.queue.shift(); // dequeue from front — O(1) with linked list
+      try { await job(); } catch (e) { logger.error("Job failed", e); }
+    }
+    this.running = false;
+  }
+}
+const emailQueue = new JobQueue();
+// In orderController — non-blocking:
+emailQueue.enqueue(() => sendEmail({ to: user.email, ...confirmationTemplate }));
+return sendCreated(res, "Order created", order); // responds immediately
+📊 Updated DSA Summary
+#	Technique	Data Structure	Applied To
+12	Priority Queue	Min-Heap (sort)	Repair job scheduling
+13	Sliding Window	Deque/Array of timestamps	Rate limiting
+14	Trie	Tree	Product autocomplete search
+15	LRU Cache	HashMap + Doubly Linked List	Recently viewed products
+16	Binary Search	Sorted array	Price range filtering
+17	Co-purchase Graph	Weighted adjacency list	Product recommendations
+18	Bloom Filter	Bit array + hash functions	Duplicate review prevention
+19	Exponential Backoff	Recursive binary delay	Email/notification retry
+20	Job Queue	FIFO Queue	Async background processin

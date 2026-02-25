@@ -61,15 +61,34 @@ export const createOrder = asyncHandler(async (req, res) => {
   orderData.totalPrice = totalPrice;
 
   // Deduction Logic
+  const successfulDeductions = [];
+
   try {
     for (const item of verifiedItems) {
-      await ProductModel.reduceStock(item.product, item.quantity);
+      const result = await ProductModel.reduceStock(item.product, item.quantity);
+      
+      // If result is null, it means the filter { stock: { $gte: quantity } } failed -> Out of Stock
+      if (!result) {
+        throw new Error(`Insufficient stock for ${item.name}`);
+      }
+      
+      successfulDeductions.push(item);
     }
   } catch (error) {
-     // Rollback (though pre-check reduces risk, concurrency might still cause issues)
-     // For now, strict pre-check above handles most cases. 
-     // A robust transaction/rollback is better but complex for this scope.
-     return sendError(res, "Stock update failed", 400);
+     logger.error(`Order creation failed during stock deduction: ${error.message}`);
+     
+     // Rollback successful deductions
+     if (successfulDeductions.length > 0) {
+       logger.info(`Rolling back ${successfulDeductions.length} items...`);
+       await Promise.allSettled(
+         successfulDeductions.map(item => 
+           ProductModel.increaseStock(item.product, item.quantity)
+             .catch(e => logger.error(`Critical Rollback Error for ${item.product}: ${e.message}`))
+         )
+       );
+     }
+     
+     return sendError(res, "Order creation failed: " + error.message, 400);
   }
 
   const order = await OrderModel.createOrder(orderData);

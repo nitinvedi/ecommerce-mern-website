@@ -133,84 +133,102 @@ const ScrollSection = ({ title, highlight, products }) => {
 const BentoGrid = () => {
     const navigate = useNavigate();
     return (
-        <section className="py-24 max-w-[1400px] mx-auto px-6">
-            <h2 className="text-3xl md:text-5xl font-semibold text-[#1d1d1f] mb-12 tracking-tight">
-                Featured <span className="text-[#6e6e73]">Collections.</span>
-            </h2>
+        <section className="py-24 max-w-[1400px] mx-auto px-6 relative">
+            {/* 5. Bento Section Header Enhancement */}
+            <div className="flex flex-col items-start mb-14">
+                <span className="px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-[#0071e3] text-sm font-semibold mb-4 border border-blue-500/20 shadow-sm flex items-center gap-2 backdrop-blur-md">
+                    <Star size={14} className="fill-[#0071e3]" /> Highlighted Experiences
+                </span>
+                <h2 className="text-4xl md:text-6xl font-bold text-[#1d1d1f] tracking-tight">
+                    Featured <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-600">Collections.</span>
+                </h2>
+            </div>
             
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 h-auto md:h-[600px]">
-                {/* Repair Service - Large Card */}
+                {/* 6. Repair Service Card - Large Card */}
                 <div 
                     onClick={() => navigate('/repair')}
-                    className="md:col-span-2 md:row-span-2 relative overflow-hidden rounded-[30px] p-8 md:p-12 cursor-pointer group shadow-lg hover:shadow-2xl transition-all duration-500 bg-black"
+                    className="md:col-span-2 md:row-span-2 relative overflow-hidden rounded-[32px] p-8 md:p-12 cursor-pointer group shadow-xl hover:shadow-2xl transition-all duration-700 bg-black border border-white/5"
                 >
-                    {/* Background Gradient */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#1c1c1e] to-black opacity-90 z-0" />
-                    <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1581092921461-eab62e97a780?q=80&w=2670&auto=format&fit=crop')] bg-cover bg-center opacity-40 group-hover:opacity-30 transition-opacity duration-700 mix-blend-overlay z-0" />
+                    {/* Background Gradient & Animated Orbs */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#101012] to-black opacity-90 z-0" />
+                    <div className="absolute -top-32 -left-32 w-80 h-80 bg-blue-600 rounded-full mix-blend-screen filter blur-[120px] opacity-20 group-hover:opacity-40 group-hover:scale-125 transition-all duration-1000" />
+                    <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-purple-600 rounded-full mix-blend-screen filter blur-[120px] opacity-10 group-hover:opacity-30 group-hover:scale-125 transition-all duration-1000" />
+                    <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1581092921461-eab62e97a780?q=80&w=2670&auto=format&fit=crop')] bg-cover bg-center opacity-30 group-hover:opacity-20 group-hover:scale-105 transition-all duration-1000 mix-blend-overlay z-0" />
                     
                     <div className="relative z-10 flex flex-col justify-between h-full">
                         <div>
-                            <span className="px-3 py-1 rounded-full border border-white/20 text-xs font-semibold text-white/50 uppercase tracking-wider backdrop-blur-md">Service Center</span>
-                            <h3 className="text-4xl md:text-5xl font-semibold text-white mt-4 leading-tight">Expert <br/><span className="text-[#2997ff]">Repairs.</span></h3>
-                            <p className="text-gray-400 mt-4 max-w-sm text-lg">Official parts. Certified technicians. Same-day service assurance.</p>
+                            <span className="px-4 py-2 rounded-full bg-white/10 border border-white/20 text-xs font-bold text-white uppercase tracking-widest backdrop-blur-md shadow-lg inline-block">Service Center</span>
+                            <h3 className="text-5xl md:text-[64px] font-bold text-transparent bg-clip-text bg-gradient-to-b from-white to-white/70 mt-6 leading-[1.1] group-hover:translate-x-2 transition-transform duration-500">Expert <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-[#2997ff]">Repairs.</span></h3>
+                            <p className="text-gray-400 mt-5 max-w-sm text-lg font-medium leading-relaxed">Official parts. Certified technicians. Same-day service assurance.</p>
                         </div>
                         
                         <div className="flex items-center justify-between mt-8">
-                             <button className="bg-white text-black px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-transform active:scale-95 flex items-center gap-2 group-hover:gap-4 duration-300">
-                                Book Appointment <ArrowRight size={18} />
+                             <button className="bg-white text-black px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-100 transition-all active:scale-95 flex items-center gap-3 group-hover:pr-6 duration-300 shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+                                Book Appointment <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                              </button>
                         </div>
                     </div>
                 </div>
 
-                {/* Refurbished Store */}
+                {/* 7. Refurbished Store */}
                 <div 
                      onClick={() => navigate('/store?category=Mobile')}
-                     className="md:col-span-1 bg-white rounded-[30px] p-8 relative overflow-hidden cursor-pointer group shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-100 flex flex-col justify-between"
+                     className="md:col-span-1 bg-white rounded-[32px] p-8 relative overflow-hidden cursor-pointer group shadow-md hover:shadow-2xl transition-all duration-700 border border-gray-100 flex flex-col justify-between hover:border-blue-100/50"
                 >
-                    <div className="relative z-10">
-                        <h3 className="text-2xl font-semibold text-[#1d1d1f]">Refurbished</h3>
-                        <p className="text-gray-500 text-sm mt-1">Good as new.</p>
+                    {/* Animated gradient border on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-blue-500/0 to-purple-500/0 group-hover:from-blue-500/5 group-hover:via-purple-500/5 group-hover:to-pink-500/5 transition-all duration-700 pointer-events-none" />
+                    
+                    <div className="relative z-10 group-hover:-translate-y-1 transition-transform duration-500">
+                        <h3 className="text-5xl font-bold text-[#1d1d1f] tracking-tight">Refurb.</h3>
+                        <p className="text-gray-500 font-medium mt-3 text-lg">Good as new.</p>
                     </div>
                     {/* Abstract blurry blobs for premium feel */}
-                    <div className="absolute right-[-20px] bottom-[-20px] w-40 h-40 bg-gray-50 rounded-full blur-3xl group-hover:bg-blue-50 transition-colors duration-500" />
-                    <Smartphone size={120} className="text-[#1d1d1f] absolute bottom-4 right-4 opacity-5 translate-y-4 translate-x-4 group-hover:translate-y-0 group-hover:translate-x-0 group-hover:opacity-10 transition-all duration-500" />
-                     <div className="mt-8 flex justify-end">
-                        <div className="w-12 h-12 rounded-full bg-[#f5f5f7] flex items-center justify-center group-hover:bg-[#0071e3] group-hover:text-white transition-all duration-300">
-                             <ChevronRight size={20} />
+                    <div className="absolute right-[-20px] bottom-[-20px] w-48 h-48 bg-gray-50 rounded-full blur-3xl group-hover:bg-blue-100/50 transition-colors duration-700" />
+                    <Smartphone size={140} className="text-[#1d1d1f] absolute bottom-2 right-2 opacity-[0.03] translate-y-8 translate-x-8 group-hover:translate-y-2 group-hover:translate-x-2 group-hover:opacity-10 group-hover:scale-110 transition-all duration-700" />
+                     <div className="mt-8 flex justify-end relative z-10">
+                        <div className="w-14 h-14 rounded-full bg-[#f5f5f7] flex items-center justify-center group-hover:bg-[#0071e3] group-hover:text-white transition-all duration-500 group-hover:scale-110 shadow-sm">
+                             <ChevronRight size={24} className="group-hover:translate-x-0.5 transition-transform" />
                         </div>
                      </div>
                 </div>
 
-                {/* Accessories */}
+                {/* 8. Accessories */}
                 <div 
                     onClick={() => navigate('/store?category=Accessories')}
-                     className="md:col-span-1 bg-[#f5f5f7] rounded-[30px] p-8 relative overflow-hidden cursor-pointer group shadow-sm hover:shadow-xl transition-all duration-500 flex flex-col justify-between"
+                     className="md:col-span-1 bg-gradient-to-br from-[#fdfbfb] to-[#ebedee] rounded-[32px] p-8 relative overflow-hidden cursor-pointer group shadow-md hover:shadow-2xl transition-all duration-700 flex flex-col justify-between border border-white"
                 >
-                    <div className="relative z-10">
-                        <h3 className="text-2xl font-semibold text-[#1d1d1f]">Accessories</h3>
-                        <p className="text-gray-500 text-sm mt-1">Power & Sound.</p>
+                    <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-blue-100/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                    
+                    <div className="relative z-10 group-hover:-translate-y-1 transition-transform duration-500">
+                        <h3 className="text-[40px] font-bold text-[#1d1d1f] leading-none tracking-tight">Sounds &<br/>Power.</h3>
+                        <p className="text-gray-500 font-medium mt-3 text-lg">Top accessories.</p>
                     </div>
-                    <Headphones size={120} className="text-[#1d1d1f] absolute bottom-4 right-4 opacity-5 rotate-12 group-hover:rotate-0 group-hover:scale-110 group-hover:opacity-10 transition-all duration-500" />
-                    <div className="mt-8 flex justify-end">
-                        <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center group-hover:bg-[#0071e3] group-hover:text-white transition-all duration-300 shadow-sm">
-                             <Plus size={20} />
+                    {/* Floating headset animation */}
+                    <Headphones size={130} className="text-[#1d1d1f] absolute bottom-4 right-4 opacity-[0.03] rotate-12 group-hover:-rotate-12 group-hover:scale-125 group-hover:opacity-10 transition-all duration-700 group-hover:-translate-y-2" />
+                    <div className="mt-8 flex justify-end relative z-10">
+                        <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center group-hover:bg-indigo-500 group-hover:text-white transition-all duration-500 shadow-sm group-hover:scale-110 group-hover:shadow-lg">
+                             <Plus size={24} className="group-hover:rotate-90 transition-transform duration-500" />
                         </div>
                      </div>
                 </div>
 
-                {/* Trade In */}
+                {/* 9. Trade In */}
                 <div 
                     onClick={() => navigate('/contact')}
-                    className="md:col-span-2 bg-gradient-to-r from-[#1d1d1f] to-[#3a3a3c] rounded-[30px] p-8 relative overflow-hidden cursor-pointer group shadow-lg hover:shadow-xl transition-all duration-500 flex flex-row items-center justify-between"
+                    className="md:col-span-2 bg-[#1d1d1f] rounded-[32px] p-8 md:p-10 relative overflow-hidden cursor-pointer group shadow-xl hover:shadow-2xl transition-all duration-700 flex flex-row items-center justify-between border border-gray-800"
                 >
-                     <div className="relative z-10 max-w-sm">
-                         <span className="text-[#2997ff] font-bold tracking-wide uppercase text-xs">Trade-In</span>
-                        <h3 className="text-3xl font-semibold text-white mt-1">Upgrade & Save.</h3>
-                        <p className="text-gray-400 mt-2 text-sm">Get credit towards your next purchase when you trade in your eligible device.</p>
+                     {/* Shimmer sweep animation background */}
+                     <div className="absolute inset-0 w-[200%] bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-[150%] group-hover:translate-x-[50%] transition-transform duration-[1500ms] ease-in-out pointer-events-none" />
+                     <div className="absolute right-0 top-0 w-80 h-80 bg-green-500/10 blur-[80px] rounded-full group-hover:bg-green-400/20 transition-colors duration-700" />
+
+                     <div className="relative z-10 max-w-sm group-hover:translate-x-2 transition-transform duration-500">
+                         <span className="inline-block px-3 py-1.5 rounded-lg bg-[#2997ff]/10 text-[#2997ff] font-bold tracking-widest uppercase text-xs mb-4 border border-[#2997ff]/20">Trade-In</span>
+                        <h3 className="text-4xl font-bold text-white mt-1">Upgrade & Save.</h3>
+                        <p className="text-gray-400 mt-3 text-base leading-relaxed font-medium">Exchange your current device for credit towards a new one. It's good for you and the planet.</p>
                      </div>
-                     <div className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                        <ArrowRight size={24} className="text-white" />
+                     <div className="relative z-10 w-16 h-16 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center group-hover:scale-110 group-hover:bg-white group-hover:text-[#1d1d1f] transition-all duration-500 shadow-lg text-white">
+                        <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
                      </div>
                 </div>
             </div>
@@ -509,28 +527,46 @@ const Landing = () => {
 
       
       {/* Header Section */}
-      <div className="max-w-[1400px] mx-auto px-6 mb-16 pt-20">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-6 max-w-2xl z-10">
+      <div className="max-w-[1400px] mx-auto px-6 mb-16 pt-20 relative">
+        {/* 4. Subtle Background Glow */}
+        <div className="absolute top-0 left-[-10%] w-[500px] h-[500px] bg-blue-100/40 rounded-full blur-[100px] -z-10 pointer-events-none" />
+        
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-12">
+            <div className="space-y-8 max-w-2xl z-10">
                 <div>
-                   <h1 className="text-5xl md:text-[64px] font-semibold text-[#1d1d1f] tracking-tight leading-tight">
-                        Store.
+                   {/* 1. Hero Text Gradient */}
+                   <h1 className="text-6xl md:text-[80px] font-bold tracking-tight leading-[1.1]">
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1d1d1f] to-[#555555]">Store.</span>
                    </h1>
-                   <p className="text-xl md:text-2xl text-[#6e6e73] font-normal leading-normal mt-4">
+                   <p className="text-2xl md:text-3xl text-[#6e6e73] font-medium leading-tight mt-6">
                         The best way to buy the products you love.
                         <br />
-                        <span className="text-[#1d1d1f] font-medium">Only at Ram Mobiles.</span>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0071e3] to-[#42a1ec] font-semibold">Only at Ram Mobiles.</span>
                    </p>
+                </div>
+                
+                {/* 2. Hero Action Buttons */}
+                <div className="flex flex-wrap items-center gap-4 pt-4">
+                    <button onClick={() => navigate('/store')} className="px-8 py-4 rounded-full bg-[#1d1d1f] text-white font-semibold text-lg hover:bg-[#333336] hover:scale-105 hover:shadow-xl hover:shadow-black/20 transition-all duration-300">
+                        Shop the Latest
+                    </button>
+                    <button onClick={() => navigate('/repair')} className="px-8 py-4 rounded-full bg-white text-[#1d1d1f] font-semibold text-lg border border-gray-200 hover:border-[#1d1d1f] hover:bg-gray-50 hover:scale-105 transition-all duration-300 flex items-center gap-2 shadow-sm">
+                        Book a Repair <ChevronRight size={20} className="text-gray-400" />
+                    </button>
                 </div>
             </div>
             
-            {/* Dynamic Hero Visual */}
-            <div className="hidden lg:block relative w-[400px] h-[300px]">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl flex items-center justify-center overflow-hidden">
+            {/* 3. Hero Visual Depth */}
+            <div className="hidden lg:block relative lg:w-[500px] lg:h-[400px] xl:w-[600px] xl:h-[500px] group cursor-pointer" onClick={() => navigate('/store')}>
+                {/* Outer Glow */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-3xl blur-2xl group-hover:blur-3xl transition-all duration-700 -z-10" />
+                <div className="absolute inset-0 bg-gradient-to-br from-[#f5f5f7] to-[#ffffff] border border-white rounded-3xl shadow-2xl overflow-hidden group-hover:-translate-y-4 transition-all duration-700">
+                    {/* Inner animated blob */}
+                    <div className="absolute top-[-20%] right-[-20%] w-[60%] h-[60%] bg-blue-100/50 rounded-full blur-[60px] group-hover:bg-indigo-100/50 transition-colors duration-700" />
                     <img 
                         src="https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/iphone-15-pro-finish-select-202309-6-7inch-naturaltitanium?wid=5120&hei=2880&fmt=p-jpg&qlt=80&.v=1692845702708" 
                         alt="Featured Device" 
-                        className="w-[120%] h-[120%] object-contain -rotate-12 translate-y-4 hover:rotate-0 transition-transform duration-700"
+                        className="w-[120%] h-[120%] object-contain -rotate-6 translate-y-8 group-hover:rotate-0 group-hover:scale-105 group-hover:translate-y-4 transition-all duration-700 drop-shadow-[0_20px_20px_rgba(0,0,0,0.15)]"
                     />
                 </div>
             </div>
@@ -538,10 +574,10 @@ const Landing = () => {
             {/* User Context Area (Mobile Only) */}
             <div className="hidden md:flex flex-col items-start md:items-end space-y-2 lg:hidden">
                 <div className="flex items-center gap-3">
-                    <img src="https://ui-avatars.com/api/?name=Support&background=random" className="w-10 h-10 rounded-full" alt="Specialist" />
+                    <img src="https://ui-avatars.com/api/?name=Support&background=random" className="w-10 h-10 rounded-full shadow-sm" alt="Specialist" />
                     <div className="text-sm">
                         <p className="text-[#1d1d1f] font-semibold">Need shopping help?</p>
-                        <a href="/contact" className="text-[#0066cc] hover:underline">Ask a Specialist</a>
+                        <a href="/contact" className="text-[#0066cc] hover:underline font-medium">Ask a Specialist</a>
                     </div>
                 </div>
             </div>
@@ -558,14 +594,16 @@ const Landing = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.05 }}
               onClick={() => navigate(cat.link)}
-              className="flex flex-col items-center gap-3 min-w-[80px] cursor-pointer group snap-start"
+              className="flex flex-col items-center gap-4 min-w-[100px] cursor-pointer group snap-start"
             >
-              <div className="w-[100px] h-[80px] flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-2">
-                 <div className="text-[#1d1d1f] opacity-80 group-hover:opacity-100 transition-opacity">
+              {/* 10. Category Navigation Hover Glows */}
+              <div className="relative w-24 h-24 rounded-[24px] bg-white border border-gray-100 shadow-sm flex items-center justify-center transition-all duration-300 group-hover:-translate-y-2 group-hover:shadow-lg group-hover:border-blue-100 group-hover:bg-blue-50/50">
+                 <div className="absolute inset-0 bg-blue-400/5 rounded-[24px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl pointer-events-none" />
+                 <div className="text-[#1d1d1f] opacity-80 group-hover:text-[#0071e3] group-hover:opacity-100 transition-colors duration-300 relative z-10 group-hover:scale-110 transform">
                     {cat.icon}
                  </div>
               </div>
-              <span className="text-sm font-medium text-[#1d1d1f] group-hover:underline underline-offset-4 decoration-[#1d1d1f]">
+              <span className="text-sm font-semibold text-gray-500 group-hover:text-[#1d1d1f] transition-colors duration-300 bg-white/50 px-3 py-1 rounded-full border border-transparent group-hover:border-gray-200">
                 {cat.name}
               </span>
             </motion.div>

@@ -186,7 +186,6 @@ export default function Store() {
     if (filters.priceRange[1] < 1000000) params.maxPrice = filters.priceRange[1];
     if (filters.brands.length > 0) params.brands = filters.brands.join(",");
     if (filters.rating > 0) params.rating = filters.rating;
-    if (filters.rating > 0) params.rating = filters.rating;
     if (filters.inStock) params.inStock = "true";
     if (filters.isRefurbished) params.condition = "refurbished";
     setSearchParams(params, { replace: true });
@@ -194,6 +193,13 @@ export default function Store() {
     const titleCat = selectedCategory === "all" ? "Store" : selectedCategory;
     document.title = searchTerm ? `Search: ${searchTerm} | Ram Mobiles` : `${titleCat} | Ram Mobiles`;
   }, [searchTerm, selectedCategory, sortBy, filters, setSearchParams]);
+
+  useEffect(() => {
+    const search = searchParams.get("search") || "";
+    if (search !== searchTerm) {
+      setSearchTerm(search);
+    }
+  }, [searchParams.get("search")]);
 
   useEffect(() => {
     fetchProducts();

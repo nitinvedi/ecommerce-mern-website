@@ -172,6 +172,16 @@ export default function Navbar({ openSignUp, openChat }) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const search = params.get("search");
+    if (search !== null && search !== searchQuery) {
+      setSearchQuery(search);
+    } else if (!search && searchQuery) {
+      setSearchQuery("");
+    }
+  }, [window.location.search]);
+
   const navLinks = [
     { name: "Store", path: "/store", icon: <ShoppingBag size={18} /> },
     { name: "Repair", path: "/repair", icon: <Wrench size={18} /> },
